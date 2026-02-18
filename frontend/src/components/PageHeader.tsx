@@ -20,11 +20,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     <div className={`mb-6 sm:mb-8 ${className}`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-lc-text mb-2">
             {title}
           </h1>
           {description && (
-            <p className="text-sm sm:text-base text-gray-600 max-w-3xl">{description}</p>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-lc-text-muted max-w-3xl">{description}</p>
           )}
         </div>
         {action && <div className="flex-shrink-0">{action}</div>}

@@ -197,13 +197,13 @@ const RecommendedProblemsPage = () => {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Beginner':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700';
       case 'Intermediate':
-        return 'bg-orange-100 text-orange-700 border-orange-200';
+        return 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700';
       case 'Advanced':
-        return 'bg-red-100 text-red-700 border-red-200';
+        return 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700';
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-gray-100 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary border-gray-200 dark:border-lc-border-light';
     }
   };
 
@@ -228,54 +228,54 @@ const RecommendedProblemsPage = () => {
       <div className="space-y-6">
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-blue-50 border-2 border-blue-200">
+          <Card className="bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
                 <Lightbulb className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Picks</p>
-                <p className="text-2xl font-bold text-blue-600">{totalRecommendations}</p>
+                <p className="text-sm text-gray-600 dark:text-lc-text-muted">Total Picks</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totalRecommendations}</p>
               </div>
             </div>
           </Card>
 
-          <Card className="bg-red-50 border-2 border-red-200">
+          <Card className="bg-red-50 dark:bg-red-900/30 border-2 border-red-200 dark:border-red-700">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-red-600 flex items-center justify-center">
                 <Target className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Weak Areas</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-sm text-gray-600 dark:text-lc-text-muted">Weak Areas</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                   {recommendations.find(r => r.category === 'weak-areas')?.problems.length || 0}
                 </p>
               </div>
             </div>
           </Card>
 
-          <Card className="bg-purple-50 border-2 border-purple-200">
+          <Card className="bg-purple-50 dark:bg-purple-900/30 border-2 border-purple-200 dark:border-purple-700">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-purple-600 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Trending</p>
-                <p className="text-2xl font-bold text-purple-600">
+                <p className="text-sm text-gray-600 dark:text-lc-text-muted">Trending</p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                   {recommendations.find(r => r.category === 'trending')?.problems.length || 0}
                 </p>
               </div>
             </div>
           </Card>
 
-          <Card className="bg-green-50 border-2 border-green-200">
+          <Card className="bg-green-50 dark:bg-green-900/30 border-2 border-green-200 dark:border-green-700">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-green-600 flex items-center justify-center">
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Quick Wins</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-sm text-gray-600 dark:text-lc-text-muted">Quick Wins</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {recommendations.find(r => r.category === 'quick-wins')?.problems.length || 0}
                 </p>
               </div>
@@ -300,10 +300,10 @@ const RecommendedProblemsPage = () => {
                     <Icon className={`w-5 h-5 ${section.iconColor}`} />
                   </div>
                   <div className="text-left">
-                    <h2 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-lc-text group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {section.title}
                     </h2>
-                    <p className="text-sm text-gray-600">{section.description}</p>
+                    <p className="text-sm text-gray-600 dark:text-lc-text-muted">{section.description}</p>
                   </div>
                 </div>
                 <div className={`px-3 py-1 rounded-full ${section.bgColor} border ${section.borderColor}`}>
@@ -315,30 +315,30 @@ const RecommendedProblemsPage = () => {
 
               {/* Problems List */}
               {isExpanded && (
-                <div className="space-y-3 pt-3 border-t border-gray-200">
+                <div className="space-y-3 pt-3 border-t border-gray-200 dark:border-lc-border">
                   {section.problems.map((problem) => (
                     <div
                       key={problem._id}
-                      className="p-4 rounded-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all"
+                      className="p-4 rounded-lg border-2 border-gray-200 dark:border-lc-border hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             {problem.isSolved && (
-                              <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                              <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
                             )}
-                            <h3 className="font-bold text-gray-900">{problem.title}</h3>
+                            <h3 className="font-bold text-gray-900 dark:text-lc-text">{problem.title}</h3>
                           </div>
-                          <p className="text-sm text-gray-600 mb-3">{problem.reasonForRecommendation}</p>
+                          <p className="text-sm text-gray-600 dark:text-lc-text-muted mb-3">{problem.reasonForRecommendation}</p>
 
                           <div className="flex flex-wrap items-center gap-2">
                             <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${getDifficultyColor(problem.difficulty)}`}>
                               {problem.difficulty}
                             </span>
-                            <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                            <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
                               {problem.topic}
                             </span>
-                            <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-gray-100 text-gray-700 border border-gray-200 flex items-center gap-1">
+                            <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-gray-100 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary border border-gray-200 dark:border-lc-border-light flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               ~{problem.estimatedTime} min
                             </span>
@@ -355,19 +355,19 @@ const RecommendedProblemsPage = () => {
                       </div>
 
                       {/* Problem Stats */}
-                      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-200">
+                      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-200 dark:border-lc-border">
                         <div className="flex items-center gap-2 text-sm">
-                          <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                          <div className="flex-1 bg-gray-200 dark:bg-lc-elevated rounded-full h-2 overflow-hidden">
                             <div
                               className="bg-green-600 h-full rounded-full"
                               style={{ width: `${problem.acceptanceRate}%` }}
                             />
                           </div>
-                          <span className="text-xs font-medium text-gray-700 whitespace-nowrap">
+                          <span className="text-xs font-medium text-gray-700 dark:text-lc-text-secondary whitespace-nowrap">
                             {problem.acceptanceRate}% accepted
                           </span>
                         </div>
-                        <div className="text-right text-xs text-gray-600">
+                        <div className="text-right text-xs text-gray-600 dark:text-lc-text-muted">
                           <span className="font-medium">{problem.totalAttempts.toLocaleString()}</span> attempts
                         </div>
                       </div>
@@ -380,14 +380,14 @@ const RecommendedProblemsPage = () => {
         })}
 
         {/* Motivational Card */}
-        <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200">
+        <Card className="bg-gradient-to-br from-blue-50 dark:from-blue-900/30 to-purple-50 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-700">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
               <Code2 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 mb-1">Keep Up The Great Work!</h3>
-              <p className="text-sm text-gray-700">
+              <h3 className="font-bold text-gray-900 dark:text-lc-text mb-1">Keep Up The Great Work!</h3>
+              <p className="text-sm text-gray-700 dark:text-lc-text-secondary">
                 These recommendations are personalized based on your activity, performance, and learning patterns. 
                 Complete them to fill knowledge gaps, build consistency, and accelerate your preparation!
               </p>

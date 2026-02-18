@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { Container } from '../components/Container';
 import { Card } from '../components/Card';
 import type { AptitudeCategory, DifficultyLevel } from '../types/models';
@@ -37,52 +38,50 @@ const AddAptitudeQuestionPage = () => {
   const handleSubmit = async () => {
     // Validation
     if (!question.trim()) {
-      alert('Please enter a question');
+      toast.error('Please enter a question');
       return;
     }
 
     if (options.some(opt => !opt.trim())) {
-      alert('Please fill in all options');
+      toast.error('Please fill in all options');
       return;
     }
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // In production, this would call the API
-    console.log('Question data:', {
-      category,
-      difficulty,
-      question,
-      options,
-      correctAnswer,
-      explanation,
-    });
-
-    setIsSubmitting(false);
-    alert(`Question ${isEditMode ? 'updated' : 'created'} successfully!`);
-    navigate('/admin/aptitude');
+    // Simulate API call with toast feedback
+    const toastId = toast.loading(`${isEditMode ? 'Updating' : 'Creating'} question...`);
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      // In production, this would call the API to save question data
+      
+      toast.success(`Question ${isEditMode ? 'updated' : 'created'} successfully!`, { id: toastId });
+      navigate('/admin/aptitude');
+    } catch {
+      toast.error('Failed to save question. Please try again.', { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-lc-bg py-6">
       <Container>
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate('/admin/aptitude')}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-600 dark:text-lc-text-muted hover:text-gray-900 dark:hover:text-lc-text mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Questions
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-lc-text mb-1">
               {isEditMode ? 'Edit Question' : 'Add New Question'}
             </h1>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-lc-text-muted">
               {isEditMode ? 'Update question details and options' : 'Create a new aptitude question for tests'}
             </p>
           </div>
@@ -93,15 +92,15 @@ const AddAptitudeQuestionPage = () => {
           <div className="lg:col-span-3 space-y-6">
             {/* Question Details */}
             <Card className="p-6">
-              <div className="border-b border-gray-200 pb-4 mb-6">
-                <h2 className="text-base font-semibold text-gray-900">Question Details</h2>
-                <p className="text-sm text-gray-500 mt-1">Write your question and provide multiple choice options</p>
+              <div className="border-b border-gray-200 dark:border-lc-border pb-4 mb-6">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">Question Details</h2>
+                <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">Write your question and provide multiple choice options</p>
               </div>
               
               <div className="space-y-5">
                 {/* Question Text */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide mb-2">
                     Question <span className="text-red-500">*</span>
                   </label>
                   <textarea
@@ -109,14 +108,14 @@ const AddAptitudeQuestionPage = () => {
                     onChange={(e) => setQuestion(e.target.value)}
                     placeholder="e.g., If a train travels 120 km in 2 hours, what is its average speed?"
                     rows={3}
-                    className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
+                    className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
                   />
-                  <p className="text-xs text-gray-500 mt-1.5">Write a clear and unambiguous question</p>
+                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">Write a clear and unambiguous question</p>
                 </div>
 
                 {/* Options */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide mb-3">
                     Answer Options <span className="text-red-500">*</span>
                   </label>
                   <div className="space-y-2.5">
@@ -133,7 +132,7 @@ const AddAptitudeQuestionPage = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1.5">
-                            <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
+                            <span className="text-xs font-bold text-gray-700 dark:text-lc-text-secondary bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">
                               {String.fromCharCode(65 + index)}
                             </span>
                             {correctAnswer === index && (
@@ -147,20 +146,20 @@ const AddAptitudeQuestionPage = () => {
                             value={option}
                             onChange={(e) => handleOptionChange(index, e.target.value)}
                             placeholder={`Enter option ${String.fromCharCode(65 + index)}`}
-                            className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                            className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                           />
                         </div>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500 mt-2.5">
+                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-2.5">
                     💡 Click the radio button to mark the correct answer
                   </p>
                 </div>
 
                 {/* Explanation */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide mb-2">
                     Explanation <span className="text-gray-400 text-[10px]">(OPTIONAL)</span>
                   </label>
                   <textarea
@@ -168,9 +167,9 @@ const AddAptitudeQuestionPage = () => {
                     onChange={(e) => setExplanation(e.target.value)}
                     placeholder="e.g., Speed = Distance / Time = 120 km / 2 hours = 60 km/h"
                     rows={3}
-                    className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
+                    className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
                   />
-                  <p className="text-xs text-gray-500 mt-1.5">Provide a detailed explanation to help students learn</p>
+                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">Provide a detailed explanation to help students learn</p>
                 </div>
               </div>
             </Card>
@@ -182,17 +181,17 @@ const AddAptitudeQuestionPage = () => {
           <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             {/* Publish Settings */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Publish Settings</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Publish Settings</h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-medium text-gray-700 dark:text-lc-text-secondary mb-2">
                     Category <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as AptitudeCategory)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-lc-border-light rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-lc-card dark:text-lc-text"
                   >
                     <option value="Quantitative">🔢 Quantitative</option>
                     <option value="Logical">🧩 Logical</option>
@@ -202,13 +201,13 @@ const AddAptitudeQuestionPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-medium text-gray-700 dark:text-lc-text-secondary mb-2">
                     Difficulty <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={difficulty}
                     onChange={(e) => setDifficulty(e.target.value as DifficultyLevel)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-lc-border-light rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-lc-card dark:text-lc-text"
                   >
                     <option value="Beginner">🟢 Beginner</option>
                     <option value="Intermediate">🟡 Intermediate</option>
@@ -216,7 +215,7 @@ const AddAptitudeQuestionPage = () => {
                   </select>
                 </div>
 
-                <div className="pt-4 border-t space-y-2">
+                <div className="pt-4 border-t dark:border-lc-border space-y-2">
                   <button
                     onClick={handleSubmit}
                     disabled={isSubmitting}
@@ -237,7 +236,7 @@ const AddAptitudeQuestionPage = () => {
                   <button
                     onClick={() => navigate('/admin/aptitude')}
                     disabled={isSubmitting}
-                    className="w-full px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-lc-border-light text-gray-700 dark:text-lc-text-secondary rounded-lg hover:bg-gray-50 dark:hover:bg-lc-elevated transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
@@ -247,39 +246,39 @@ const AddAptitudeQuestionPage = () => {
 
             {/* Quick Info */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Question Info</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Question Info</h3>
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-600">Category</span>
+                  <span className="text-gray-600 dark:text-lc-text-muted">Category</span>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                    category === 'Quantitative' ? 'bg-blue-100 text-blue-700' :
-                    category === 'Logical' ? 'bg-purple-100 text-purple-700' :
-                    category === 'Verbal' ? 'bg-green-100 text-green-700' :
-                    'bg-orange-100 text-orange-700'
+                    category === 'Quantitative' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
+                    category === 'Logical' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' :
+                    category === 'Verbal' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
+                    'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
                   }`}>{category}</span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-600">Difficulty</span>
+                  <span className="text-gray-600 dark:text-lc-text-muted">Difficulty</span>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                    difficulty === 'Beginner' ? 'bg-green-100 text-green-700' :
-                    difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-red-100 text-red-700'
+                    difficulty === 'Beginner' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
+                    difficulty === 'Intermediate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
+                    'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                   }`}>{difficulty}</span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-600">Options</span>
-                  <span className="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">4</span>
+                  <span className="text-gray-600 dark:text-lc-text-muted">Options</span>
+                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">4</span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-600">Correct Answer</span>
-                  <span className="font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded">
+                  <span className="text-gray-600 dark:text-lc-text-muted">Correct Answer</span>
+                  <span className="font-semibold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded">
                     {String.fromCharCode(65 + correctAnswer)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-600">Has Explanation</span>
+                  <span className="text-gray-600 dark:text-lc-text-muted">Has Explanation</span>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                    explanation ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                    explanation ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-lc-elevated text-gray-600 dark:text-lc-text-muted'
                   }`}>
                     {explanation ? 'Yes' : 'No'}
                   </span>

@@ -89,15 +89,15 @@ const AptitudeManagementPage = () => {
   const getCategoryColor = (category: AptitudeCategory) => {
     switch (category) {
       case 'Quantitative':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
       case 'Logical':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300';
       case 'Verbal':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
       case 'Technical':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-lc-elevated text-gray-800 dark:text-lc-text-secondary';
     }
   };
 
@@ -119,7 +119,7 @@ const AptitudeManagementPage = () => {
               placeholder="Search by question or options..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-primary-500 dark:focus:ring-accent-500 focus:border-transparent"
             />
           </div>
 
@@ -131,7 +131,7 @@ const AptitudeManagementPage = () => {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value as 'all' | AptitudeCategory)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-primary-500 dark:focus:ring-accent-500 focus:border-transparent"
               >
                 <option value="all">All Categories</option>
                 <option value="Quantitative">Quantitative</option>
@@ -163,44 +163,44 @@ const AptitudeManagementPage = () => {
                 <FileQuestion className="w-5 h-5 text-white" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-blue-600 mb-1">{questions.length}</p>
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Total Questions</p>
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{questions.length}</p>
+            <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted uppercase tracking-wide">Total Questions</p>
           </div>
         </Card>
         <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200 hover:shadow-xl hover:scale-105 transition-all duration-300">
           <div className="text-center">
             <span className="text-2xl mb-2 inline-block">🔢</span>
-            <p className="text-3xl font-bold text-blue-600 mb-1">
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
               {questions.filter(q => q.category === 'Quantitative').length}
             </p>
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Quantitative</p>
+            <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted uppercase tracking-wide">Quantitative</p>
           </div>
         </Card>
         <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 hover:shadow-xl hover:scale-105 transition-all duration-300">
           <div className="text-center">
             <span className="text-2xl mb-2 inline-block">🧩</span>
-            <p className="text-3xl font-bold text-purple-600 mb-1">
+            <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
               {questions.filter(q => q.category === 'Logical').length}
             </p>
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Logical</p>
+            <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted uppercase tracking-wide">Logical</p>
           </div>
         </Card>
         <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 hover:shadow-xl hover:scale-105 transition-all duration-300">
           <div className="text-center">
             <span className="text-2xl mb-2 inline-block">💬</span>
-            <p className="text-3xl font-bold text-green-600 mb-1">
+            <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
               {questions.filter(q => q.category === 'Verbal').length}
             </p>
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Verbal</p>
+            <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted uppercase tracking-wide">Verbal</p>
           </div>
         </Card>
         <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-orange-200 hover:shadow-xl hover:scale-105 transition-all duration-300">
           <div className="text-center">
             <span className="text-2xl mb-2 inline-block">⚙️</span>
-            <p className="text-3xl font-bold text-orange-600 mb-1">
+            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
               {questions.filter(q => q.category === 'Technical').length}
             </p>
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Technical</p>
+            <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted uppercase tracking-wide">Technical</p>
           </div>
         </Card>
       </div>
@@ -209,7 +209,7 @@ const AptitudeManagementPage = () => {
       <div className="space-y-4">
         {filteredQuestions.length === 0 ? (
           <Card>
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-gray-500 dark:text-lc-text-muted">
               <FileQuestion className="w-16 h-16 mx-auto mb-4 opacity-20" />
               <p className="text-lg font-medium">No questions found</p>
               <p className="text-sm">Try changing your search or filter criteria</p>
@@ -229,7 +229,7 @@ const AptitudeManagementPage = () => {
                         {question.category}
                       </span>
                     </div>
-                    <p className="text-base text-gray-900 mb-4 leading-relaxed">
+                    <p className="text-base text-gray-900 dark:text-lc-text mb-4 leading-relaxed">
                       {question.question}
                     </p>
                   </div>
@@ -242,17 +242,17 @@ const AptitudeManagementPage = () => {
                       key={optIndex}
                       className={`p-3 rounded-lg border-2 ${
                         optIndex === question.correctOptionIndex
-                          ? 'border-green-300 bg-green-50'
-                          : 'border-gray-200 bg-gray-50'
+                          ? 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/30'
+                          : 'border-gray-200 dark:border-lc-border-light bg-gray-50 dark:bg-lc-elevated'
                       }`}
                     >
                       <div className="flex items-start gap-2">
-                        <span className="font-semibold text-gray-700 min-w-[24px]">
+                        <span className="font-semibold text-gray-700 dark:text-lc-text-secondary min-w-[24px]">
                           {String.fromCharCode(65 + optIndex)}.
                         </span>
-                        <span className="text-gray-900">{option}</span>
+                        <span className="text-gray-900 dark:text-lc-text">{option}</span>
                         {optIndex === question.correctOptionIndex && (
-                          <span className="ml-auto text-xs font-medium text-green-700">✓ Correct</span>
+                          <span className="ml-auto text-xs font-medium text-green-700 dark:text-green-400">✓ Correct</span>
                         )}
                       </div>
                     </div>
@@ -261,14 +261,14 @@ const AptitudeManagementPage = () => {
 
                 {/* Explanation Preview */}
                 {question.explanation && (
-                  <div className="bg-blue-50 p-3 rounded-lg">
-                    <p className="text-sm font-medium text-blue-900 mb-1">Explanation:</p>
-                    <p className="text-sm text-blue-800 line-clamp-2">{question.explanation}</p>
+                  <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg">
+                    <p className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">Explanation:</p>
+                    <p className="text-sm text-blue-800 dark:text-blue-200 line-clamp-2">{question.explanation}</p>
                   </div>
                 )}
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 border-t pt-3">
+                <div className="flex items-center gap-2 border-t dark:border-lc-border pt-3">
                   <button
                     onClick={() => handleViewQuestion(question)}
                     className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
@@ -278,7 +278,7 @@ const AptitudeManagementPage = () => {
                   </button>
                   <button
                     onClick={() => navigate(`/admin/aptitude/edit/${question._id}`)}
-                    className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary rounded-lg hover:bg-gray-200 dark:hover:bg-lc-border-light transition-colors text-sm"
                   >
                     <Edit2 className="w-4 h-4" />
                     Edit
@@ -319,7 +319,7 @@ const AptitudeManagementPage = () => {
                 {/* Category Header - Clickable */}
                 <button
                   onClick={() => toggleCategory(category)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-lc-elevated transition-colors"
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 ${colors.bg} ${colors.border} border-2 rounded-lg flex items-center justify-center`}>
@@ -327,7 +327,7 @@ const AptitudeManagementPage = () => {
                     </div>
                     <div className="text-left">
                       <h3 className={`text-lg font-bold ${colors.text}`}>{category}</h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-lc-text-muted">
                         {categoryQuestions.length} question{categoryQuestions.length !== 1 ? 's' : ''}
                       </p>
                     </div>
@@ -362,11 +362,11 @@ const AptitudeManagementPage = () => {
                       return (
                         <>
                           {paginatedQuestions.map((question, index) => (
-                            <div key={question._id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                            <div key={question._id} className="bg-white dark:bg-lc-card rounded-lg p-4 shadow-sm border border-gray-200 dark:border-lc-border">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <span className="text-sm font-semibold text-gray-500">Q{index + 1}</span>
-                            <p className="text-sm text-gray-900 line-clamp-2 flex-1">{question.question}</p>
+                            <span className="text-sm font-semibold text-gray-500 dark:text-lc-text-muted">Q{index + 1}</span>
+                            <p className="text-sm text-gray-900 dark:text-lc-text line-clamp-2 flex-1">{question.question}</p>
                           </div>
                         </div>
 
@@ -397,7 +397,7 @@ const AptitudeManagementPage = () => {
                           </button>
                           <button
                             onClick={() => navigate(`/admin/aptitude/edit/${question._id}`)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-xs"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary rounded-lg hover:bg-gray-200 dark:hover:bg-lc-border-light transition-colors text-xs"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                             Edit
@@ -415,8 +415,8 @@ const AptitudeManagementPage = () => {
 
                           {/* Pagination Controls */}
                           {totalPages > 1 && (
-                            <div className="flex items-center justify-between pt-4 border-t border-gray-200 bg-white rounded-lg p-3">
-                              <div className="text-sm text-gray-600">
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-lc-border bg-white dark:bg-lc-card rounded-lg p-3">
+                              <div className="text-sm text-gray-600 dark:text-lc-text-muted">
                                 Showing {startIndex + 1}-{Math.min(endIndex, categoryQuestions.length)} of {categoryQuestions.length} questions
                               </div>
                               <div className="flex items-center gap-2">
@@ -460,7 +460,7 @@ const AptitudeManagementPage = () => {
                                 <button
                                   onClick={() => changePage(category, currentPage + 1)}
                                   disabled={currentPage === totalPages}
-                                  className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                  className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-lc-text-secondary bg-white dark:bg-lc-elevated border border-gray-300 dark:border-lc-border-light rounded-lg hover:bg-gray-50 dark:hover:bg-lc-border-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
                                   Next
                                 </button>
@@ -481,7 +481,7 @@ const AptitudeManagementPage = () => {
       {/* View Question Modal */}
       {showViewModal && selectedQuestion && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-lc-card rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getCategoryColor(selectedQuestion.category)}`}>
@@ -490,7 +490,7 @@ const AptitudeManagementPage = () => {
               </div>
               <button
                 onClick={() => setShowViewModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 dark:text-lc-text-muted hover:text-gray-700 dark:hover:text-lc-text"
               >
                 ×
               </button>
@@ -498,28 +498,28 @@ const AptitudeManagementPage = () => {
 
             {/* Question */}
             <div className="mb-6">
-              <h4 className="font-semibold mb-2">Question:</h4>
-              <p className="text-lg text-gray-900 leading-relaxed">{selectedQuestion.question}</p>
+              <h4 className="font-semibold dark:text-lc-text mb-2">Question:</h4>
+              <p className="text-lg text-gray-900 dark:text-lc-text leading-relaxed">{selectedQuestion.question}</p>
             </div>
 
             {/* Options */}
             <div className="mb-6">
-              <h4 className="font-semibold mb-3">Options:</h4>
+              <h4 className="font-semibold dark:text-lc-text mb-3">Options:</h4>
               <div className="space-y-3">
                 {selectedQuestion.options.map((option, optIndex) => (
                   <div
                     key={optIndex}
                     className={`p-4 rounded-lg border-2 ${
                       optIndex === selectedQuestion.correctOptionIndex
-                        ? 'border-green-300 bg-green-50'
-                        : 'border-gray-200 bg-gray-50'
+                        ? 'border-green-300 bg-green-50 dark:bg-green-900/30 dark:border-green-600'
+                        : 'border-gray-200 dark:border-lc-border-light bg-gray-50 dark:bg-lc-elevated'
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <span className="font-semibold text-gray-700 min-w-[32px]">
+                      <span className="font-semibold text-gray-700 dark:text-lc-text-secondary min-w-[32px]">
                         {String.fromCharCode(65 + optIndex)}.
                       </span>
-                      <span className="flex-1 text-gray-900">{option}</span>
+                      <span className="flex-1 text-gray-900 dark:text-lc-text">{option}</span>
                       {optIndex === selectedQuestion.correctOptionIndex && (
                         <span className="px-2 py-1 bg-green-600 text-white text-xs font-medium rounded">
                           Correct Answer
@@ -534,17 +534,17 @@ const AptitudeManagementPage = () => {
             {/* Explanation */}
             {selectedQuestion.explanation && (
               <div className="mb-6">
-                <h4 className="font-semibold mb-2">Explanation:</h4>
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-gray-900 leading-relaxed">{selectedQuestion.explanation}</p>
+                <h4 className="font-semibold dark:text-lc-text mb-2">Explanation:</h4>
+                <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg">
+                  <p className="text-gray-900 dark:text-lc-text leading-relaxed">{selectedQuestion.explanation}</p>
                 </div>
               </div>
             )}
 
-            <div className="flex justify-end gap-3 border-t pt-4">
+            <div className="flex justify-end gap-3 border-t dark:border-lc-border pt-4">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-gray-200 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary rounded-lg hover:bg-gray-300 dark:hover:bg-lc-border-light transition-colors"
               >
                 Close
               </button>

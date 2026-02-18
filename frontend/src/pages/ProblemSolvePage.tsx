@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
+import toast from 'react-hot-toast';
 import { 
   ArrowLeft, Play, Save, RotateCcw, ChevronDown, ChevronLeft, ChevronRight,
   Maximize2, Minimize2, Wand2, History, Clock, Tag
@@ -117,9 +118,10 @@ const ProblemSolvePage = () => {
       await saveCode(problem._id, userId, code, language);
       setSaveStatus('saved');
       updateProblemStatus(problem._id, userId, 'attempted');
+      toast.success('Code saved successfully', { duration: 2000 });
       setTimeout(() => setSaveStatus('unsaved'), 2000);
-    } catch (error) {
-      console.error('Failed to save:', error);
+    } catch {
+      toast.error('Failed to save code. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -129,6 +131,7 @@ const ProblemSolvePage = () => {
     if (confirm('Are you sure you want to reset your code?')) {
       setCode(DEFAULT_CODE[language as keyof typeof DEFAULT_CODE]);
       setSaveStatus('unsaved');
+      toast.success('Code reset to default template');
     }
   };
 

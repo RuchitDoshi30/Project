@@ -1,0 +1,169 @@
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import toast from 'react-hot-toast';
+
+/**
+ * API Client Service
+ * 
+ * Centralized HTTP client for all API requests.
+ * Handles authentication, error handling, and request/response interceptors.
+ * 
+ * In production, this will communicate with the backend API.
+ * Currently configured for mock/development mode.
+ */
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+// Create axios instance with default config
+export const apiClient: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+/**
+ * Request Interceptor
+ * Automatically adds authentication token to all requests
+ */
+apiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = localStorage.getItem('auth_token');
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error: AxiosError) => {
+    return Promise.reject(error);
+  }
+);
+
+/**
+ * Response Interceptor
+ * Handles common error scenarios and authentication failures
+ */
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    // Handle authentication errors
+    if (error.response?.status === 401) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+      toast.error('Session expired. Please login again.');
+      return Promise.reject(error);
+    }
+
+    // Handle authorization errors
+    if (error.response?.status === 403) {
+      toast.error('You do not have permission to perform this action.');
+      return Promise.reject(error);
+    }
+
+    // Handle server errors
+    if (error.response?.status && error.response.status >= 500) {
+      toast.error('Server error. Please try again later.');
+      return Promise.reject(error);
+    }
+
+    // Handle network errors
+    if (!error.response) {
+      toast.error('Network error. Please check your connection.');
+      return Promise.reject(error);
+    }
+
+    // Handle validation errors
+    if (error.response?.status === 400) {
+      const message = (error.response.data as { message?: string })?.message || 'Invalid request.';
+      toast.error(message);
+      return Promise.reject(error);
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+/**
+ * API Helper Functions
+ */
+export const api = {
+  // GET request
+  get: async <T>(url: string, config?: object): Promise<T> => {
+    const response = await apiClient.get<T>(url, config);
+    return response.data;
+  },
+
+  // POST request
+  post: async <T>(url: string, data?: unknown, config?: object): Promise<T> => {
+    const response = await apiClient.post<T>(url, data, config);
+    return response.data;
+  },
+
+  // PUT request
+  put: async <T>(url: string, data?: unknown, config?: object): Promise<T> => {
+    const response = await apiClient.put<T>(url, data, config);
+    return response.data;
+  },
+
+  // PATCH request
+  patch: async <T>(url: string, data?: unknown, config?: object): Promise<T> => {
+    const response = await apiClient.patch<T>(url, data, config);
+    return response.data;
+  },
+
+  // DELETE request
+  delete: async <T>(url: string, config?: object): Promise<T> => {
+    const response = await apiClient.delete<T>(url, config);
+    return response.data;
+  },
+};
+
+/**
+ * API Endpoints Configuration
+ * Centralized endpoint definitions for easy maintenance
+ */
+export const API_ENDPOINTS = {
+  // Authentication
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    LOGOUT: '/auth/logout',
+    REFRESH: '/auth/refresh',
+    ME: '/auth/me',
+  },
+
+  // Problems
+  PROBLEMS: {
+    LIST: '/problems',
+    DETAIL: (slug: string) => `/problems/${slug}`,
+    SUBMIT: '/problems/submit',
+    SUBMISSIONS: (problemId: string) => `/problems/${problemId}/submissions`,
+  },
+
+  // Aptitude Tests
+  APTITUDE: {
+    TESTS: '/aptitude/tests',
+    TEST_DETAIL: (id: string) => `/aptitude/tests/${id}`,
+    QUESTIONS: (testId: string) => `/aptitude/tests/${testId}/questions`,
+    SUBMIT: '/aptitude/submit',
+    ATTEMPTS: '/aptitude/attempts',
+    ATTEMPT_DETAIL: (id: string) => `/aptitude/attempts/${id}`,
+  },
+
+  // Dashboard
+  DASHBOARD: {
+    STATS: '/dashboard/stats',
+    PROGRESS: '/dashboard/progress',
+    ACTIVITY: '/dashboard/activity',
+  },
+
+  // Admin
+  ADMIN: {
+    STATS: '/admin/statistics',
+    STUDENTS: '/admin/students',
+    SUBMISSIONS: '/admin/submissions',
+    APPROVE: (id: string) => `/admin/submissions/${id}/approve`,
+    REJECT: (id: string) => `/admin/submissions/${id}/reject`,
+  },
+} as const;

@@ -438,7 +438,7 @@ export const getAptitudeTests = (filters?: {
 
     return filtered;
   } catch (error) {
-    console.error('Error filtering aptitude tests:', error);
+    // Return all tests if filtering fails
     return mockAptitudeTests;
   }
 };
@@ -451,7 +451,6 @@ export const getAptitudeTests = (filters?: {
  */
 export const getAptitudeTestById = (id: string): IAptitudeTest | undefined => {
   if (!id || typeof id !== 'string') {
-    console.error('Invalid test ID provided');
     return undefined;
   }
   return mockAptitudeTests.find(t => t._id === id);
@@ -466,21 +465,19 @@ export const getAptitudeTestById = (id: string): IAptitudeTest | undefined => {
 export const getQuestionsForTest = (testId: string): IAptitudeQuestion[] => {
   try {
     if (!testId) {
-      console.error('Test ID is required');
       return [];
     }
 
     const test = getAptitudeTestById(testId);
     if (!test) {
-      console.error(`Test not found: ${testId}`);
       return [];
     }
-    
+
     return test.questions
-      .map(qId => mockAptitudeQuestions.find(q => q._id === qId))
+      .map((qId: string) => mockAptitudeQuestions.find(q => q._id === qId))
       .filter((q): q is IAptitudeQuestion => q !== undefined);
   } catch (error) {
-    console.error('Error fetching questions for test:', error);
+    // Return empty array if error occurs
     return [];
   }
 };
@@ -493,7 +490,6 @@ export const getQuestionsForTest = (testId: string): IAptitudeQuestion[] => {
  */
 export const getQuestionById = (id: string): IAptitudeQuestion | undefined => {
   if (!id || typeof id !== 'string') {
-    console.error('Invalid question ID provided');
     return undefined;
   }
   return mockAptitudeQuestions.find(q => q._id === id);
@@ -568,8 +564,8 @@ export const submitTestAttempt = (
     attempts.push(attempt);
     localStorage.setItem(key, JSON.stringify(attempts));
   } catch (error) {
-    console.error('Failed to save attempt to localStorage:', error);
-    // Still return the attempt even if storage fails
+    // Silent fail - storage errors don't prevent attempt completion
+    // In production, this would be logged to monitoring service
   }
 
   return attempt;
@@ -585,18 +581,17 @@ export const submitTestAttempt = (
 export const getAttemptById = (attemptId: string, userId: string): IAptitudeAttempt | undefined => {
   try {
     if (!attemptId || !userId) {
-      console.error('Attempt ID and User ID are required');
       return undefined;
     }
 
     const key = `${STORAGE_KEY_PREFIX}${userId}`;
     const existing = localStorage.getItem(key);
     if (!existing) return undefined;
-    
+
     const attempts: IAptitudeAttempt[] = JSON.parse(existing);
     return attempts.find(a => a._id === attemptId);
   } catch (error) {
-    console.error('Error retrieving attempt:', error);
+    // Silent fail - return undefined for invalid data
     return undefined;
   }
 };
@@ -610,21 +605,20 @@ export const getAttemptById = (attemptId: string, userId: string): IAptitudeAtte
 export const getUserAttempts = (userId: string): IAptitudeAttempt[] => {
   try {
     if (!userId) {
-      console.error('User ID is required');
       return [];
     }
 
     const key = `${STORAGE_KEY_PREFIX}${userId}`;
     const existing = localStorage.getItem(key);
     if (!existing) return [];
-    
+
     const attempts: IAptitudeAttempt[] = JSON.parse(existing);
     // Sort by completion date, newest first
-    return attempts.sort((a, b) => 
+    return attempts.sort((a, b) =>
       new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
     );
   } catch (error) {
-    console.error('Error retrieving user attempts:', error);
+    // Silent fail - return empty array for invalid data
     return [];
   }
 };
@@ -639,14 +633,13 @@ export const getUserAttempts = (userId: string): IAptitudeAttempt[] => {
 export const getTestAttempts = (testId: string, userId: string): IAptitudeAttempt[] => {
   try {
     if (!testId || !userId) {
-      console.error('Test ID and User ID are required');
       return [];
     }
 
     const allAttempts = getUserAttempts(userId);
     return allAttempts.filter(a => a.testId === testId);
   } catch (error) {
-    console.error('Error retrieving test attempts:', error);
+    // Return empty array for invalid data
     return [];
   }
 };
@@ -686,7 +679,7 @@ export const saveInProgressAttempt = (
     };
     localStorage.setItem(key, JSON.stringify(inProgress));
   } catch (error) {
-    console.error('Failed to save in-progress attempt:', error);
+    // Silent fail - in-progress data won't be saved
   }
 };
 
@@ -705,10 +698,10 @@ export const getInProgressAttempt = (
     const key = `${IN_PROGRESS_KEY_PREFIX}${userId}_${testId}`;
     const stored = localStorage.getItem(key);
     if (!stored) return null;
-    
+
     return JSON.parse(stored);
   } catch (error) {
-    console.error('Failed to retrieve in-progress attempt:', error);
+    // Return null if retrieval fails
     return null;
   }
 };
@@ -727,7 +720,7 @@ export const clearInProgressAttempt = (
     const key = `${IN_PROGRESS_KEY_PREFIX}${userId}_${testId}`;
     localStorage.removeItem(key);
   } catch (error) {
-    console.error('Failed to clear in-progress attempt:', error);
+    // Silent fail - not critical if clear fails
   }
 };
 
@@ -801,14 +794,14 @@ export const getSmartRecommendations = (
   const recommendations: string[] = [];
   const categoryPerf = getCategoryPerformance(attempt);
   const test = getAptitudeTestById(attempt.testId);
-  
+
   if (!test) return recommendations;
 
   // Analyze category performance
   const weakCategories = Object.entries(categoryPerf)
     .filter(([, perf]) => perf.total > 0 && perf.percentage < 60)
     .map(([category]) => category);
-  
+
   const strongCategories = Object.entries(categoryPerf)
     .filter(([, perf]) => perf.total > 0 && perf.percentage >= 80)
     .map(([category]) => category);
@@ -833,7 +826,7 @@ export const getSmartRecommendations = (
     const question = mockAptitudeQuestions.find(q => q._id === a.questionId);
     return question && question.correctOptionIndex === a.selectedOption;
   }).length;
-  
+
   if (confidentAnswers.length > 0) {
     const confidentAccuracy = Math.round((confidentCorrect / confidentAnswers.length) * 100);
     if (confidentAccuracy < 70) {
@@ -851,7 +844,7 @@ export const getSmartRecommendations = (
   }
 
   if (attempt.score >= 80) {
-    const advancedTest = availableTests.find(t => 
+    const advancedTest = availableTests.find(t =>
       t.title.toLowerCase().includes('advanced') && t.category === test.category
     );
     if (advancedTest) {

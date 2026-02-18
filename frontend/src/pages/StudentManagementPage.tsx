@@ -177,8 +177,8 @@ const StudentManagementPage = () => {
   // Get status badge color
   const getStatusColor = (status: string) => {
     return status === 'active' 
-      ? 'bg-green-100 text-green-800' 
-      : 'bg-red-100 text-red-800';
+      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
+      : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
   };
 
   // Get status icon
@@ -206,7 +206,7 @@ const StudentManagementPage = () => {
               placeholder="Search by name, email, or student ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-primary-500 dark:focus:ring-accent-500 focus:border-transparent"
             />
           </div>
 
@@ -216,7 +216,7 @@ const StudentManagementPage = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'disabled')}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-primary-500 dark:focus:ring-accent-500 focus:border-transparent"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -245,8 +245,8 @@ const StudentManagementPage = () => {
                 <UserPlus className="w-5 h-5 text-white" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-blue-600 mb-1">{students.length}</p>
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Total Students</p>
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{students.length}</p>
+            <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted uppercase tracking-wide">Total Students</p>
           </div>
         </Card>
         <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 hover:shadow-xl hover:scale-105 transition-all duration-300">
@@ -257,10 +257,10 @@ const StudentManagementPage = () => {
                 <CheckCircle className="w-5 h-5 text-white" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-green-600 mb-1">
+            <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
               {students.filter(s => s.status === 'active').length}
             </p>
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Active</p>
+            <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted uppercase tracking-wide">Active</p>
           </div>
         </Card>
         <Card className="bg-gradient-to-br from-red-50 to-pink-50 border-red-200 hover:shadow-xl hover:scale-105 transition-all duration-300">
@@ -271,10 +271,10 @@ const StudentManagementPage = () => {
                 <XCircle className="w-5 h-5 text-white" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-red-600 mb-1">
+            <p className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
               {students.filter(s => s.status === 'disabled').length}
             </p>
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Disabled</p>
+            <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted uppercase tracking-wide">Disabled</p>
           </div>
         </Card>
         <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 hover:shadow-xl hover:scale-105 transition-all duration-300">
@@ -285,8 +285,8 @@ const StudentManagementPage = () => {
                 <Eye className="w-5 h-5 text-white" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-purple-600 mb-1">{filteredStudents.length}</p>
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Showing</p>
+            <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">{filteredStudents.length}</p>
+            <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted uppercase tracking-wide">Showing</p>
           </div>
         </Card>
       </div>
@@ -296,41 +296,41 @@ const StudentManagementPage = () => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Student</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Student ID</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Progress</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Avg Score</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Last Active</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-700">Actions</th>
+              <tr className="border-b border-gray-200 dark:border-lc-border">
+                <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-lc-text-secondary">Student</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-lc-text-secondary">Student ID</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-lc-text-secondary">Progress</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-lc-text-secondary">Avg Score</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-lc-text-secondary">Status</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-lc-text-secondary">Last Active</th>
+                <th className="text-right py-3 px-4 font-semibold text-gray-700 dark:text-lc-text-secondary">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-gray-500">
+                  <td colSpan={7} className="text-center py-8 text-gray-500 dark:text-lc-text-muted">
                     No students found matching your criteria
                   </td>
                 </tr>
               ) : (
                 filteredStudents.map((student) => (
-                  <tr key={student.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <tr key={student.id} className="border-b border-gray-100 dark:border-lc-border hover:bg-gray-50 dark:hover:bg-lc-elevated">
                     <td className="py-4 px-4">
                       <div>
-                        <p className="font-medium text-gray-900">{student.name}</p>
-                        <p className="text-sm text-gray-500">{student.email}</p>
+                        <p className="font-medium text-gray-900 dark:text-lc-text">{student.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-lc-text-muted">{student.email}</p>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="font-mono text-sm text-gray-700">{student.studentId}</span>
+                      <span className="font-mono text-sm text-gray-700 dark:text-lc-text-secondary">{student.studentId}</span>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex flex-col gap-1">
-                        <span className="text-sm text-gray-700">
+                        <span className="text-sm text-gray-700 dark:text-lc-text-secondary">
                           {student.problemsSolved} problems
                         </span>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-500 dark:text-lc-text-muted">
                           {student.testsCompleted} tests
                         </span>
                       </div>
@@ -353,20 +353,20 @@ const StudentManagementPage = () => {
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-sm text-gray-600">{student.lastActive}</span>
+                      <span className="text-sm text-gray-600 dark:text-lc-text-muted">{student.lastActive}</span>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleViewStudent(student)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleResetPassword(student)}
-                          className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                          className="p-2 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition-colors"
                           title="Reset Password"
                         >
                           <Lock className="w-4 h-4" />
@@ -375,8 +375,8 @@ const StudentManagementPage = () => {
                           onClick={() => handleToggleStatus(student.id)}
                           className={`p-2 rounded-lg transition-colors ${
                             student.status === 'active'
-                              ? 'text-red-600 hover:bg-red-50'
-                              : 'text-green-600 hover:bg-green-50'
+                              ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30'
+                              : 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30'
                           }`}
                           title={student.status === 'active' ? 'Disable Account' : 'Enable Account'}
                         >
@@ -388,7 +388,7 @@ const StudentManagementPage = () => {
                         </button>
                         <button
                           onClick={() => handleDeleteStudent(student.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                           title="Delete Student"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -406,13 +406,13 @@ const StudentManagementPage = () => {
       {/* Add Student Modal (Placeholder) */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold mb-4">Add New Student</h3>
-            <p className="text-gray-600 mb-4">Student creation form will be implemented here.</p>
+          <div className="bg-white dark:bg-lc-card rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold dark:text-lc-text mb-4">Add New Student</h3>
+            <p className="text-gray-600 dark:text-lc-text-muted mb-4">Student creation form will be implemented here.</p>
             <div className="flex justify-end">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-gray-200 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary rounded-lg hover:bg-gray-300 dark:hover:bg-lc-border-light transition-colors"
               >
                 Close
               </button>
@@ -424,24 +424,24 @@ const StudentManagementPage = () => {
       {/* View Student Modal */}
       {showViewModal && selectedStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-2xl font-bold mb-4">{selectedStudent.name}</h3>
+          <div className="bg-white dark:bg-lc-card rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-2xl font-bold dark:text-lc-text mb-4">{selectedStudent.name}</h3>
             
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
-                <p className="text-sm text-gray-500">Email</p>
-                <p className="font-medium">{selectedStudent.email}</p>
+                <p className="text-sm text-gray-500 dark:text-lc-text-muted">Email</p>
+                <p className="font-medium dark:text-lc-text">{selectedStudent.email}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Student ID</p>
-                <p className="font-medium font-mono">{selectedStudent.studentId}</p>
+                <p className="text-sm text-gray-500 dark:text-lc-text-muted">Student ID</p>
+                <p className="font-medium font-mono dark:text-lc-text">{selectedStudent.studentId}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Enrollment Date</p>
-                <p className="font-medium">{new Date(selectedStudent.enrollmentDate).toLocaleDateString()}</p>
+                <p className="text-sm text-gray-500 dark:text-lc-text-muted">Enrollment Date</p>
+                <p className="font-medium dark:text-lc-text">{new Date(selectedStudent.enrollmentDate).toLocaleDateString()}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Status</p>
+                <p className="text-sm text-gray-500 dark:text-lc-text-muted">Status</p>
                 <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedStudent.status)}`}>
                   {getStatusIcon(selectedStudent.status)}
                   {selectedStudent.status.charAt(0).toUpperCase() + selectedStudent.status.slice(1)}
@@ -449,32 +449,32 @@ const StudentManagementPage = () => {
               </div>
             </div>
 
-            <div className="border-t pt-4 mb-6">
-              <h4 className="font-semibold mb-3">Performance Summary</h4>
+            <div className="border-t dark:border-lc-border pt-4 mb-6">
+              <h4 className="font-semibold dark:text-lc-text mb-3">Performance Summary</h4>
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-2xl font-bold text-blue-600">{selectedStudent.problemsSolved}</p>
-                  <p className="text-sm text-gray-600">Problems Solved</p>
+                <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg">
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{selectedStudent.problemsSolved}</p>
+                  <p className="text-sm text-gray-600 dark:text-lc-text-muted">Problems Solved</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <p className="text-2xl font-bold text-green-600">{selectedStudent.testsCompleted}</p>
-                  <p className="text-sm text-gray-600">Tests Completed</p>
+                <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg">
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{selectedStudent.testsCompleted}</p>
+                  <p className="text-sm text-gray-600 dark:text-lc-text-muted">Tests Completed</p>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <p className="text-2xl font-bold text-purple-600">{selectedStudent.averageScore}%</p>
-                  <p className="text-sm text-gray-600">Average Score</p>
+                <div className="bg-purple-50 dark:bg-purple-900/30 p-4 rounded-lg">
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{selectedStudent.averageScore}%</p>
+                  <p className="text-sm text-gray-600 dark:text-lc-text-muted">Average Score</p>
                 </div>
               </div>
             </div>
 
-            <div className="border-t pt-4">
-              <p className="text-sm text-gray-500">Last Active: {selectedStudent.lastActive}</p>
+            <div className="border-t dark:border-lc-border pt-4">
+              <p className="text-sm text-gray-500 dark:text-lc-text-muted">Last Active: {selectedStudent.lastActive}</p>
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-gray-200 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary rounded-lg hover:bg-gray-300 dark:hover:bg-lc-border-light transition-colors"
               >
                 Close
               </button>

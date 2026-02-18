@@ -101,29 +101,29 @@ const LeaderboardPage = () => {
   const getRankBadge = (rank: number) => {
     if (rank === 1) {
       return (
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-100 border border-yellow-200">
-          <Crown className="w-4 h-4 text-yellow-600" />
-          <span className="text-sm font-bold text-yellow-700">1st</span>
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-200 dark:border-yellow-700">
+          <Crown className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+          <span className="text-sm font-bold text-yellow-700 dark:text-yellow-300">1st</span>
         </div>
       );
     } else if (rank === 2) {
       return (
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 border border-gray-300">
-          <Medal className="w-4 h-4 text-gray-600" />
-          <span className="text-sm font-bold text-gray-700">2nd</span>
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 dark:bg-lc-elevated border border-gray-300 dark:border-lc-border-light">
+          <Medal className="w-4 h-4 text-gray-600 dark:text-lc-text-muted" />
+          <span className="text-sm font-bold text-gray-700 dark:text-lc-text-secondary">2nd</span>
         </div>
       );
     } else if (rank === 3) {
       return (
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 border border-orange-200">
-          <Medal className="w-4 h-4 text-orange-600" />
-          <span className="text-sm font-bold text-orange-700">3rd</span>
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-900/40 border border-orange-200 dark:border-orange-700">
+          <Medal className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+          <span className="text-sm font-bold text-orange-700 dark:text-orange-300">3rd</span>
         </div>
       );
     }
     return (
-      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 border border-gray-200">
-        <span className="text-sm font-bold text-gray-700">{rank}</span>
+      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-lc-elevated border border-gray-200 dark:border-lc-border-light">
+        <span className="text-sm font-bold text-gray-700 dark:text-lc-text-secondary">{rank}</span>
       </div>
     );
   };
@@ -149,39 +149,39 @@ const LeaderboardPage = () => {
       <div className="space-y-6">
         {/* Your Rank Card */}
         {currentUserRank && (
-          <Card className="border-2 border-blue-200 bg-blue-50">
+          <Card className="border border-accent-500/30 dark:border-accent-500/20 bg-accent-500/5 dark:bg-accent-500/5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">{currentUserRank.rank}</span>
+                <div className="w-12 h-12 rounded-full bg-accent-500/20 dark:bg-accent-500/15 flex items-center justify-center">
+                  <span className="text-accent-600 dark:text-accent-400 font-bold text-lg">{currentUserRank.rank}</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900">Your Current Rank</h3>
-                  <p className="text-sm text-gray-600">{currentUserRank.enrollmentNumber}</p>
+                  <h3 className="font-bold text-gray-900 dark:text-lc-text">Your Current Rank</h3>
+                  <p className="text-sm text-gray-600 dark:text-lc-text-muted">{currentUserRank.enrollmentNumber}</p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-blue-600">{currentUserRank.score}</div>
-                <p className="text-sm text-gray-600">Total Points</p>
+                <div className="text-3xl font-bold text-accent-600 dark:text-accent-400">{currentUserRank.score}</div>
+                <p className="text-sm text-gray-600 dark:text-lc-text-muted">Total Points</p>
               </div>
             </div>
 
             <div className="grid grid-cols-4 gap-4">
-              <div className="text-center bg-white rounded-lg p-3 border border-blue-200">
-                <p className="text-xs text-gray-600 mb-1">Problems</p>
-                <p className="text-lg font-bold text-blue-600">{currentUserRank.problemsSolved}</p>
+              <div className="text-center bg-white dark:bg-lc-card rounded-lg p-3 border border-gray-200 dark:border-lc-border">
+                <p className="text-xs text-gray-600 dark:text-lc-text-muted mb-1">Problems</p>
+                <p className="text-lg font-bold text-accent-600 dark:text-accent-400">{currentUserRank.problemsSolved}</p>
               </div>
-              <div className="text-center bg-white rounded-lg p-3 border border-blue-200">
-                <p className="text-xs text-gray-600 mb-1">Tests</p>
-                <p className="text-lg font-bold text-purple-600">{currentUserRank.testsCompleted}</p>
+              <div className="text-center bg-white dark:bg-lc-card rounded-lg p-3 border border-gray-200 dark:border-lc-border">
+                <p className="text-xs text-gray-600 dark:text-lc-text-muted mb-1">Tests</p>
+                <p className="text-lg font-bold text-accent-600 dark:text-accent-400">{currentUserRank.testsCompleted}</p>
               </div>
-              <div className="text-center bg-white rounded-lg p-3 border border-blue-200">
-                <p className="text-xs text-gray-600 mb-1">Streak</p>
-                <p className="text-lg font-bold text-orange-600">{currentUserRank.streak}</p>
+              <div className="text-center bg-white dark:bg-lc-card rounded-lg p-3 border border-gray-200 dark:border-lc-border">
+                <p className="text-xs text-gray-600 dark:text-lc-text-muted mb-1">Streak</p>
+                <p className="text-lg font-bold text-accent-600 dark:text-accent-400">{currentUserRank.streak}</p>
               </div>
-              <div className="text-center bg-white rounded-lg p-3 border border-blue-200">
-                <p className="text-xs text-gray-600 mb-1">Badges</p>
-                <p className="text-lg font-bold text-green-600">{currentUserRank.badges}</p>
+              <div className="text-center bg-white dark:bg-lc-card rounded-lg p-3 border border-gray-200 dark:border-lc-border">
+                <p className="text-xs text-gray-600 dark:text-lc-text-muted mb-1">Badges</p>
+                <p className="text-lg font-bold text-accent-600 dark:text-accent-400">{currentUserRank.badges}</p>
               </div>
             </div>
           </Card>
@@ -192,17 +192,16 @@ const LeaderboardPage = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Category Filter */}
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-lc-text-secondary mb-2">Category</label>
               <div className="flex gap-2">
                 {(['overall', 'coding', 'aptitude'] as LeaderboardCategory[]).map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setCategory(cat)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border font-medium transition-colors ${
-                      category === cat
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border font-medium transition-colors ${category === cat
+                        ? 'bg-primary-600 text-white border-primary-600 dark:bg-accent-500/15 dark:text-accent-400 dark:border-accent-500/30'
+                        : 'bg-white dark:bg-lc-card text-gray-700 dark:text-lc-text-secondary border-gray-300 dark:border-lc-border-light hover:bg-gray-50 dark:hover:bg-lc-elevated'
+                      }`}
                   >
                     {getCategoryIcon(cat)}
                     <span className="capitalize">{cat}</span>
@@ -213,17 +212,16 @@ const LeaderboardPage = () => {
 
             {/* Time Period Filter */}
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Time Period</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-lc-text-secondary mb-2">Time Period</label>
               <div className="flex gap-2">
                 {(['all-time', 'monthly', 'weekly'] as TimePeriod[]).map((period) => (
                   <button
                     key={period}
                     onClick={() => setTimePeriod(period)}
-                    className={`px-4 py-2 rounded-lg border font-medium transition-colors ${
-                      timePeriod === period
-                        ? 'bg-purple-600 text-white border-purple-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`}
+                    className={`px-4 py-2 rounded-lg border font-medium transition-colors ${timePeriod === period
+                        ? 'bg-primary-600 text-white border-primary-600 dark:bg-accent-500/15 dark:text-accent-400 dark:border-accent-500/30'
+                        : 'bg-white dark:bg-lc-card text-gray-700 dark:text-lc-text-secondary border-gray-300 dark:border-lc-border-light hover:bg-gray-50 dark:hover:bg-lc-elevated'
+                      }`}
                   >
                     {period.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                   </button>
@@ -238,9 +236,9 @@ const LeaderboardPage = () => {
           {topPerformers.slice(0, 3).map((_entry, index) => {
             const heights = ['h-48', 'h-56', 'h-44'];
             const colors = [
-              'from-gray-100 to-gray-200 border-gray-300',
-              'from-yellow-100 to-yellow-200 border-yellow-300',
-              'from-orange-100 to-orange-200 border-orange-300'
+              'from-gray-100 dark:from-lc-elevated to-gray-200 dark:to-lc-border-light border-gray-300 dark:border-lc-border-light',
+              'from-yellow-100 dark:from-yellow-900/40 to-yellow-200 dark:to-yellow-800/40 border-yellow-300 dark:border-yellow-600',
+              'from-orange-100 dark:from-orange-900/40 to-orange-200 dark:to-orange-800/40 border-orange-300 dark:border-orange-600'
             ];
             const order = [1, 0, 2]; // Reorder to show 2nd, 1st, 3rd
             const actualIndex = order[index];
@@ -255,19 +253,19 @@ const LeaderboardPage = () => {
                   {getRankBadge(actualEntry.rank)}
                 </div>
                 <div className="text-center flex-1 flex flex-col justify-center">
-                  <h3 className="font-bold text-gray-900 mb-1">{actualEntry.name}</h3>
-                  <p className="text-xs text-gray-600 mb-3">{actualEntry.enrollmentNumber}</p>
-                  <div className="text-2xl font-bold text-gray-900">{actualEntry.score}</div>
-                  <p className="text-xs text-gray-600">points</p>
+                  <h3 className="font-bold text-gray-900 dark:text-lc-text mb-1">{actualEntry.name}</h3>
+                  <p className="text-xs text-gray-600 dark:text-lc-text-muted mb-3">{actualEntry.enrollmentNumber}</p>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-lc-text">{actualEntry.score}</div>
+                  <p className="text-xs text-gray-600 dark:text-lc-text-muted">points</p>
                 </div>
-                <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-300">
+                <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-300 dark:border-lc-border-light">
                   <div className="text-center">
-                    <p className="text-xs text-gray-600">Problems</p>
-                    <p className="text-sm font-bold text-blue-600">{actualEntry.problemsSolved}</p>
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted">Problems</p>
+                    <p className="text-sm font-bold text-blue-600 dark:text-blue-400">{actualEntry.problemsSolved}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-gray-600">Tests</p>
-                    <p className="text-sm font-bold text-purple-600">{actualEntry.testsCompleted}</p>
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted">Tests</p>
+                    <p className="text-sm font-bold text-purple-600 dark:text-purple-400">{actualEntry.testsCompleted}</p>
                   </div>
                 </div>
               </Card>
@@ -278,15 +276,15 @@ const LeaderboardPage = () => {
         {/* Rest of Leaderboard */}
         <Card>
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-bold text-gray-900">All Rankings</h2>
+            <TrendingUp className="w-5 h-5 text-accent-600 dark:text-accent-400" />
+            <h2 className="text-lg font-bold text-gray-900 dark:text-lc-text">All Rankings</h2>
           </div>
 
           <div className="space-y-2">
             {topPerformers.slice(3).map((entry) => (
               <div
                 key={entry.userId}
-                className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 dark:border-lc-border hover:bg-gray-50 dark:hover:bg-lc-elevated transition-colors"
               >
                 {/* Rank */}
                 <div className="flex-shrink-0">
@@ -295,37 +293,37 @@ const LeaderboardPage = () => {
 
                 {/* User Info */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-900 truncate">{entry.name}</h3>
-                  <p className="text-sm text-gray-600">{entry.enrollmentNumber}</p>
+                  <h3 className="font-bold text-gray-900 dark:text-lc-text truncate">{entry.name}</h3>
+                  <p className="text-sm text-gray-600 dark:text-lc-text-muted">{entry.enrollmentNumber}</p>
                 </div>
 
                 {/* Stats */}
                 <div className="hidden md:flex items-center gap-6">
                   <div className="text-center">
-                    <p className="text-xs text-gray-600">Problems</p>
-                    <p className="text-sm font-bold text-blue-600">{entry.problemsSolved}</p>
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted">Problems</p>
+                    <p className="text-sm font-bold text-blue-600 dark:text-blue-400">{entry.problemsSolved}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-gray-600">Tests</p>
-                    <p className="text-sm font-bold text-purple-600">{entry.testsCompleted}</p>
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted">Tests</p>
+                    <p className="text-sm font-bold text-purple-600 dark:text-purple-400">{entry.testsCompleted}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-gray-600">Streak</p>
-                    <p className="text-sm font-bold text-orange-600">{entry.streak}</p>
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted">Streak</p>
+                    <p className="text-sm font-bold text-orange-600 dark:text-orange-400">{entry.streak}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-gray-600">Badges</p>
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted">Badges</p>
                     <div className="flex items-center justify-center gap-1">
-                      <Award className="w-3 h-3 text-green-600" />
-                      <p className="text-sm font-bold text-green-600">{entry.badges}</p>
+                      <Award className="w-3 h-3 text-green-600 dark:text-green-400" />
+                      <p className="text-sm font-bold text-green-600 dark:text-green-400">{entry.badges}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Score */}
                 <div className="text-right flex-shrink-0">
-                  <div className="text-xl font-bold text-gray-900">{entry.score}</div>
-                  <p className="text-xs text-gray-600">points</p>
+                  <div className="text-xl font-bold text-gray-900 dark:text-accent-400">{entry.score}</div>
+                  <p className="text-xs text-gray-600 dark:text-lc-text-muted">points</p>
                 </div>
               </div>
             ))}
@@ -333,15 +331,15 @@ const LeaderboardPage = () => {
         </Card>
 
         {/* Achievement Badges Info */}
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200">
+        <Card className="bg-gradient-to-br from-green-50 dark:from-green-900/20 to-green-100 dark:to-green-800/10 border border-green-200 dark:border-green-800">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
               <Star className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 mb-1">Keep Climbing!</h3>
-              <p className="text-sm text-gray-700">
-                Earn points by solving problems, completing tests, and maintaining your streak. 
+              <h3 className="font-bold text-gray-900 dark:text-lc-text mb-1">Keep Climbing!</h3>
+              <p className="text-sm text-gray-700 dark:text-lc-text-secondary">
+                Earn points by solving problems, completing tests, and maintaining your streak.
                 Complete achievements to earn badges and boost your ranking!
               </p>
             </div>

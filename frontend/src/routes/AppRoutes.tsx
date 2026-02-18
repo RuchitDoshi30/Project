@@ -31,10 +31,14 @@ import LeaderboardPage from '../pages/LeaderboardPage';
 import RecommendedProblemsPage from '../pages/RecommendedProblemsPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import ForbiddenPage from '../pages/ForbiddenPage';
+import PlacementDrivesPage from '../pages/PlacementDrivesPage';
+import AnnouncementsPage from '../pages/AnnouncementsPage';
+import BulkEmailPage from '../pages/BulkEmailPage';
+import ReportsPage from '../pages/ReportsPage';
 
 const AppRoutes = () => {
   const { user } = useAuth();
-  
+
   return (
     <BrowserRouter>
       <Routes>
@@ -229,7 +233,9 @@ const AppRoutes = () => {
           path="/admin/problems/new"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AddProblemPage />
+              <AdminLayout>
+                <AddProblemPage />
+              </AdminLayout>
             </ProtectedRoute>
           }
         />
@@ -237,7 +243,9 @@ const AppRoutes = () => {
           path="/admin/problems/edit/:id"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AddProblemPage />
+              <AdminLayout>
+                <AddProblemPage />
+              </AdminLayout>
             </ProtectedRoute>
           }
         />
@@ -245,7 +253,9 @@ const AppRoutes = () => {
           path="/admin/aptitude/new"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AddAptitudeQuestionPage />
+              <AdminLayout>
+                <AddAptitudeQuestionPage />
+              </AdminLayout>
             </ProtectedRoute>
           }
         />
@@ -253,7 +263,51 @@ const AppRoutes = () => {
           path="/admin/aptitude/edit/:id"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AddAptitudeQuestionPage />
+              <AdminLayout>
+                <AddAptitudeQuestionPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* New Admin Pages */}
+        <Route
+          path="/admin/drives"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout>
+                <PlacementDrivesPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/announcements"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout>
+                <AnnouncementsPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/email"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout>
+                <BulkEmailPage />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/reports"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout>
+                <ReportsPage />
+              </AdminLayout>
             </ProtectedRoute>
           }
         />

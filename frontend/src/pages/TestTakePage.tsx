@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { 
   ArrowLeft, Clock, ChevronLeft, ChevronRight, Flag, AlertCircle, Bookmark, BookmarkCheck, Shield, ShieldCheck
 } from 'lucide-react';
@@ -53,7 +54,6 @@ const TestTakePage = () => {
   // Load test data and check for in-progress attempt
   useEffect(() => {
     if (!testId) {
-      console.error('No test ID provided');
       navigate('/aptitude');
       return;
     }
@@ -62,14 +62,12 @@ const TestTakePage = () => {
       setIsLoading(true);
       const foundTest = getAptitudeTestById(testId);
       if (!foundTest) {
-        console.error(`Test not found: ${testId}`);
         navigate('/aptitude');
         return;
       }
 
       const testQuestions = getQuestionsForTest(testId);
       if (testQuestions.length === 0) {
-        console.error('No questions found for test');
         navigate('/aptitude');
         return;
       }
@@ -100,8 +98,8 @@ const TestTakePage = () => {
       }
 
       setIsLoading(false);
-    } catch (error) {
-      console.error('Error loading test:', error);
+    } catch {
+      // Navigate to aptitude page on error
       navigate('/aptitude');
     }
   }, [testId, navigate]);
@@ -157,10 +155,11 @@ const TestTakePage = () => {
       // Clear in-progress attempt
       clearInProgressAttempt(testId, MOCK_USER_ID);
       
+      toast.success('Test submitted successfully! Redirecting to results...');
+      
       // Navigate to results
       navigate(`/aptitude/results/${attempt._id}`);
-    } catch (error) {
-      console.error('Error submitting test:', error);
+    } catch {
       setIsSubmitting(false);
       // TODO: Show user-friendly error modal
     }

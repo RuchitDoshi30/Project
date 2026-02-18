@@ -207,25 +207,12 @@ const SubmissionHistoryPage = () => {
         <Card className="hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between p-4">
             <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Total Submissions</p>
-              <p className="text-2xl font-bold text-gray-900 mb-1">{stats.total}</p>
-              <p className="text-xs text-gray-400">All attempts</p>
+              <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Total Submissions</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-lc-text mb-1">{stats.total}</p>
+              <p className="text-xs text-gray-400 dark:text-lc-text-muted">All attempts</p>
             </div>
-            <div className="bg-blue-50 p-2.5 rounded-lg">
-              <Code2 className="w-5 h-5 text-blue-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between p-4">
-            <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Accepted</p>
-              <p className="text-2xl font-bold text-gray-900 mb-1">{stats.accepted}</p>
-              <p className="text-xs text-gray-400">Success</p>
-            </div>
-            <div className="bg-green-50 p-2.5 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+            <div className="bg-blue-50 dark:bg-blue-900/40 p-2.5 rounded-lg">
+              <Code2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </Card>
@@ -233,12 +220,12 @@ const SubmissionHistoryPage = () => {
         <Card className="hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between p-4">
             <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Failed</p>
-              <p className="text-2xl font-bold text-gray-900 mb-1">{stats.failed}</p>
-              <p className="text-xs text-gray-400">Attempts</p>
+              <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Accepted</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-lc-text mb-1">{stats.accepted}</p>
+              <p className="text-xs text-gray-400 dark:text-lc-text-muted">Success</p>
             </div>
-            <div className="bg-red-50 p-2.5 rounded-lg">
-              <XCircle className="w-5 h-5 text-red-600" />
+            <div className="bg-green-50 dark:bg-green-900/40 p-2.5 rounded-lg">
+              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </Card>
@@ -246,12 +233,25 @@ const SubmissionHistoryPage = () => {
         <Card className="hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between p-4">
             <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Acceptance Rate</p>
-              <p className="text-2xl font-bold text-gray-900 mb-1">{stats.acceptanceRate}%</p>
-              <p className="text-xs text-gray-400">Success rate</p>
+              <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Failed</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-lc-text mb-1">{stats.failed}</p>
+              <p className="text-xs text-gray-400 dark:text-lc-text-muted">Attempts</p>
             </div>
-            <div className="bg-purple-50 p-2.5 rounded-lg">
-              <Calendar className="w-5 h-5 text-purple-600" />
+            <div className="bg-red-50 dark:bg-red-900/40 p-2.5 rounded-lg">
+              <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+          </div>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between p-4">
+            <div className="flex-1">
+              <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Acceptance Rate</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-lc-text mb-1">{stats.acceptanceRate}%</p>
+              <p className="text-xs text-gray-400 dark:text-lc-text-muted">Success rate</p>
+            </div>
+            <div className="bg-purple-50 dark:bg-purple-900/40 p-2.5 rounded-lg">
+              <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </Card>
@@ -268,7 +268,7 @@ const SubmissionHistoryPage = () => {
               placeholder="Search by problem name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-lc-border-light bg-white dark:bg-lc-card text-gray-900 dark:text-lc-text rounded-lg focus:ring-2 focus:ring-primary-500 dark:focus:ring-accent-500 focus:border-transparent"
             />
           </div>
 
@@ -278,7 +278,7 @@ const SubmissionHistoryPage = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 dark:border-lc-border-light bg-white dark:bg-lc-card text-gray-900 dark:text-lc-text rounded-lg focus:ring-2 focus:ring-primary-500 dark:focus:ring-accent-500 focus:border-transparent"
             >
               <option value="all">All Status</option>
               <option value="accepted">Accepted</option>
@@ -292,7 +292,7 @@ const SubmissionHistoryPage = () => {
           <select
             value={languageFilter}
             onChange={(e) => setLanguageFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 dark:border-lc-border-light bg-white dark:bg-lc-card text-gray-900 dark:text-lc-text rounded-lg focus:ring-2 focus:ring-primary-500 dark:focus:ring-accent-500 focus:border-transparent"
           >
             <option value="all">All Languages</option>
             {languages.map(lang => (
@@ -306,9 +306,9 @@ const SubmissionHistoryPage = () => {
       <div className="space-y-3">
         {filteredSubmissions.length === 0 ? (
           <Card className="p-12 text-center">
-            <Code2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">No submissions found</h3>
-            <p className="text-sm text-gray-500">Try adjusting your filters</p>
+            <Code2 className="w-12 h-12 text-gray-300 dark:text-lc-text-muted mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text mb-1">No submissions found</h3>
+            <p className="text-sm text-gray-500 dark:text-lc-text-muted">Try adjusting your filters</p>
           </Card>
         ) : (
           filteredSubmissions.map((submission) => (
@@ -319,36 +319,36 @@ const SubmissionHistoryPage = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       {getStatusIcon(submission.status)}
-                      <h3 className="text-base font-bold text-gray-900">{submission.problemTitle}</h3>
+                      <h3 className="text-base font-bold text-gray-900 dark:text-lc-text">{submission.problemTitle}</h3>
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
-                        submission.problemDifficulty === 'Beginner' ? 'bg-green-100 text-green-700 border-green-200' :
-                        submission.problemDifficulty === 'Intermediate' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                        'bg-red-100 text-red-700 border-red-200'
+                        submission.problemDifficulty === 'Beginner' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700' :
+                        submission.problemDifficulty === 'Intermediate' ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700' :
+                        'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700'
                       }`}>
                         {submission.problemDifficulty}
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-lc-text-muted">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5" />
                         {formatDate(submission.submittedAt)}
                       </span>
                       <span className={`px-2 py-0.5 rounded-full font-medium border ${
-                        submission.status === 'accepted' ? 'bg-green-100 text-green-700 border-green-200' :
-                        submission.status === 'wrong-answer' ? 'bg-red-100 text-red-700 border-red-200' :
-                        submission.status === 'runtime-error' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                        'bg-yellow-100 text-yellow-700 border-yellow-200'
+                        submission.status === 'accepted' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700' :
+                        submission.status === 'wrong-answer' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700' :
+                        submission.status === 'runtime-error' ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700' :
+                        'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700'
                       }`}>
                         {submission.status.replace('-', ' ').toUpperCase()}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-semibold border border-gray-200">
+                      <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary font-semibold border border-gray-200 dark:border-lc-border-light">
                         {submission.language}
                       </span>
                     </div>
                   </div>
                   <button
                     onClick={() => setExpandedSubmission(expandedSubmission === submission.id ? null : submission.id)}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all"
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-lc-text-secondary hover:bg-gray-50 dark:hover:bg-lc-elevated rounded-lg transition-all"
                   >
                     <Eye className="w-4 h-4" />
                     {expandedSubmission === submission.id ? 'Hide' : 'View'}
@@ -358,28 +358,28 @@ const SubmissionHistoryPage = () => {
 
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-3">
-                  <div className="text-center bg-blue-50 rounded-lg p-2 border border-blue-200">
-                    <p className="text-xs text-gray-600 mb-1">Tests Passed</p>
-                    <p className="text-sm font-bold text-blue-600">{submission.testsPassed}/{submission.totalTests}</p>
+                  <div className="text-center bg-blue-50 dark:bg-blue-900/30 rounded-lg p-2 border border-blue-200 dark:border-lc-border">
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted mb-1">Tests Passed</p>
+                    <p className="text-sm font-bold text-blue-600 dark:text-blue-400">{submission.testsPassed}/{submission.totalTests}</p>
                   </div>
-                  <div className="text-center bg-purple-50 rounded-lg p-2 border border-purple-200">
-                    <p className="text-xs text-gray-600 mb-1">Runtime</p>
-                    <p className="text-sm font-bold text-purple-600">{submission.executionTime}ms</p>
+                  <div className="text-center bg-purple-50 dark:bg-purple-900/30 rounded-lg p-2 border border-purple-200 dark:border-lc-border">
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted mb-1">Runtime</p>
+                    <p className="text-sm font-bold text-purple-600 dark:text-purple-400">{submission.executionTime}ms</p>
                   </div>
-                  <div className="text-center bg-green-50 rounded-lg p-2 border border-green-200">
-                    <p className="text-xs text-gray-600 mb-1">Memory</p>
-                    <p className="text-sm font-bold text-green-600">{submission.memoryUsed}MB</p>
+                  <div className="text-center bg-green-50 dark:bg-green-900/30 rounded-lg p-2 border border-green-200 dark:border-lc-border">
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted mb-1">Memory</p>
+                    <p className="text-sm font-bold text-green-600 dark:text-green-400">{submission.memoryUsed}MB</p>
                   </div>
                 </div>
 
                 {/* Expanded View */}
                 {expandedSubmission === submission.id && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-lc-border">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-bold text-gray-900">Submitted Code</h4>
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-lc-text">Submitted Code</h4>
                       <button
                         onClick={() => handleDownload(submission)}
-                        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all"
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-lc-text-secondary hover:bg-gray-50 dark:hover:bg-lc-elevated rounded-lg transition-all"
                       >
                         <Download className="w-4 h-4" />
                         Download

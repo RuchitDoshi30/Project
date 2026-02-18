@@ -50,7 +50,6 @@ const AptitudeTestResultsPage = () => {
   // Load attempt and test data
   useEffect(() => {
     if (!attemptId) {
-      console.error('No attempt ID provided');
       navigate('/aptitude');
       return;
     }
@@ -59,7 +58,6 @@ const AptitudeTestResultsPage = () => {
       try {
         const foundAttempt = getAttemptById(attemptId, CURRENT_USER_ID);
         if (!foundAttempt) {
-          console.error(`Attempt not found: ${attemptId}`);
           navigate('/aptitude');
           return;
         }
@@ -68,7 +66,6 @@ const AptitudeTestResultsPage = () => {
         
         const foundTest = getAptitudeTestById(foundAttempt.testId);
         if (!foundTest) {
-          console.error(`Test not found: ${foundAttempt.testId}`);
           navigate('/aptitude');
           return;
         }
@@ -77,8 +74,7 @@ const AptitudeTestResultsPage = () => {
         setAptitudeTest(foundTest);
         setTestQuestions(questionsInTest);
         setIsLoadingResults(false);
-      } catch (error) {
-        console.error('Error loading results:', error);
+      } catch {
         navigate('/aptitude');
       }
     };
@@ -232,7 +228,7 @@ const AptitudeTestResultsPage = () => {
             </button>
             <button
               onClick={() => navigate('/aptitude')}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium text-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-accent-500/15 dark:hover:bg-accent-500/25 text-white dark:text-accent-400 dark:border dark:border-accent-500/30 rounded-lg font-medium text-sm transition-colors"
             >
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline">All Tests</span>
@@ -517,7 +513,7 @@ const AptitudeTestResultsPage = () => {
         <div className="flex justify-center gap-4 pt-4">
           <button
             onClick={() => navigate(`/aptitude/test/${aptitudeTest._id}`)}
-            className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
+            className="px-6 py-3 bg-primary-600 hover:bg-primary-700 dark:bg-accent-500/15 dark:hover:bg-accent-500/25 text-white dark:text-accent-400 dark:border dark:border-accent-500/30 rounded-lg font-medium transition-colors"
           >
             Retake This Test
           </button>

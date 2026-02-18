@@ -1,13 +1,14 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       screens: {
-        xs: '475px', // Extra small devices
+        xs: '475px',
       },
       colors: {
-        // LeetCode/HackerRank inspired color scheme
+        // LeetCode-inspired color scheme
         primary: {
           50: '#f0f9ff',
           100: '#e0f2fe',
@@ -34,6 +35,31 @@ export default {
           easy: '#00b8a3',
           medium: '#ffc01e',
           hard: '#ef4743',
+        },
+        // LeetCode dark mode palette
+        lc: {
+          bg: '#1a1a1a',
+          card: '#282828',
+          elevated: '#333333',
+          border: '#3e3e3e',
+          'border-light': '#4a4a4a',
+          text: '#eff1f6',
+          'text-secondary': '#b3b3b3',
+          'text-muted': '#a3a3a3',
+          hover: '#ffffff0d',
+        },
+        // LeetCode accent (signature amber-orange)
+        accent: {
+          50: '#fff8eb',
+          100: '#ffecc6',
+          200: '#ffdb8a',
+          300: '#ffc94d',
+          400: '#ffb620',
+          500: '#ffa116',
+          600: '#e08a00',
+          700: '#b86e00',
+          800: '#965a00',
+          900: '#7a4a00',
         },
       },
       fontFamily: {

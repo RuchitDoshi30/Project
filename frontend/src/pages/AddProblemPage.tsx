@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, X, Save, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { Container } from '../components/Container';
 import { Card } from '../components/Card';
 import type { DifficultyLevel } from '../types/models';
@@ -112,40 +113,30 @@ const AddProblemPage = () => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // In production, this would call the API
-    console.log('Problem data:', {
-      title,
-      slug,
-      difficulty,
-      description,
-      tags,
-      constraints,
-      examples,
-      testCases,
-    });
+    // In production, this would call the API to save problem data
 
     setIsSubmitting(false);
-    alert(`Problem ${isEditMode ? 'updated' : 'created'} successfully!`);
+    toast.success(`Problem ${isEditMode ? 'updated' : 'created'} successfully!`);
     navigate('/admin/problems');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-lc-bg py-6">
       <Container>
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => navigate('/admin/problems')}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-600 dark:text-lc-text-muted hover:text-gray-900 dark:hover:text-lc-text mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Problems
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-lc-text mb-1">
               {isEditMode ? 'Edit Problem' : 'Add New Problem'}
             </h1>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-lc-text-muted">
               {isEditMode ? 'Update problem details and test cases' : 'Create a new coding problem for students'}
             </p>
           </div>
@@ -156,16 +147,16 @@ const AddProblemPage = () => {
           <div className="lg:col-span-3 space-y-6">
             {/* Basic Information */}
             <Card className="p-6">
-              <div className="border-b border-gray-200 pb-4 mb-6">
-                <h2 className="text-base font-semibold text-gray-900">Basic Information</h2>
-                <p className="text-sm text-gray-500 mt-1">General details about the problem</p>
+              <div className="border-b border-gray-200 dark:border-lc-border pb-4 mb-6">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">Basic Information</h2>
+                <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">General details about the problem</p>
               </div>
               
               <div className="space-y-5">
                 {/* Title & Slug in Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                    <label className="block text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide mb-2">
                       Problem Title <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -173,12 +164,12 @@ const AddProblemPage = () => {
                       value={title}
                       onChange={(e) => handleTitleChange(e.target.value)}
                       placeholder="e.g., Two Sum"
-                      className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                    <label className="block text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide mb-2">
                       URL Slug <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -186,14 +177,14 @@ const AddProblemPage = () => {
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
                       placeholder="e.g., two-sum"
-                      className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono transition-all"
+                      className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono transition-all"
                     />
                   </div>
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide mb-2">
                     Description <span className="text-red-500">*</span>
                   </label>
                   <textarea
@@ -201,14 +192,14 @@ const AddProblemPage = () => {
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Describe the problem clearly. Include what the input/output should be and any special conditions..."
                     rows={6}
-                    className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
+                    className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
                   />
-                  <p className="text-xs text-gray-500 mt-1.5">Write a clear and detailed problem statement</p>
+                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">Write a clear and detailed problem statement</p>
                 </div>
 
                 {/* Constraints */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide mb-2">
                     Constraints
                   </label>
                   <textarea
@@ -216,19 +207,19 @@ const AddProblemPage = () => {
                     onChange={(e) => setConstraints(e.target.value)}
                     placeholder="• 2 ≤ nums.length ≤ 10⁴&#10;• -10⁹ ≤ nums[i] ≤ 10⁹"
                     rows={3}
-                    className="w-full px-3.5 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono transition-all"
+                    className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono transition-all"
                   />
-                  <p className="text-xs text-gray-500 mt-1.5">One constraint per line (optional)</p>
+                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">One constraint per line (optional)</p>
                 </div>
               </div>
             </Card>
 
             {/* Examples */}
             <Card className="p-6">
-              <div className="border-b border-gray-200 pb-4 mb-6 flex items-center justify-between">
+              <div className="border-b border-gray-200 dark:border-lc-border pb-4 mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-semibold text-gray-900">Examples</h2>
-                  <p className="text-sm text-gray-500 mt-1">Provide sample inputs and outputs to illustrate the problem</p>
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">Examples</h2>
+                  <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">Provide sample inputs and outputs to illustrate the problem</p>
                 </div>
                 <button
                   onClick={handleAddExample}
@@ -241,9 +232,9 @@ const AddProblemPage = () => {
 
               <div className="space-y-3">
                 {examples.map((example, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors group">
+                  <div key={index} className="border border-gray-200 dark:border-lc-border rounded-lg p-4 bg-gray-50 dark:bg-lc-elevated hover:bg-gray-100 dark:hover:bg-lc-border-light transition-colors group">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Example {index + 1}</span>
+                      <span className="text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide">Example {index + 1}</span>
                       <button
                         onClick={() => handleRemoveExample(index)}
                         className="p-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all"
@@ -254,35 +245,35 @@ const AddProblemPage = () => {
                     
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1.5">Input</label>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">Input</label>
                         <textarea
                           value={example.input}
                           onChange={(e) => handleExampleChange(index, 'input', e.target.value)}
                           placeholder="nums = [2,7,11,15]&#10;target = 9"
                           rows={2}
-                          className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono bg-white"
+                          className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-lc-border-light rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono bg-white dark:bg-lc-card dark:text-lc-text"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1.5">Output</label>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">Output</label>
                         <textarea
                           value={example.output}
                           onChange={(e) => handleExampleChange(index, 'output', e.target.value)}
                           placeholder="[0,1]"
                           rows={2}
-                          className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono bg-white"
+                          className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-lc-border-light rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono bg-white dark:bg-lc-card dark:text-lc-text"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1.5">Explanation</label>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">Explanation</label>
                       <textarea
                         value={example.explanation}
                         onChange={(e) => handleExampleChange(index, 'explanation', e.target.value)}
                         placeholder="nums[0] + nums[1] == 9, so we return [0, 1]"
                         rows={2}
-                        className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none bg-white"
+                        className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-lc-border-light rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none bg-white dark:bg-lc-card dark:text-lc-text"
                       />
                     </div>
                   </div>
@@ -292,10 +283,10 @@ const AddProblemPage = () => {
 
             {/* Test Cases */}
             <Card className="p-6">
-              <div className="border-b border-gray-200 pb-4 mb-6 flex items-center justify-between">
+              <div className="border-b border-gray-200 dark:border-lc-border pb-4 mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-semibold text-gray-900">Test Cases</h2>
-                  <p className="text-sm text-gray-500 mt-1">Define test cases to validate student solutions</p>
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">Test Cases</h2>
+                  <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">Define test cases to validate student solutions</p>
                 </div>
                 <button
                   onClick={handleAddTestCase}
@@ -308,12 +299,12 @@ const AddProblemPage = () => {
 
               <div className="space-y-3">
                 {testCases.map((testCase, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors group">
+                  <div key={index} className="border border-gray-200 dark:border-lc-border rounded-lg p-4 bg-gray-50 dark:bg-lc-elevated hover:bg-gray-100 dark:hover:bg-lc-border-light transition-colors group">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Test {index + 1}</span>
+                        <span className="text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide">Test {index + 1}</span>
                         {testCase.isHidden && (
-                          <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">Hidden</span>
+                          <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded">Hidden</span>
                         )}
                       </div>
                       <button
@@ -326,28 +317,28 @@ const AddProblemPage = () => {
 
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1.5">Input</label>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">Input</label>
                         <textarea
                           value={testCase.input}
                           onChange={(e) => handleTestCaseChange(index, 'input', e.target.value)}
                           placeholder="[2,7,11,15]&#10;9"
                           rows={2}
-                          className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono bg-white"
+                          className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-lc-border-light rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono bg-white dark:bg-lc-card dark:text-lc-text"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1.5">Expected Output</label>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">Expected Output</label>
                         <textarea
                           value={testCase.expectedOutput}
                           onChange={(e) => handleTestCaseChange(index, 'expectedOutput', e.target.value)}
                           placeholder="[0,1]"
                           rows={2}
-                          className="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono bg-white"
+                          className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-lc-border-light rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono bg-white dark:bg-lc-card dark:text-lc-text"
                         />
                       </div>
                     </div>
 
-                    <label className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                    <label className="flex items-center gap-2 text-xs text-gray-700 dark:text-lc-text-secondary cursor-pointer">
                       <input
                         type="checkbox"
                         checked={testCase.isHidden}
@@ -366,17 +357,17 @@ const AddProblemPage = () => {
           <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             {/* Publish Settings */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Publish Settings</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Publish Settings</h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-medium text-gray-700 dark:text-lc-text-secondary mb-2">
                     Difficulty <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={difficulty}
                     onChange={(e) => setDifficulty(e.target.value as DifficultyLevel)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-lc-border-light rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-lc-card dark:text-lc-text"
                   >
                     <option value="Beginner">🟢 Beginner</option>
                     <option value="Intermediate">🟡 Intermediate</option>
@@ -384,7 +375,7 @@ const AddProblemPage = () => {
                   </select>
                 </div>
 
-                <div className="pt-4 border-t space-y-2">
+                <div className="pt-4 border-t dark:border-lc-border space-y-2">
                   <button
                     onClick={handleSubmit}
                     disabled={isSubmitting}
@@ -405,7 +396,7 @@ const AddProblemPage = () => {
                   <button
                     onClick={() => navigate('/admin/problems')}
                     disabled={isSubmitting}
-                    className="w-full px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-lc-border-light text-gray-700 dark:text-lc-text-secondary rounded-lg hover:bg-gray-50 dark:hover:bg-lc-elevated transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
@@ -415,7 +406,7 @@ const AddProblemPage = () => {
 
             {/* Tags */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Tags</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Tags</h3>
               
               <div className="space-y-3">
                 <div className="flex gap-2">
@@ -425,11 +416,11 @@ const AddProblemPage = () => {
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
                     placeholder="Add tag..."
-                    className="flex-1 px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-3 py-2 text-xs border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <button
                     onClick={handleAddTag}
-                    className="px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                    className="px-3 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -440,12 +431,12 @@ const AddProblemPage = () => {
                     {tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-md font-medium"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-md font-medium"
                       >
                         {tag}
                         <button
                           onClick={() => handleRemoveTag(tag)}
-                          className="hover:text-blue-900 transition-colors"
+                          className="hover:text-blue-900 dark:hover:text-blue-100 transition-colors"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -453,33 +444,33 @@ const AddProblemPage = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-500 text-center py-4">No tags added yet</p>
+                  <p className="text-xs text-gray-500 dark:text-lc-text-muted text-center py-4">No tags added yet</p>
                 )}
               </div>
             </Card>
 
             {/* Quick Stats */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">Summary</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Summary</h3>
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-600">Examples</span>
-                  <span className="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">{examples.length}</span>
+                  <span className="text-gray-600 dark:text-lc-text-muted">Examples</span>
+                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">{examples.length}</span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-600">Test Cases</span>
-                  <span className="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">{testCases.length}</span>
+                  <span className="text-gray-600 dark:text-lc-text-muted">Test Cases</span>
+                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">{testCases.length}</span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-600">Tags</span>
-                  <span className="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">{tags.length}</span>
+                  <span className="text-gray-600 dark:text-lc-text-muted">Tags</span>
+                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">{tags.length}</span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-gray-600">Difficulty</span>
+                  <span className="text-gray-600 dark:text-lc-text-muted">Difficulty</span>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                    difficulty === 'Beginner' ? 'bg-green-100 text-green-700' :
-                    difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-red-100 text-red-700'
+                    difficulty === 'Beginner' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
+                    difficulty === 'Intermediate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
+                    'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                   }`}>
                     {difficulty}
                   </span>

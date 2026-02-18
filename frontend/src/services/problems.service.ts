@@ -1,5 +1,11 @@
 import type { IProblem, ISubmission, ICodeSnippet, IProblemProgress, ITestCaseResult } from '../types/models';
 
+// Constants for localStorage keys
+const STORAGE_KEYS = {
+  CODE_PREFIX: 'code_',
+  PROGRESS_PREFIX: 'progress_',
+} as const;
+
 // Mock problems data
 export const mockProblems: IProblem[] = [
   {
@@ -377,15 +383,14 @@ export const getUserSubmission = (problemId: string, userId: string): ISubmissio
 export const saveCode = async (problemId: string, userId: string, code: string, language: string): Promise<void> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  console.log('Code saved:', { problemId, userId, code, language });
   
-  // In a real app, this would save to localStorage or backend
-  localStorage.setItem(`code_${problemId}_${userId}`, JSON.stringify({ code, language }));
+  // In a real app, this would save to backend via API
+  localStorage.setItem(`${STORAGE_KEYS.CODE_PREFIX}${problemId}_${userId}`, JSON.stringify({ code, language }));
 };
 
 // Get saved code
 export const getSavedCode = (problemId: string, userId: string): { code: string; language: string } | null => {
-  const saved = localStorage.getItem(`code_${problemId}_${userId}`);
+  const saved = localStorage.getItem(`${STORAGE_KEYS.CODE_PREFIX}${problemId}_${userId}`);
   return saved ? JSON.parse(saved) : null;
 };
 
@@ -478,7 +483,7 @@ const mockSubmissionHistory: Record<string, ISubmission[]> = {
 
 // Problem progress tracking (stores status and time spent)
 const getProblemProgress = (problemId: string, userId: string): IProblemProgress => {
-  const key = `progress_${problemId}_${userId}`;
+  const key = `${STORAGE_KEYS.PROGRESS_PREFIX}${problemId}_${userId}`;
   const saved = localStorage.getItem(key);
   if (saved) {
     return JSON.parse(saved);
@@ -491,7 +496,7 @@ const getProblemProgress = (problemId: string, userId: string): IProblemProgress
 };
 
 const saveProblemProgress = (progress: IProblemProgress, userId: string): void => {
-  const key = `progress_${progress.problemId}_${userId}`;
+  const key = `${STORAGE_KEYS.PROGRESS_PREFIX}${progress.problemId}_${userId}`;
   localStorage.setItem(key, JSON.stringify(progress));
 };
 

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { Code2, AlertCircle, Loader2, Trophy, Target, TrendingUp } from 'lucide-react';
 import type { LoginCredentials } from '../types/auth.types';
@@ -14,6 +15,12 @@ const loginSchema = z.object({
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
+
+interface LocationState {
+  from?: {
+    pathname: string;
+  };
+}
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -33,7 +40,8 @@ const LoginPage = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      const from = (location.state as any)?.from?.pathname;
+      const state = location.state as LocationState;
+      const from = state?.from?.pathname;
       if (user.role === 'admin') {
         navigate(from || '/admin', { replace: true });
       } else {
@@ -48,8 +56,11 @@ const LoginPage = () => {
 
     try {
       await login(data as LoginCredentials);
+      toast.success('Welcome back! Login successful.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -58,36 +69,36 @@ const LoginPage = () => {
   return (
     <div className="h-screen w-full flex overflow-hidden">
       {/* Left Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-8 lg:px-12 xl:px-16 bg-white overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-8 lg:px-12 xl:px-16 bg-white dark:bg-lc-bg overflow-y-auto">
         <div className="w-full max-w-md py-8">
           {/* Logo and Title */}
           <div className="mb-6">
             <div className="flex items-center mb-6">
-              <div className="bg-primary-600 p-3 rounded-xl">
+              <div className="bg-primary-600 dark:bg-accent-500 p-3 rounded-xl">
                 <Code2 className="h-8 w-8 text-white" />
               </div>
               <div className="ml-3">
-                <h1 className="text-2xl font-bold text-gray-900">PlacementPrep</h1>
-                <p className="text-sm text-gray-600">Engineering Excellence</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-lc-text">PlacementPrep</h1>
+                <p className="text-sm text-gray-600 dark:text-lc-text-muted">Engineering Excellence</p>
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h2>
-            <p className="text-gray-600">Sign in to continue your preparation journey</p>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-lc-text mb-2">Welcome back</h2>
+            <p className="text-gray-600 dark:text-lc-text-muted">Sign in to continue your preparation journey</p>
           </div>
 
           {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Error Alert */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start">
-                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
-                <p className="text-sm text-red-800">{error}</p>
+              <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-start">
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 mr-3 flex-shrink-0" />
+                <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
               </div>
             )}
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-lc-text-secondary mb-2">
                 Email Address
               </label>
               <input
@@ -99,13 +110,13 @@ const LoginPage = () => {
                 autoComplete="email"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
               )}
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-lc-text-secondary mb-2">
                 Password
               </label>
               <input
@@ -117,7 +128,7 @@ const LoginPage = () => {
                 autoComplete="current-password"
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
               )}
             </div>
 
@@ -139,21 +150,21 @@ const LoginPage = () => {
           </form>
 
           {/* Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-sm text-gray-500 mb-3 font-medium">Demo Credentials:</p>
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-lc-border">
+            <p className="text-sm text-gray-500 dark:text-lc-text-muted mb-3 font-medium">Demo Credentials:</p>
             <div className="space-y-2">
-              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                <p className="text-xs font-semibold text-gray-700 mb-1">Student Account</p>
-                <p className="text-xs text-gray-600">john.doe@college.edu / student123</p>
+              <div className="bg-gray-50 dark:bg-lc-card p-3 rounded-lg border border-gray-200 dark:border-lc-border">
+                <p className="text-xs font-semibold text-gray-700 dark:text-lc-text-secondary mb-1">Student Account</p>
+                <p className="text-xs text-gray-600 dark:text-lc-text-muted">john.doe@college.edu / student123</p>
               </div>
-              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                <p className="text-xs font-semibold text-gray-700 mb-1">Admin Account</p>
-                <p className="text-xs text-gray-600">admin@college.edu / admin123</p>
+              <div className="bg-gray-50 dark:bg-lc-card p-3 rounded-lg border border-gray-200 dark:border-lc-border">
+                <p className="text-xs font-semibold text-gray-700 dark:text-lc-text-secondary mb-1">Admin Account</p>
+                <p className="text-xs text-gray-600 dark:text-lc-text-muted">admin@college.edu / admin123</p>
               </div>
             </div>
           </div>
 
-          <p className="text-center text-xs text-gray-500 mt-6">
+          <p className="text-center text-xs text-gray-500 dark:text-lc-text-muted mt-6">
             © 2026 PlacementPrep. All rights reserved.
           </p>
         </div>

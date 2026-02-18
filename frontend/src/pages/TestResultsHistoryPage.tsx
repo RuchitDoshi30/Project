@@ -196,25 +196,12 @@ const TestResultsHistoryPage = () => {
         <Card className="hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between p-4">
             <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Total Attempts</p>
-              <p className="text-2xl font-bold text-gray-900 mb-1">{stats.total}</p>
-              <p className="text-xs text-gray-400">Tests taken</p>
+              <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Total Attempts</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-lc-text mb-1">{stats.total}</p>
+              <p className="text-xs text-gray-400 dark:text-lc-text-muted">Tests taken</p>
             </div>
-            <div className="bg-purple-50 p-2.5 rounded-lg">
-              <Brain className="w-5 h-5 text-purple-600" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between p-4">
-            <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Passed</p>
-              <p className="text-2xl font-bold text-gray-900 mb-1">{stats.passed}</p>
-              <p className="text-xs text-gray-400">Tests cleared</p>
-            </div>
-            <div className="bg-green-50 p-2.5 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+            <div className="bg-purple-50 dark:bg-purple-900/40 p-2.5 rounded-lg">
+              <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </Card>
@@ -222,12 +209,12 @@ const TestResultsHistoryPage = () => {
         <Card className="hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between p-4">
             <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Failed</p>
-              <p className="text-2xl font-bold text-gray-900 mb-1">{stats.failed}</p>
-              <p className="text-xs text-gray-400">Need retry</p>
+              <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Passed</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-lc-text mb-1">{stats.passed}</p>
+              <p className="text-xs text-gray-400 dark:text-lc-text-muted">Tests cleared</p>
             </div>
-            <div className="bg-red-50 p-2.5 rounded-lg">
-              <XCircle className="w-5 h-5 text-red-600" />
+            <div className="bg-green-50 dark:bg-green-900/40 p-2.5 rounded-lg">
+              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </Card>
@@ -235,12 +222,25 @@ const TestResultsHistoryPage = () => {
         <Card className="hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between p-4">
             <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Average Score</p>
-              <p className="text-2xl font-bold text-gray-900 mb-1">{stats.avgScore}%</p>
-              <p className="text-xs text-gray-400">Overall performance</p>
+              <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Failed</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-lc-text mb-1">{stats.failed}</p>
+              <p className="text-xs text-gray-400 dark:text-lc-text-muted">Need retry</p>
             </div>
-            <div className="bg-blue-50 p-2.5 rounded-lg">
-              <Award className="w-5 h-5 text-blue-600" />
+            <div className="bg-red-50 dark:bg-red-900/40 p-2.5 rounded-lg">
+              <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+          </div>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between p-4">
+            <div className="flex-1">
+              <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Average Score</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-lc-text mb-1">{stats.avgScore}%</p>
+              <p className="text-xs text-gray-400 dark:text-lc-text-muted">Overall performance</p>
+            </div>
+            <div className="bg-blue-50 dark:bg-blue-900/40 p-2.5 rounded-lg">
+              <Award className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </Card>
@@ -257,7 +257,7 @@ const TestResultsHistoryPage = () => {
               placeholder="Search by test name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-lc-border-light bg-white dark:bg-lc-card text-gray-900 dark:text-lc-text rounded-lg focus:ring-2 focus:ring-primary-500 dark:focus:ring-accent-500 focus:border-transparent"
             />
           </div>
 
@@ -267,7 +267,7 @@ const TestResultsHistoryPage = () => {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 dark:border-lc-border-light bg-white dark:bg-lc-card text-gray-900 dark:text-lc-text rounded-lg focus:ring-2 focus:ring-primary-500 dark:focus:ring-accent-500 focus:border-transparent"
             >
               <option value="all">All Categories</option>
               <option value="Quantitative">Quantitative</option>
@@ -281,7 +281,7 @@ const TestResultsHistoryPage = () => {
           <select
             value={resultFilter}
             onChange={(e) => setResultFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 dark:border-lc-border-light bg-white dark:bg-lc-card text-gray-900 dark:text-lc-text rounded-lg focus:ring-2 focus:ring-primary-500 dark:focus:ring-accent-500 focus:border-transparent"
           >
             <option value="all">All Results</option>
             <option value="passed">Passed Only</option>
@@ -294,9 +294,9 @@ const TestResultsHistoryPage = () => {
       <div className="space-y-3">
         {filteredAttempts.length === 0 ? (
           <Card className="p-12 text-center">
-            <Brain className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">No test attempts found</h3>
-            <p className="text-sm text-gray-500">Try adjusting your filters</p>
+            <Brain className="w-12 h-12 text-gray-300 dark:text-lc-text-muted mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text mb-1">No test attempts found</h3>
+            <p className="text-sm text-gray-500 dark:text-lc-text-muted">Try adjusting your filters</p>
           </Card>
         ) : (
           filteredAttempts.map((attempt) => (
@@ -307,27 +307,27 @@ const TestResultsHistoryPage = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       {attempt.passed ? (
-                        <CheckCircle className="w-5 h-5 text-green-600" />
+                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                       ) : (
-                        <XCircle className="w-5 h-5 text-red-600" />
+                        <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                       )}
-                      <h3 className="text-base font-bold text-gray-900">{attempt.testTitle}</h3>
+                      <h3 className="text-base font-bold text-gray-900 dark:text-lc-text">{attempt.testTitle}</h3>
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
-                        attempt.category === 'Quantitative' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                        attempt.category === 'Logical' ? 'bg-purple-100 text-purple-700 border-purple-200' :
-                        attempt.category === 'Verbal' ? 'bg-green-100 text-green-700 border-green-200' :
-                        'bg-orange-100 text-orange-700 border-orange-200'
+                        attempt.category === 'Quantitative' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700' :
+                        attempt.category === 'Logical' ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700' :
+                        attempt.category === 'Verbal' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700' :
+                        'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700'
                       }`}>
                         {attempt.category}
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-lc-text-muted">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5" />
                         {formatDate(attempt.completedAt)}
                       </span>
                       <span className={`px-2 py-0.5 rounded-full font-medium border ${
-                        attempt.passed ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'
+                        attempt.passed ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700' : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700'
                       }`}>
                         {attempt.passed ? 'PASSED' : 'FAILED'}
                       </span>
@@ -335,11 +335,11 @@ const TestResultsHistoryPage = () => {
                   </div>
                   <div className="text-right">
                     <div className={`text-3xl font-bold mb-1 ${
-                      attempt.passed ? 'text-green-600' : 'text-red-600'
+                      attempt.passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                     }`}>
                       {attempt.score}%
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-lc-text-muted">
                       Required: {attempt.passingPercentage}%
                     </p>
                   </div>
@@ -347,17 +347,17 @@ const TestResultsHistoryPage = () => {
 
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-3">
-                  <div className="text-center bg-blue-50 rounded-lg p-2 border border-blue-200">
-                    <p className="text-xs text-gray-600 mb-1">Correct</p>
-                    <p className="text-sm font-bold text-blue-600">{attempt.correctAnswers}/{attempt.totalQuestions}</p>
+                  <div className="text-center bg-blue-50 dark:bg-blue-900/30 rounded-lg p-2 border border-blue-200 dark:border-lc-border">
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted mb-1">Correct</p>
+                    <p className="text-sm font-bold text-blue-600 dark:text-blue-400">{attempt.correctAnswers}/{attempt.totalQuestions}</p>
                   </div>
-                  <div className="text-center bg-purple-50 rounded-lg p-2 border border-purple-200">
-                    <p className="text-xs text-gray-600 mb-1">Accuracy</p>
-                    <p className="text-sm font-bold text-purple-600">{Math.round((attempt.correctAnswers / attempt.totalQuestions) * 100)}%</p>
+                  <div className="text-center bg-purple-50 dark:bg-purple-900/30 rounded-lg p-2 border border-purple-200 dark:border-lc-border">
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted mb-1">Accuracy</p>
+                    <p className="text-sm font-bold text-purple-600 dark:text-purple-400">{Math.round((attempt.correctAnswers / attempt.totalQuestions) * 100)}%</p>
                   </div>
-                  <div className="text-center bg-green-50 rounded-lg p-2 border border-green-200">
-                    <p className="text-xs text-gray-600 mb-1">Time</p>
-                    <p className="text-sm font-bold text-green-600">{formatTime(attempt.timeSpent)}</p>
+                  <div className="text-center bg-green-50 dark:bg-green-900/30 rounded-lg p-2 border border-green-200 dark:border-lc-border">
+                    <p className="text-xs text-gray-600 dark:text-lc-text-muted mb-1">Time</p>
+                    <p className="text-sm font-bold text-green-600 dark:text-green-400">{formatTime(attempt.timeSpent)}</p>
                   </div>
                 </div>
 
@@ -365,7 +365,7 @@ const TestResultsHistoryPage = () => {
                 {attempt.questions.length > 0 && (
                   <button
                     onClick={() => setExpandedAttempt(expandedAttempt === attempt.id ? null : attempt.id)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-lc-text-secondary hover:bg-gray-50 dark:hover:bg-lc-elevated rounded-lg transition-all"
                   >
                     <Eye className="w-4 h-4" />
                     {expandedAttempt === attempt.id ? 'Hide Question Review' : 'View Question Review'}
@@ -375,40 +375,40 @@ const TestResultsHistoryPage = () => {
 
                 {/* Expanded View - Question Review */}
                 {expandedAttempt === attempt.id && attempt.questions.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <h4 className="text-sm font-bold text-gray-900 mb-3">Question-by-Question Review</h4>
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-lc-border">
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-lc-text mb-3">Question-by-Question Review</h4>
                     <div className="space-y-3">
                       {attempt.questions.map((question, index) => (
                         <div 
                           key={index}
-                          className="p-4 rounded-lg bg-gray-50 border border-gray-200"
+                          className="p-4 rounded-lg bg-gray-50 dark:bg-lc-elevated border border-gray-200 dark:border-lc-border-light"
                         >
                           <div className="flex items-start gap-3 mb-2">
                             {question.isCorrect ? (
-                              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                             ) : (
-                              <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                              <XCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                             )}
                             <div className="flex-1">
-                              <p className="text-sm font-semibold text-gray-900 mb-2">
+                              <p className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-2">
                                 Q{index + 1}. {question.questionText}
                               </p>
                               <div className="space-y-1 text-xs">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-gray-700">Your Answer:</span>
+                                  <span className="font-semibold text-gray-700 dark:text-lc-text-secondary">Your Answer:</span>
                                   <span className={`font-bold ${
-                                    question.isCorrect ? 'text-green-600' : 'text-red-600'
+                                    question.isCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                                   }`}>
                                     {question.yourAnswer}
                                   </span>
                                 </div>
                                 {!question.isCorrect && (
                                   <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-gray-700">Correct Answer:</span>
-                                    <span className="text-green-600 font-bold">{question.correctAnswer}</span>
+                                    <span className="font-semibold text-gray-700 dark:text-lc-text-secondary">Correct Answer:</span>
+                                    <span className="text-green-600 dark:text-green-400 font-bold">{question.correctAnswer}</span>
                                   </div>
                                 )}
-                                <div className="flex items-center gap-2 text-gray-600">
+                                <div className="flex items-center gap-2 text-gray-600 dark:text-lc-text-muted">
                                   <Clock className="w-3 h-3" />
                                   <span>Time spent: {question.timeSpent}s</span>
                                 </div>
@@ -428,14 +428,14 @@ const TestResultsHistoryPage = () => {
 
       {/* Score Trend Insight */}
       {filteredAttempts.length > 1 && (
-        <Card className="mt-6 p-5 bg-gray-50 border-gray-200">
+        <Card className="mt-6 p-5 bg-gray-50 dark:bg-lc-card/50 border-gray-200 dark:border-lc-border">
           <div className="flex items-center gap-2 mb-3">
-            <div className="bg-gray-100 rounded-lg p-2">
-              <TrendingUp className="w-4 h-4 text-gray-600" />
+            <div className="bg-gray-100 dark:bg-lc-elevated rounded-lg p-2">
+              <TrendingUp className="w-4 h-4 text-gray-600 dark:text-lc-text-muted" />
             </div>
-            <h3 className="text-sm font-semibold text-gray-900">Performance Trend</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text">Performance Trend</h3>
           </div>
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-gray-700 dark:text-lc-text-secondary">
             Your average score has {stats.avgScore >= 75 ? 'been strong' : 'room for improvement'}. 
             Keep practicing to improve your weak areas!
           </p>

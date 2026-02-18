@@ -302,11 +302,11 @@ export const getPendingSubmissions = (): RecentSubmission[] => {
  * @param {string} submissionId - Submission ID
  * @returns {Promise<void>}
  */
-export const approveSubmission = async (submissionId: string): Promise<void> => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const approveSubmission = async (_submissionId: string): Promise<void> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  console.log('Approved submission:', submissionId);
-  // In production, this would update the backend
+  // In production, this would update the backend via API call
 };
 
 /**
@@ -316,9 +316,9 @@ export const approveSubmission = async (submissionId: string): Promise<void> => 
  * @param {string} reason - Rejection reason
  * @returns {Promise<void>}
  */
-export const rejectSubmission = async (submissionId: string, reason: string): Promise<void> => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const rejectSubmission = async (_submissionId: string, _reason: string): Promise<void> => {
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  console.log('Rejected submission:', submissionId, 'Reason:', reason);
-  // In production, this would update the backend
+  // In production, this would update the backend via API call with rejection reason
 };
