@@ -150,7 +150,7 @@ const AptitudePage = () => {
             <Filter className="w-4 h-4" />
             Filters
             {hasActiveFilters && !showFilters && (
-              <span className="ml-1 px-1.5 py-0.5 bg-white text-primary-600 rounded text-xs font-semibold">
+              <span className="ml-1 px-1.5 py-0.5 bg-white dark:bg-lc-card text-primary-600 dark:text-accent-400 rounded text-xs font-semibold">
                 {(selectedCategory ? 1 : 0) + (searchQuery ? 1 : 0)}
               </span>
             )}

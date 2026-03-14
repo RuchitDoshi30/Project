@@ -328,7 +328,7 @@ const SubmissionReviewPage = () => {
       <Card className="mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Filter className="text-gray-400 w-5 h-5" />
+            <Filter className="text-gray-400 w-5 h-5" aria-hidden="true" />
             <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
             <select
               value={statusFilter}
@@ -352,7 +352,7 @@ const SubmissionReviewPage = () => {
         {filteredSubmissions.length === 0 ? (
           <Card>
             <div className="text-center py-12 text-gray-500">
-              <Clock className="w-16 h-16 mx-auto mb-4 opacity-20" />
+              <Clock className="w-16 h-16 mx-auto mb-4 opacity-20" aria-hidden="true" />
               <p className="text-lg font-medium">No submissions found</p>
               <p className="text-sm">Try changing your filter criteria</p>
             </div>
@@ -382,12 +382,12 @@ const SubmissionReviewPage = () => {
 
                       <div className="flex items-center gap-6 text-sm text-gray-600 mb-3">
                         <div className="flex items-center gap-1.5">
-                          <User className="w-4 h-4" />
+                          <User className="w-4 h-4" aria-hidden="true" />
                           <span>{submission.studentName}</span>
                           <span className="text-gray-400">({submission.studentId})</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="w-4 h-4" />
+                          <Calendar className="w-4 h-4" aria-hidden="true" />
                           <span>{formatTimestamp(submission.submittedAt)}</span>
                         </div>
                       </div>
@@ -420,8 +420,9 @@ const SubmissionReviewPage = () => {
                   <button
                     onClick={() => handleViewSubmission(submission)}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    aria-label={`Review submission for ${submission.studentName}`}
                   >
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-4 h-4" aria-hidden="true" />
                     Review
                   </button>
                 </div>
@@ -433,22 +434,30 @@ const SubmissionReviewPage = () => {
 
       {/* Review Modal */}
       {showReviewModal && selectedSubmission && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="submission-review-title"
+        >
           <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-2xl font-bold">{selectedSubmission.problemTitle}</h3>
+                <h3 id="submission-review-title" className="text-2xl font-bold">
+                  {selectedSubmission.problemTitle}
+                </h3>
                 <button
                   onClick={() => setShowReviewModal(false)}
                   className="text-gray-500 hover:text-gray-700"
+                  aria-label="Close review"
                 >
-                  <XCircle className="w-6 h-6" />
+                  <XCircle className="w-6 h-6" aria-hidden="true" />
                 </button>
               </div>
 
               <div className="flex items-center gap-6 text-sm">
                 <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-gray-400" />
+                  <User className="w-4 h-4 text-gray-400" aria-hidden="true" />
                   <span className="font-medium">{selectedSubmission.studentName}</span>
                   <span className="text-gray-500">({selectedSubmission.studentId})</span>
                 </div>
@@ -516,14 +525,14 @@ const SubmissionReviewPage = () => {
                     onClick={() => handleApprove(selectedSubmission)}
                     className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                   >
-                    <CheckCircle className="w-5 h-5" />
+                    <CheckCircle className="w-5 h-5" aria-hidden="true" />
                     Approve Submission
                   </button>
                   <button
                     onClick={() => handleReject(selectedSubmission)}
                     className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                   >
-                    <XCircle className="w-5 h-5" />
+                    <XCircle className="w-5 h-5" aria-hidden="true" />
                     Reject Submission
                   </button>
                   <button

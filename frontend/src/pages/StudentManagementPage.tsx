@@ -200,7 +200,7 @@ const StudentManagementPage = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Search */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" aria-hidden="true" />
             <input
               type="text"
               placeholder="Search by name, email, or student ID..."
@@ -227,8 +227,9 @@ const StudentManagementPage = () => {
             <button
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              aria-label="Add new student"
             >
-              <UserPlus className="w-5 h-5" />
+              <UserPlus className="w-5 h-5" aria-hidden="true" />
               <span>Add Student</span>
             </button>
           </div>
@@ -242,7 +243,7 @@ const StudentManagementPage = () => {
             <div className="flex items-center justify-center gap-3 mb-2">
               <span className="text-2xl">👨‍🎓</span>
               <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg p-2.5">
-                <UserPlus className="w-5 h-5 text-white" />
+                <UserPlus className="w-5 h-5 text-white" aria-hidden="true" />
               </div>
             </div>
             <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{students.length}</p>
@@ -254,7 +255,7 @@ const StudentManagementPage = () => {
             <div className="flex items-center justify-center gap-3 mb-2">
               <span className="text-2xl">✅</span>
               <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg p-2.5">
-                <CheckCircle className="w-5 h-5 text-white" />
+                <CheckCircle className="w-5 h-5 text-white" aria-hidden="true" />
               </div>
             </div>
             <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
@@ -268,7 +269,7 @@ const StudentManagementPage = () => {
             <div className="flex items-center justify-center gap-3 mb-2">
               <span className="text-2xl">⛔</span>
               <div className="bg-gradient-to-br from-red-500 to-pink-600 rounded-xl shadow-lg p-2.5">
-                <XCircle className="w-5 h-5 text-white" />
+                <XCircle className="w-5 h-5 text-white" aria-hidden="true" />
               </div>
             </div>
             <p className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
@@ -282,7 +283,7 @@ const StudentManagementPage = () => {
             <div className="flex items-center justify-center gap-3 mb-2">
               <span className="text-2xl">👁️</span>
               <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg p-2.5">
-                <Eye className="w-5 h-5 text-white" />
+                <Eye className="w-5 h-5 text-white" aria-hidden="true" />
               </div>
             </div>
             <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">{filteredStudents.length}</p>
@@ -361,15 +362,17 @@ const StudentManagementPage = () => {
                           onClick={() => handleViewStudent(student)}
                           className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                           title="View Details"
+                          aria-label={`View details for ${student.name}`}
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-4 h-4" aria-hidden="true" />
                         </button>
                         <button
                           onClick={() => handleResetPassword(student)}
                           className="p-2 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg transition-colors"
                           title="Reset Password"
+                          aria-label={`Reset password for ${student.name}`}
                         >
-                          <Lock className="w-4 h-4" />
+                          <Lock className="w-4 h-4" aria-hidden="true" />
                         </button>
                         <button
                           onClick={() => handleToggleStatus(student.id)}
@@ -379,19 +382,21 @@ const StudentManagementPage = () => {
                               : 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30'
                           }`}
                           title={student.status === 'active' ? 'Disable Account' : 'Enable Account'}
+                          aria-label={student.status === 'active' ? `Disable account for ${student.name}` : `Enable account for ${student.name}`}
                         >
                           {student.status === 'active' ? (
-                            <XCircle className="w-4 h-4" />
+                            <XCircle className="w-4 h-4" aria-hidden="true" />
                           ) : (
-                            <CheckCircle className="w-4 h-4" />
+                            <CheckCircle className="w-4 h-4" aria-hidden="true" />
                           )}
                         </button>
                         <button
                           onClick={() => handleDeleteStudent(student.id)}
                           className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                           title="Delete Student"
+                          aria-label={`Delete student ${student.name}`}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </button>
                       </div>
                     </td>
@@ -405,9 +410,16 @@ const StudentManagementPage = () => {
 
       {/* Add Student Modal (Placeholder) */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="add-student-title"
+        >
           <div className="bg-white dark:bg-lc-card rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold dark:text-lc-text mb-4">Add New Student</h3>
+            <h3 id="add-student-title" className="text-xl font-bold dark:text-lc-text mb-4">
+              Add New Student
+            </h3>
             <p className="text-gray-600 dark:text-lc-text-muted mb-4">Student creation form will be implemented here.</p>
             <div className="flex justify-end">
               <button
@@ -423,9 +435,16 @@ const StudentManagementPage = () => {
 
       {/* View Student Modal */}
       {showViewModal && selectedStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="view-student-title"
+        >
           <div className="bg-white dark:bg-lc-card rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-2xl font-bold dark:text-lc-text mb-4">{selectedStudent.name}</h3>
+            <h3 id="view-student-title" className="text-2xl font-bold dark:text-lc-text mb-4">
+              {selectedStudent.name}
+            </h3>
             
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>

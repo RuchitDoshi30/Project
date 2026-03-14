@@ -48,7 +48,7 @@ const RecommendedProblemsPage = () => {
       problems: [
         {
           _id: '1',
-          slug: 'binary-search-tree-validation',
+          slug: 'binary-tree-level-order-traversal',
           title: 'Validate Binary Search Tree',
           difficulty: 'Intermediate',
           topic: 'Trees',
@@ -59,7 +59,7 @@ const RecommendedProblemsPage = () => {
         },
         {
           _id: '2',
-          slug: 'dynamic-programming-fibonacci',
+          slug: 'climbing-stairs',
           title: 'Fibonacci with DP',
           difficulty: 'Beginner',
           topic: 'Dynamic Programming',
@@ -70,7 +70,7 @@ const RecommendedProblemsPage = () => {
         },
         {
           _id: '3',
-          slug: 'graph-cycle-detection',
+          slug: 'binary-search',
           title: 'Detect Cycle in Graph',
           difficulty: 'Intermediate',
           topic: 'Graphs',
@@ -92,7 +92,7 @@ const RecommendedProblemsPage = () => {
       problems: [
         {
           _id: '4',
-          slug: 'merge-k-sorted-lists',
+          slug: 'merge-two-sorted-lists',
           title: 'Merge K Sorted Lists',
           difficulty: 'Advanced',
           topic: 'Linked Lists',
@@ -104,7 +104,7 @@ const RecommendedProblemsPage = () => {
         },
         {
           _id: '5',
-          slug: 'longest-increasing-subsequence',
+          slug: 'maximum-subarray',
           title: 'Longest Increasing Subsequence',
           difficulty: 'Intermediate',
           topic: 'Dynamic Programming',
@@ -126,7 +126,7 @@ const RecommendedProblemsPage = () => {
       problems: [
         {
           _id: '6',
-          slug: 'two-sum-variant',
+          slug: 'two-sum',
           title: 'Two Sum - All Pairs',
           difficulty: 'Beginner',
           topic: 'Arrays',
@@ -137,7 +137,7 @@ const RecommendedProblemsPage = () => {
         },
         {
           _id: '7',
-          slug: 'container-with-most-water',
+          slug: 'reverse-linked-list',
           title: 'Container With Most Water',
           difficulty: 'Intermediate',
           topic: 'Two Pointers',
@@ -159,7 +159,7 @@ const RecommendedProblemsPage = () => {
       problems: [
         {
           _id: '8',
-          slug: 'palindrome-check',
+          slug: 'valid-parentheses',
           title: 'Check Palindrome',
           difficulty: 'Beginner',
           topic: 'Strings',
@@ -170,7 +170,7 @@ const RecommendedProblemsPage = () => {
         },
         {
           _id: '9',
-          slug: 'find-missing-number',
+          slug: 'binary-search',
           title: 'Find Missing Number',
           difficulty: 'Beginner',
           topic: 'Arrays',
@@ -181,7 +181,7 @@ const RecommendedProblemsPage = () => {
         },
         {
           _id: '10',
-          slug: 'reverse-integer',
+          slug: 'reverse-linked-list',
           title: 'Reverse Integer',
           difficulty: 'Beginner',
           topic: 'Math',
@@ -208,7 +208,7 @@ const RecommendedProblemsPage = () => {
   };
 
   const handleStartProblem = (slug: string) => {
-    navigate(`/student/coding/problem/${slug}`);
+    navigate(`/coding/${slug}`);
   };
 
   const toggleSection = (category: RecommendationCategory) => {

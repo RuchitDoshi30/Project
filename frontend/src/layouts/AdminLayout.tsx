@@ -56,7 +56,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         <div className="flex flex-col w-64 xl:w-72 bg-white dark:bg-lc-card border-r border-gray-200 dark:border-lc-border h-screen sticky top-0">
           {/* Logo */}
           <div className="flex items-center h-16 px-6 border-b border-gray-200 dark:border-lc-border flex-shrink-0">
-            <Code2 className="h-8 w-8 text-primary-600 dark:text-accent-500" />
+            <Code2 className="h-8 w-8 text-primary-600 dark:text-accent-500" aria-hidden="true" />
             <span className="ml-2 text-xl font-bold text-gray-900 dark:text-lc-text">Admin Panel</span>
           </div>
 
@@ -92,7 +92,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
           <div className="border-t border-gray-200 dark:border-lc-border p-4 flex-shrink-0 bg-white dark:bg-lc-card">
             <div className="flex items-center space-x-3 mb-3">
               <div className="w-10 h-10 bg-primary-100 dark:bg-accent-500/15 rounded-full flex items-center justify-center flex-shrink-0">
-                <User className="h-6 w-6 text-primary-600 dark:text-accent-400" />
+                <User className="h-6 w-6 text-primary-600 dark:text-accent-400" aria-hidden="true" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 dark:text-lc-text truncate">{user?.name}</p>
@@ -115,7 +115,12 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div
+          className="fixed inset-0 z-50 lg:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Admin navigation menu"
+        >
           <div
             className="fixed inset-0 bg-black/50 dark:bg-black/70 transition-opacity"
             onClick={() => setSidebarOpen(false)}
@@ -124,14 +129,15 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             {/* Mobile sidebar header */}
             <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-lc-border">
               <div className="flex items-center">
-                <Code2 className="h-8 w-8 text-primary-600 dark:text-accent-500" />
+                <Code2 className="h-8 w-8 text-primary-600 dark:text-accent-500" aria-hidden="true" />
                 <span className="ml-2 text-xl font-bold text-gray-900 dark:text-lc-text">Admin Panel</span>
               </div>
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="p-2 rounded-md text-gray-600 dark:text-lc-text-secondary hover:bg-gray-100 dark:hover:bg-lc-elevated"
+                aria-label="Close navigation menu"
               >
-                <X className="h-6 w-6" />
+                <X className="h-6 w-6" aria-hidden="true" />
               </button>
             </div>
 
@@ -168,7 +174,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             <div className="border-t border-gray-200 dark:border-lc-border p-4">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="w-10 h-10 bg-primary-100 dark:bg-accent-500/15 rounded-full flex items-center justify-center">
-                  <User className="h-6 w-6 text-primary-600 dark:text-accent-400" />
+                  <User className="h-6 w-6 text-primary-600 dark:text-accent-400" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-lc-text">{user?.name}</p>
@@ -198,8 +204,9 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             <button
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden p-2 rounded-md text-gray-600 dark:text-lc-text-secondary hover:bg-gray-100 dark:hover:bg-lc-elevated"
+              aria-label="Open navigation menu"
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-6 w-6" aria-hidden="true" />
             </button>
             <h1 className="ml-2 lg:ml-0 text-lg sm:text-xl font-bold text-gray-900 dark:text-lc-text truncate">
               {navigation.find((item) => isActive(item.href))?.name || 'Admin Panel'}
@@ -209,7 +216,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
           {/* Desktop user info in header */}
           <div className="hidden lg:flex items-center space-x-3">
             <div className="w-8 h-8 bg-primary-100 dark:bg-accent-500/15 rounded-full flex items-center justify-center">
-              <User className="h-5 w-5 text-primary-600 dark:text-accent-400" />
+              <User className="h-5 w-5 text-primary-600 dark:text-accent-400" aria-hidden="true" />
             </div>
             <div className="hidden xl:block">
               <p className="text-sm font-medium text-gray-900 dark:text-lc-text">{user?.name}</p>

@@ -43,9 +43,11 @@ const LoginPage = () => {
       const state = location.state as LocationState;
       const from = state?.from?.pathname;
       if (user.role === 'admin') {
-        navigate(from || '/admin', { replace: true });
+        const adminDestination = from?.startsWith('/admin') ? from : '/admin';
+        navigate(adminDestination, { replace: true });
       } else {
-        navigate(from || '/', { replace: true });
+        const studentDestination = from && !from.startsWith('/admin') ? from : '/';
+        navigate(studentDestination, { replace: true });
       }
     }
   }, [isAuthenticated, user, navigate, location]);

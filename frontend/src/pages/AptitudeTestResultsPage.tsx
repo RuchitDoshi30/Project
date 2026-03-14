@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Trophy, XCircle, CheckCircle, RotateCcw, Home, ChevronDown, ChevronUp, 
@@ -19,22 +19,18 @@ const CURRENT_USER_ID = '2'; // TODO: Replace with actual authenticated user ID 
 
 // Category color mapping for consistent UI
 const CATEGORY_THEME_COLORS: Record<AptitudeCategory, { bg: string; text: string; border: string }> = {
-  Quantitative: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-  Logical: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
-  Verbal: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
-  Technical: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
+  Quantitative: { bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-200 dark:border-blue-700/40' },
+  Logical: { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-300', border: 'border-purple-200 dark:border-purple-700/40' },
+  Verbal: { bg: 'bg-green-50 dark:bg-green-900/20', text: 'text-green-700 dark:text-green-300', border: 'border-green-200 dark:border-green-700/40' },
+  Technical: { bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-300', border: 'border-orange-200 dark:border-orange-700/40' },
 };
 
 /**
  * AptitudeTestResultsPage Component
- * 
- * Comprehensive results page featuring:
- * - Score display with pass/fail status
- * - Category-wise performance breakdown with visual indicators
- * - Smart recommendations based on performance analysis
- * - Detailed answer review with explanations
- * - Explanations view mode (expand/collapse all)
- * - Confidence level and bookmark indicators
+ *
+ * Orchestrates the aptitude results experience and delegates rendering to
+ * smaller presentation components for score, performance, recommendations,
+ * and detailed review.
  */
 const AptitudeTestResultsPage = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -130,8 +126,8 @@ const AptitudeTestResultsPage = () => {
   // Loading state with skeleton
   if (isLoadingResults) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b border-gray-200 px-4 py-3">
+      <div className="min-h-screen bg-gray-50 dark:bg-lc-bg">
+        <div className="bg-white dark:bg-lc-surface border-b border-gray-200 dark:border-lc-border px-4 py-3">
           <div className="max-w-4xl mx-auto">
             <div className="animate-pulse flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -160,7 +156,7 @@ const AptitudeTestResultsPage = () => {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-600">Failed to load results</p>
+          <p className="text-gray-600 dark:text-lc-text-muted">Failed to load results</p>
         </div>
       </div>
     );
@@ -183,350 +179,504 @@ const AptitudeTestResultsPage = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/aptitude')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Back to tests"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <div>
-              <h1 className="text-base font-semibold text-gray-900">Test Results</h1>
-              <p className="text-xs text-gray-500">{aptitudeTest.title}</p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-lc-bg">
+      <ResultsHeader
+        title={aptitudeTest.title}
+        showAllExplanations={showAllExplanations}
+        onToggleShowAll={() => setShowAllExplanations(!showAllExplanations)}
+        onNavigateHome={() => navigate('/aptitude')}
+        onRetake={() => navigate(`/aptitude/test/${aptitudeTest._id}`)}
+      />
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowAllExplanations(!showAllExplanations)}
-              className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
-              title={showAllExplanations ? 'Collapse all explanations' : 'Show all explanations'}
-            >
-              {showAllExplanations ? (
-                <>
-                  <EyeOff className="w-4 h-4" />
-                  <span className="hidden sm:inline">Hide All</span>
-                </>
-              ) : (
-                <>
-                  <Eye className="w-4 h-4" />
-                  <span className="hidden sm:inline">Show All</span>
-                </>
-              )}
-            </button>
-            <button
-              onClick={() => navigate(`/aptitude/test/${aptitudeTest._id}`)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span className="hidden sm:inline">Retake</span>
-            </button>
-            <button
-              onClick={() => navigate('/aptitude')}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-accent-500/15 dark:hover:bg-accent-500/25 text-white dark:text-accent-400 dark:border dark:border-accent-500/30 rounded-lg font-medium text-sm transition-colors"
-            >
-              <Home className="w-4 h-4" />
-              <span className="hidden sm:inline">All Tests</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
       <div className="max-w-4xl mx-auto p-6 space-y-6">
-        {/* Score Card */}
-        <Card className={`p-8 text-center ${
-          testAttempt.passed 
-            ? 'bg-gradient-to-br from-green-50 to-white border-green-200' 
-            : 'bg-gradient-to-br from-red-50 to-white border-red-200'
-        }`}>
-          <div className="mb-4">
-            {testAttempt.passed ? (
-              <Trophy className="w-16 h-16 text-green-600 mx-auto" />
-            ) : (
-              <XCircle className="w-16 h-16 text-red-600 mx-auto" />
-            )}
-          </div>
-          
-          <h2 className={`text-3xl font-bold mb-2 ${
-            testAttempt.passed ? 'text-green-900' : 'text-red-900'
-          }`}>
-            {testAttempt.passed ? 'Congratulations!' : 'Keep Trying!'}
-          </h2>
-          
-          <p className="text-gray-600 mb-6">
-            {testAttempt.passed 
-              ? 'You have successfully passed the test!' 
-              : `You need ${aptitudeTest.passingPercentage}% to pass. Keep practicing!`
-            }
-          </p>
+        <ScoreSummaryCard
+          passed={testAttempt.passed}
+          passingPercentage={aptitudeTest.passingPercentage}
+          scorePercentage={scorePercentage}
+          totalQuestions={testQuestions.length}
+          correctAnswersCount={correctAnswersCount}
+          incorrectAnswersCount={incorrectAnswersCount}
+          confidentAnswersCount={confidentAnswers.length}
+          confidenceAccuracy={confidenceAccuracy}
+        />
 
-          {/* Score Display */}
-          <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-white border-4 border-gray-200 mb-6">
-            <div className="text-center">
-              <div className={`text-4xl font-bold ${
-                testAttempt.passed ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {scorePercentage}%
-              </div>
-              <div className="text-xs text-gray-500 mt-1">Score</div>
-            </div>
-          </div>
+        <CategoryPerformanceCard data={categoryPerformanceData} />
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
-            <div className="bg-white rounded-lg p-3 shadow-sm">
-              <div className="text-2xl font-bold text-gray-900">{testQuestions.length}</div>
-              <div className="text-xs text-gray-500 mt-1">Total</div>
-            </div>
-            <div className="bg-white rounded-lg p-3 shadow-sm">
-              <div className="text-2xl font-bold text-green-600">{correctAnswersCount}</div>
-              <div className="text-xs text-gray-500 mt-1">Correct</div>
-            </div>
-            <div className="bg-white rounded-lg p-3 shadow-sm">
-              <div className="text-2xl font-bold text-red-600">{incorrectAnswersCount}</div>
-              <div className="text-xs text-gray-500 mt-1">Incorrect</div>
-            </div>
-          </div>
+        <RecommendationsCard recommendations={intelligentRecommendations} />
 
-          {/* Confidence Analysis */}
-          {confidentAnswers.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Shield className="w-5 h-5 text-blue-600" />
-                <h3 className="text-sm font-semibold text-gray-900">Confidence Analysis</h3>
-              </div>
-              <div className="text-sm text-gray-600">
-                You marked <span className="font-semibold text-blue-600">{confidentAnswers.length}</span> answers as confident
-                with <span className={`font-semibold ${confidenceAccuracy >= 70 ? 'text-green-600' : 'text-orange-600'}`}>
-                  {confidenceAccuracy}%
-                </span> accuracy
-              </div>
-            </div>
-          )}
-        </Card>
+        <DetailedReview
+          questions={testQuestions}
+          expandedQuestionIds={expandedQuestionIds}
+          onToggleQuestion={toggleQuestionExpansion}
+          getUserAnswerForQuestion={getUserAnswerForQuestion}
+          isAnswerCorrect={isAnswerCorrect}
+          wasAnsweredConfidently={wasAnsweredConfidently}
+          wasQuestionBookmarked={wasQuestionBookmarked}
+        />
 
-        {/* Category Performance Breakdown */}
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-5 h-5 text-primary-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Performance by Category</h3>
-          </div>
-          <div className="space-y-3">
-            {Object.entries(categoryPerformanceData).map(([category, performance]) => {
-              if (performance.total === 0) return null;
-              const colors = CATEGORY_THEME_COLORS[category as AptitudeCategory];
-              const performanceLevel = performance.percentage >= 80 ? 'Excellent' 
-                : performance.percentage >= 60 ? 'Good' 
-                : 'Needs Practice';
-              
-              return (
-                <div key={category} className={`p-4 rounded-lg border ${colors.bg} ${colors.border}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-gray-900">{category}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded font-medium ${
-                        performance.percentage >= 80 ? 'bg-green-100 text-green-700'
-                        : performance.percentage >= 60 ? 'bg-blue-100 text-blue-700'
-                        : 'bg-orange-100 text-orange-700'
-                      }`}>
-                        {performanceLevel}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <div className={`text-lg font-bold ${colors.text}`}>
-                        {performance.percentage}%
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {performance.correct}/{performance.total} correct
-                      </div>
-                    </div>
-                  </div>
-                  <div className="h-2 bg-white rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full transition-all duration-500 ${
-                        performance.percentage >= 80 ? 'bg-green-500'
-                        : performance.percentage >= 60 ? 'bg-blue-500'
-                        : 'bg-orange-500'
-                      }`}
-                      style={{ width: `${performance.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-
-        {/* Smart Recommendations */}
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-white border-blue-200">
-          <div className="flex items-center gap-2 mb-4">
-            <Lightbulb className="w-5 h-5 text-amber-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Recommendations for You</h3>
-          </div>
-          <div className="space-y-2">
-            {intelligentRecommendations.map((recommendation, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-white rounded-lg border border-blue-100">
-                <Award className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-700 flex-1">{recommendation}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Review Answers */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Detailed Review</h3>
-            <span className="text-sm text-gray-500">
-              Click on any question to view explanation
-            </span>
-          </div>
-          <div className="space-y-3">
-            {testQuestions.map((question, questionIndex) => {
-              const userSelectedAnswer = getUserAnswerForQuestion(question._id);
-              const isUserAnswerCorrect = isAnswerCorrect(question._id);
-              const isQuestionExpanded = expandedQuestionIds.has(question._id);
-              const wasMarkedConfident = wasAnsweredConfidently(question._id);
-              const wasFlagged = wasQuestionBookmarked(question._id);
-
-              return (
-                <Card key={question._id} className={`overflow-hidden ${
-                  isUserAnswerCorrect 
-                    ? 'border-l-4 border-green-500' 
-                    : 'border-l-4 border-red-500'
-                }`}>
-                  <button
-                    onClick={() => toggleQuestionExpansion(question._id)}
-                    className="w-full p-4 text-left hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                          isUserAnswerCorrect ? 'bg-green-100' : 'bg-red-100'
-                        }`}>
-                          {isUserAnswerCorrect ? (
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                          ) : (
-                            <XCircle className="w-4 h-4 text-red-600" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <span className="text-sm font-medium text-gray-500">
-                              Question {questionIndex + 1}
-                            </span>
-                            <span className={`text-xs px-2 py-0.5 rounded font-medium ${
-                              isUserAnswerCorrect 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-red-100 text-red-700'
-                            }`}>
-                              {isUserAnswerCorrect ? 'Correct' : 'Incorrect'}
-                            </span>
-                            <span className="text-xs px-2 py-0.5 rounded font-medium bg-gray-100 text-gray-600">
-                              {question.category}
-                            </span>
-                            {wasMarkedConfident && (
-                              <span className="text-xs px-2 py-0.5 rounded font-medium bg-blue-100 text-blue-700 flex items-center gap-1">
-                                <Shield className="w-3 h-3" />
-                                Confident
-                              </span>
-                            )}
-                            {wasFlagged && (
-                              <span className="text-xs px-2 py-0.5 rounded font-medium bg-yellow-100 text-yellow-700 flex items-center gap-1">
-                                <Bookmark className="w-3 h-3" />
-                                Flagged
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-900 font-medium">
-                            {question.question}
-                          </p>
-                        </div>
-                      </div>
-                      {isQuestionExpanded ? (
-                        <ChevronUp className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                      )}
-                    </div>
-                  </button>
-
-                  {isQuestionExpanded && (
-                    <div className="px-4 pb-4 border-t border-gray-100 pt-4">
-                      {/* Options */}
-                      <div className="space-y-2 mb-4">
-                        {question.options.map((option, optionIndex) => {
-                          const isUserSelection = userSelectedAnswer === optionIndex;
-                          const isCorrectOption = question.correctOptionIndex === optionIndex;
-
-                          return (
-                            <div
-                              key={optionIndex}
-                              className={`p-3 rounded-lg border ${
-                                isCorrectOption
-                                  ? 'bg-green-50 border-green-300'
-                                  : isUserSelection
-                                  ? 'bg-red-50 border-red-300'
-                                  : 'bg-gray-50 border-gray-200'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                {isCorrectOption && (
-                                  <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                                )}
-                                {isUserSelection && !isCorrectOption && (
-                                  <XCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-                                )}
-                                <span className={`text-sm ${
-                                  isCorrectOption || isUserSelection ? 'font-medium' : ''
-                                }`}>
-                                  {option}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Explanation */}
-                      {question.explanation && (
-                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                          <p className="text-xs font-semibold text-blue-900 mb-1">Explanation:</p>
-                          <p className="text-sm text-blue-800">{question.explanation}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="flex justify-center gap-4 pt-4">
-          <button
-            onClick={() => navigate(`/aptitude/test/${aptitudeTest._id}`)}
-            className="px-6 py-3 bg-primary-600 hover:bg-primary-700 dark:bg-accent-500/15 dark:hover:bg-accent-500/25 text-white dark:text-accent-400 dark:border dark:border-accent-500/30 rounded-lg font-medium transition-colors"
-          >
-            Retake This Test
-          </button>
-          <button
-            onClick={() => navigate('/aptitude')}
-            className="px-6 py-3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors"
-          >
-            Browse More Tests
-          </button>
-        </div>
+        <FooterActions
+          onRetake={() => navigate(`/aptitude/test/${aptitudeTest._id}`)}
+          onBrowseMore={() => navigate('/aptitude')}
+        />
       </div>
     </div>
   );
 };
 
 export default AptitudeTestResultsPage;
+
+// ────────────────────────────────────────────────────────────
+// Presentation Components
+// ────────────────────────────────────────────────────────────
+
+interface ResultsHeaderProps {
+  title: string;
+  showAllExplanations: boolean;
+  onToggleShowAll: () => void;
+  onNavigateHome: () => void;
+  onRetake: () => void;
+}
+
+const ResultsHeader = ({
+  title,
+  showAllExplanations,
+  onToggleShowAll,
+  onNavigateHome,
+  onRetake,
+}: ResultsHeaderProps) => (
+  <div className="bg-white dark:bg-lc-surface border-b border-gray-200 dark:border-lc-border px-4 py-3 sticky top-0 z-10">
+    <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onNavigateHome}
+          className="p-2 hover:bg-gray-100 dark:hover:bg-lc-elevated rounded-lg transition-colors"
+          aria-label="Back to tests"
+        >
+          <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-lc-text-secondary" aria-hidden="true" />
+        </button>
+        <div>
+          <h1 className="text-base font-semibold text-gray-900 dark:text-lc-text">Test Results</h1>
+          <p className="text-xs text-gray-500 dark:text-lc-text-muted">{title}</p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onToggleShowAll}
+          className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-lc-card border border-gray-300 dark:border-lc-border-light text-gray-700 dark:text-lc-text-secondary rounded-lg font-medium text-sm hover:bg-gray-50 dark:hover:bg-lc-elevated transition-colors"
+          title={showAllExplanations ? 'Collapse all explanations' : 'Show all explanations'}
+        >
+          {showAllExplanations ? (
+            <>
+              <EyeOff className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Hide All</span>
+            </>
+          ) : (
+            <>
+              <Eye className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Show All</span>
+            </>
+          )}
+        </button>
+        <button
+          onClick={onRetake}
+          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-lc-card border border-gray-300 dark:border-lc-border-light text-gray-700 dark:text-lc-text-secondary rounded-lg font-medium text-sm hover:bg-gray-50 dark:hover:bg-lc-elevated transition-colors"
+        >
+          <RotateCcw className="w-4 h-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Retake</span>
+        </button>
+        <button
+          onClick={onNavigateHome}
+          className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-accent-500/15 dark:hover:bg-accent-500/25 text-white dark:text-accent-400 dark:border dark:border-accent-500/30 rounded-lg font-medium text-sm transition-colors"
+        >
+          <Home className="w-4 h-4" aria-hidden="true" />
+          <span className="hidden sm:inline">All Tests</span>
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+interface ScoreSummaryCardProps {
+  passed: boolean;
+  passingPercentage: number;
+  scorePercentage: number;
+  totalQuestions: number;
+  correctAnswersCount: number;
+  incorrectAnswersCount: number;
+  confidentAnswersCount: number;
+  confidenceAccuracy: number;
+}
+
+const ScoreSummaryCard = ({
+  passed,
+  passingPercentage,
+  scorePercentage,
+  totalQuestions,
+  correctAnswersCount,
+  incorrectAnswersCount,
+  confidentAnswersCount,
+  confidenceAccuracy,
+}: ScoreSummaryCardProps) => (
+  <Card
+    className={`p-8 text-center ${
+      passed
+        ? 'bg-gradient-to-br from-green-50 to-white dark:from-green-900/20 dark:to-lc-surface border-green-200 dark:border-green-700/40'
+        : 'bg-gradient-to-br from-red-50 to-white dark:from-red-900/20 dark:to-lc-surface border-red-200 dark:border-red-700/40'
+    }`}
+  >
+    <div className="mb-4">
+      {passed ? (
+        <Trophy className="w-16 h-16 text-green-600 mx-auto" aria-hidden="true" />
+      ) : (
+        <XCircle className="w-16 h-16 text-red-600 mx-auto" aria-hidden="true" />
+      )}
+    </div>
+    
+    <h2
+      className={`text-3xl font-bold mb-2 ${
+        passed ? 'text-green-900 dark:text-green-300' : 'text-red-900 dark:text-red-300'
+      }`}
+    >
+      {passed ? 'Congratulations!' : 'Keep Trying!'}
+    </h2>
+    
+    <p className="text-gray-600 dark:text-lc-text-muted mb-6">
+      {passed
+        ? 'You have successfully passed the test!'
+        : `You need ${passingPercentage}% to pass. Keep practicing!`}
+    </p>
+
+    <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-white dark:bg-lc-card border-4 border-gray-200 dark:border-lc-border mb-6">
+      <div className="text-center">
+        <div
+          className={`text-4xl font-bold ${
+            passed ? 'text-green-600' : 'text-red-600'
+          }`}
+        >
+          {scorePercentage}%
+        </div>
+        <div className="text-xs text-gray-500 dark:text-lc-text-muted mt-1">Score</div>
+      </div>
+    </div>
+
+    <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
+      <div className="bg-white dark:bg-lc-card rounded-lg p-3 shadow-sm border border-transparent dark:border-lc-border">
+        <div className="text-2xl font-bold text-gray-900 dark:text-lc-text">{totalQuestions}</div>
+        <div className="text-xs text-gray-500 dark:text-lc-text-muted mt-1">Total</div>
+      </div>
+      <div className="bg-white dark:bg-lc-card rounded-lg p-3 shadow-sm border border-transparent dark:border-lc-border">
+        <div className="text-2xl font-bold text-green-600">{correctAnswersCount}</div>
+        <div className="text-xs text-gray-500 dark:text-lc-text-muted mt-1">Correct</div>
+      </div>
+      <div className="bg-white dark:bg-lc-card rounded-lg p-3 shadow-sm border border-transparent dark:border-lc-border">
+        <div className="text-2xl font-bold text-red-600">{incorrectAnswersCount}</div>
+        <div className="text-xs text-gray-500 dark:text-lc-text-muted mt-1">Incorrect</div>
+      </div>
+    </div>
+
+    {confidentAnswersCount > 0 && (
+      <div className="mt-6 pt-6 border-t border-gray-200 dark:border-lc-border">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Shield className="w-5 h-5 text-blue-600" aria-hidden="true" />
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text">Confidence Analysis</h3>
+        </div>
+        <div className="text-sm text-gray-600 dark:text-lc-text-muted">
+          You marked{' '}
+          <span className="font-semibold text-blue-600">{confidentAnswersCount}</span> answers as
+          confident with{' '}
+          <span
+            className={`font-semibold ${
+              confidenceAccuracy >= 70 ? 'text-green-600' : 'text-orange-600'
+            }`}
+          >
+            {confidenceAccuracy}%
+          </span>{' '}
+          accuracy
+        </div>
+      </div>
+    )}
+  </Card>
+);
+
+interface CategoryPerformanceCardProps {
+  data: Record<AptitudeCategory, { correct: number; total: number; percentage: number }>;
+}
+
+const CategoryPerformanceCard = memo(function CategoryPerformanceCard({
+  data,
+}: CategoryPerformanceCardProps) {
+  return (
+    <Card className="p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <TrendingUp className="w-5 h-5 text-primary-600" aria-hidden="true" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text">Performance by Category</h3>
+      </div>
+      <div className="space-y-3">
+        {Object.entries(data).map(([category, performance]) => {
+          if (performance.total === 0) return null;
+          const colors = CATEGORY_THEME_COLORS[category as AptitudeCategory];
+          const performanceLevel =
+            performance.percentage >= 80
+              ? 'Excellent'
+              : performance.percentage >= 60
+              ? 'Good'
+              : 'Needs Practice';
+          
+          return (
+            <div
+              key={category}
+              className={`p-4 rounded-lg border ${colors.bg} ${colors.border}`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-lc-text">{category}</span>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded font-medium ${
+                      performance.percentage >= 80
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                        : performance.percentage >= 60
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                        : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
+                    }`}
+                  >
+                    {performanceLevel}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <div className={`text-lg font-bold ${colors.text}`}>
+                    {performance.percentage}%
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-lc-text-muted">
+                    {performance.correct}/{performance.total} correct
+                  </div>
+                </div>
+              </div>
+              <div className="h-2 bg-white dark:bg-lc-card rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-500 ${
+                    performance.percentage >= 80
+                      ? 'bg-green-500'
+                      : performance.percentage >= 60
+                      ? 'bg-blue-500'
+                      : 'bg-orange-500'
+                  }`}
+                  style={{ width: `${performance.percentage}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+});
+
+interface RecommendationsCardProps {
+  recommendations: string[];
+}
+
+const RecommendationsCard = ({ recommendations }: RecommendationsCardProps) => (
+  <Card className="p-6 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-lc-surface border-blue-200 dark:border-blue-700/40">
+    <div className="flex items-center gap-2 mb-4">
+      <Lightbulb className="w-5 h-5 text-amber-600" aria-hidden="true" />
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text">Recommendations for You</h3>
+    </div>
+    <div className="space-y-2">
+      {recommendations.map((recommendation, index) => (
+        <div
+          key={index}
+          className="flex items-start gap-3 p-3 bg-white dark:bg-lc-card rounded-lg border border-blue-100 dark:border-lc-border"
+        >
+          <Award className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-sm text-gray-700 dark:text-lc-text-secondary flex-1">{recommendation}</p>
+        </div>
+      ))}
+    </div>
+  </Card>
+);
+
+interface DetailedReviewProps {
+  questions: IAptitudeQuestion[];
+  expandedQuestionIds: Set<string>;
+  onToggleQuestion: (questionId: string) => void;
+  getUserAnswerForQuestion: (questionId: string) => number | undefined;
+  isAnswerCorrect: (questionId: string) => boolean;
+  wasAnsweredConfidently: (questionId: string) => boolean;
+  wasQuestionBookmarked: (questionId: string) => boolean;
+}
+
+const DetailedReview = ({
+  questions,
+  expandedQuestionIds,
+  onToggleQuestion,
+  getUserAnswerForQuestion,
+  isAnswerCorrect,
+  wasAnsweredConfidently,
+  wasQuestionBookmarked,
+}: DetailedReviewProps) => (
+  <section aria-label="Detailed question review">
+    <div className="flex items-center justify-between mb-4">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text">Detailed Review</h3>
+      <span className="text-sm text-gray-500 dark:text-lc-text-muted">Click on any question to view explanation</span>
+    </div>
+    <div className="space-y-3">
+      {questions.map((question, questionIndex) => {
+        const userSelectedAnswer = getUserAnswerForQuestion(question._id);
+        const isUserAnswerCorrect = isAnswerCorrect(question._id);
+        const isQuestionExpanded = expandedQuestionIds.has(question._id);
+        const wasMarkedConfident = wasAnsweredConfidently(question._id);
+        const wasFlagged = wasQuestionBookmarked(question._id);
+
+        return (
+          <Card
+            key={question._id}
+            className={`overflow-hidden ${
+              isUserAnswerCorrect ? 'border-l-4 border-green-500' : 'border-l-4 border-red-500'
+            }`}
+          >
+            <button
+              onClick={() => onToggleQuestion(question._id)}
+              className="w-full p-4 text-left hover:bg-gray-50 dark:hover:bg-lc-elevated transition-colors"
+              aria-expanded={isQuestionExpanded}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3 flex-1">
+                  <div
+                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                      isUserAnswerCorrect ? 'bg-green-100' : 'bg-red-100'
+                    }`}
+                    aria-hidden="true"
+                  >
+                    {isUserAnswerCorrect ? (
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-red-600" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-sm font-medium text-gray-500 dark:text-lc-text-muted">
+                        Question {questionIndex + 1}
+                      </span>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded font-medium ${
+                          isUserAnswerCorrect
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {isUserAnswerCorrect ? 'Correct' : 'Incorrect'}
+                      </span>
+                      <span className="text-xs px-2 py-0.5 rounded font-medium bg-gray-100 dark:bg-lc-elevated text-gray-600 dark:text-lc-text-secondary">
+                        {question.category}
+                      </span>
+                      {wasMarkedConfident && (
+                        <span className="text-xs px-2 py-0.5 rounded font-medium bg-blue-100 text-blue-700 flex items-center gap-1">
+                          <Shield className="w-3 h-3" aria-hidden="true" />
+                          Confident
+                        </span>
+                      )}
+                      {wasFlagged && (
+                        <span className="text-xs px-2 py-0.5 rounded font-medium bg-yellow-100 text-yellow-700 flex items-center gap-1">
+                          <Bookmark className="w-3 h-3" aria-hidden="true" />
+                          Flagged
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-900 dark:text-lc-text font-medium">
+                      {question.question}
+                    </p>
+                  </div>
+                </div>
+                {isQuestionExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-gray-400 dark:text-lc-text-muted flex-shrink-0" aria-hidden="true" />
+                ) : (
+                  <ChevronDown
+                    className="w-5 h-5 text-gray-400 dark:text-lc-text-muted flex-shrink-0"
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
+            </button>
+
+            {isQuestionExpanded && (
+              <div className="px-4 pb-4 border-t border-gray-100 dark:border-lc-border pt-4">
+                <div className="space-y-2 mb-4">
+                  {question.options.map((option, optionIndex) => {
+                    const isUserSelection = userSelectedAnswer === optionIndex;
+                    const isCorrectOption = question.correctOptionIndex === optionIndex;
+
+                    return (
+                      <div
+                        key={optionIndex}
+                        className={`p-3 rounded-lg border ${
+                          isCorrectOption
+                            ? 'bg-green-50 border-green-300'
+                            : isUserSelection
+                            ? 'bg-red-50 border-red-300'
+                            : 'bg-gray-50 dark:bg-lc-elevated border-gray-200 dark:border-lc-border'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {isCorrectOption && (
+                            <CheckCircle
+                              className="w-4 h-4 text-green-600 flex-shrink-0"
+                              aria-hidden="true"
+                            />
+                          )}
+                          {isUserSelection && !isCorrectOption && (
+                            <XCircle
+                              className="w-4 h-4 text-red-600 flex-shrink-0"
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span
+                            className={`text-sm ${
+                              isCorrectOption || isUserSelection ? 'font-medium' : ''
+                            }`}
+                          >
+                            {option}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {question.explanation && (
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-lg">
+                    <p className="text-xs font-semibold text-blue-900 dark:text-blue-300 mb-1">Explanation:</p>
+                    <p className="text-sm text-blue-800 dark:text-blue-200">{question.explanation}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+        );
+      })}
+    </div>
+  </section>
+);
+
+interface FooterActionsProps {
+  onRetake: () => void;
+  onBrowseMore: () => void;
+}
+
+const FooterActions = ({ onRetake, onBrowseMore }: FooterActionsProps) => (
+  <div className="flex justify-center gap-4 pt-4">
+    <button
+      onClick={onRetake}
+      className="px-6 py-3 bg-primary-600 hover:bg-primary-700 dark:bg-accent-500/15 dark:hover:bg-accent-500/25 text-white dark:text-accent-400 dark:border dark:border-accent-500/30 rounded-lg font-medium transition-colors"
+    >
+      Retake This Test
+    </button>
+    <button
+      onClick={onBrowseMore}
+      className="px-6 py-3 bg-white dark:bg-lc-card border border-gray-300 dark:border-lc-border-light text-gray-700 dark:text-lc-text-secondary hover:bg-gray-50 dark:hover:bg-lc-elevated rounded-lg font-medium transition-colors"
+    >
+      Browse More Tests
+    </button>
+  </div>
+);

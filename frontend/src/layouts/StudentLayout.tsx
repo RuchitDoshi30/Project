@@ -149,7 +149,12 @@ export const StudentLayout: React.FC<{ children: React.ReactNode }> = ({ childre
 
       {/* ===== Mobile Sidebar Drawer ===== */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div
+          className="fixed inset-0 z-50 lg:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Student navigation menu"
+        >
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/50 dark:bg-black/70 transition-opacity"
@@ -160,7 +165,7 @@ export const StudentLayout: React.FC<{ children: React.ReactNode }> = ({ childre
             {/* Drawer header */}
             <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200 dark:border-lc-border">
               <div className="flex items-center">
-                <Code2 className="h-7 w-7 text-primary-600 dark:text-accent-500" />
+                <Code2 className="h-7 w-7 text-primary-600 dark:text-accent-500" aria-hidden="true" />
                 <span className="ml-2 text-lg font-bold text-gray-900 dark:text-lc-text">
                   PlacementPrep
                 </span>
@@ -168,8 +173,9 @@ export const StudentLayout: React.FC<{ children: React.ReactNode }> = ({ childre
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="p-2 rounded-md text-gray-600 dark:text-lc-text-secondary hover:bg-gray-100 dark:hover:bg-lc-elevated"
+                aria-label="Close navigation menu"
               >
-                <X className="h-6 w-6" />
+                <X className="h-6 w-6" aria-hidden="true" />
               </button>
             </div>
 
@@ -195,7 +201,7 @@ export const StudentLayout: React.FC<{ children: React.ReactNode }> = ({ childre
             <div className="border-t border-gray-200 dark:border-lc-border p-4 space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-primary-100 dark:bg-accent-500/15 rounded-full flex items-center justify-center">
-                  <User className="h-6 w-6 text-primary-600 dark:text-accent-400" />
+                  <User className="h-6 w-6 text-primary-600 dark:text-accent-400" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-lc-text">
@@ -231,13 +237,14 @@ export const StudentLayout: React.FC<{ children: React.ReactNode }> = ({ childre
             <button
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden p-2 rounded-md text-gray-600 dark:text-lc-text-secondary hover:bg-gray-100 dark:hover:bg-lc-elevated"
+              aria-label="Open navigation menu"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5" aria-hidden="true" />
             </button>
 
             {/* Mobile logo (visible only on small screens) */}
             <Link to="/" className="flex items-center lg:hidden">
-              <Code2 className="h-6 w-6 text-primary-600 dark:text-accent-500" />
+              <Code2 className="h-6 w-6 text-primary-600 dark:text-accent-500" aria-hidden="true" />
               <span className="ml-2 text-base font-bold text-gray-900 dark:text-lc-text hidden xs:block">
                 PlacementPrep
               </span>
@@ -262,7 +269,7 @@ export const StudentLayout: React.FC<{ children: React.ReactNode }> = ({ childre
               className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-lc-elevated rounded-lg px-2 py-1.5 transition-colors"
             >
               <div className="w-8 h-8 bg-primary-100 dark:bg-accent-500/15 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-primary-600 dark:text-accent-400" />
+                <User className="h-4 w-4 text-primary-600 dark:text-accent-400" aria-hidden="true" />
               </div>
               <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-lc-text-secondary max-w-[120px] truncate">
                 {user?.name}
@@ -274,8 +281,9 @@ export const StudentLayout: React.FC<{ children: React.ReactNode }> = ({ childre
               onClick={handleLogout}
               className="lg:hidden p-2 text-gray-600 dark:text-lc-text-secondary hover:bg-gray-100 dark:hover:bg-lc-elevated rounded-lg transition-colors"
               title="Logout"
+              aria-label="Logout"
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
         </div>

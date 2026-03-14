@@ -85,7 +85,7 @@ const ProblemManagementPage = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Search */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" aria-hidden="true" />
             <input
               type="text"
               placeholder="Search by title, slug, or tags..."
@@ -99,7 +99,7 @@ const ProblemManagementPage = () => {
           <div className="flex items-center gap-4">
             {/* Difficulty Filter */}
             <div className="flex items-center gap-2">
-              <Filter className="text-gray-400 w-5 h-5" />
+              <Filter className="text-gray-400 w-5 h-5" aria-hidden="true" />
               <select
                 value={difficultyFilter}
                 onChange={(e) => setDifficultyFilter(e.target.value as 'all' | DifficultyLevel)}
@@ -116,8 +116,9 @@ const ProblemManagementPage = () => {
             <button
               onClick={() => navigate('/admin/problems/new')}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              aria-label="Add new problem"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-5 h-5" aria-hidden="true" />
               <span>Add Problem</span>
             </button>
           </div>
@@ -129,7 +130,7 @@ const ProblemManagementPage = () => {
         <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 hover:shadow-lg transition-all duration-300">
           <div className="text-center">
             <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-              <Code className="w-6 h-6 text-white" />
+            <Code className="w-6 h-6 text-white" aria-hidden="true" />
             </div>
             <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{problems.length}</p>
             <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted uppercase tracking-wide">Total Problems</p>
@@ -169,7 +170,7 @@ const ProblemManagementPage = () => {
         {filteredProblems.length === 0 ? (
           <Card className="col-span-full">
             <div className="text-center py-12 text-gray-500 dark:text-lc-text-muted">
-              <Code className="w-16 h-16 mx-auto mb-4 opacity-20" />
+              <Code className="w-16 h-16 mx-auto mb-4 opacity-20" aria-hidden="true" />
               <p className="text-lg font-medium">No problems found</p>
               <p className="text-sm">Try changing your search or filter criteria</p>
             </div>
@@ -183,7 +184,7 @@ const ProblemManagementPage = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
-                        <Code className="w-4 h-4 text-white" />
+              <Code className="w-4 h-4 text-white" aria-hidden="true" />
                       </div>
                       <h3 className="text-lg font-bold text-gray-900 dark:text-lc-text">
                         {problem.title}
@@ -231,21 +232,21 @@ const ProblemManagementPage = () => {
                     onClick={() => handleViewProblem(problem)}
                     className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                   >
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-4 h-4" aria-hidden="true" />
                     View
                   </button>
                   <button
                     onClick={() => navigate(`/admin/problems/edit/${problem._id}`)}
                     className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary rounded-lg hover:bg-gray-200 dark:hover:bg-lc-border-light transition-colors text-sm"
                   >
-                    <Edit2 className="w-4 h-4" />
+                    <Edit2 className="w-4 h-4" aria-hidden="true" />
                     Edit
                   </button>
                   <button
                     onClick={() => handleDeleteProblem(problem._id)}
                     className="flex items-center gap-2 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm ml-auto"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4" aria-hidden="true" />
                     Delete
                   </button>
                 </div>
@@ -257,11 +258,21 @@ const ProblemManagementPage = () => {
 
       {/* View Problem Modal */}
       {showViewModal && selectedProblem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="view-problem-title"
+        >
           <div className="bg-white dark:bg-lc-card rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-2xl font-bold dark:text-lc-text mb-2">{selectedProblem.title}</h3>
+                <h3
+                  id="view-problem-title"
+                  className="text-2xl font-bold dark:text-lc-text mb-2"
+                >
+                  {selectedProblem.title}
+                </h3>
                 <div className="flex items-center gap-2">
                   <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getDifficultyColor(selectedProblem.difficulty)}`}>
                     {selectedProblem.difficulty}
@@ -272,6 +283,7 @@ const ProblemManagementPage = () => {
               <button
                 onClick={() => setShowViewModal(false)}
                 className="text-gray-500 dark:text-lc-text-muted hover:text-gray-700 dark:hover:text-lc-text"
+                aria-label="Close problem details"
               >
                 ×
               </button>

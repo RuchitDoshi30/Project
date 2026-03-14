@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense, lazy, type ReactNode } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 // Layouts
@@ -7,34 +8,52 @@ import { AdminLayout } from '../layouts/AdminLayout';
 
 // Components
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { Spinner } from '../components/Spinner';
 
-// Pages
-import LoginPage from '../pages/LoginPage';
-import DashboardPage from '../pages/DashboardPage';
-import CodingPage from '../pages/CodingPage';
-import ProblemSolvePage from '../pages/ProblemSolvePage';
-import AptitudePage from '../pages/AptitudePage';
-import TestTakePage from '../pages/TestTakePage';
-import AptitudeTestResultsPage from '../pages/AptitudeTestResultsPage';
-import AdminDashboardPage from '../pages/AdminDashboardPage';
-import StudentManagementPage from '../pages/StudentManagementPage';
-import SubmissionReviewPage from '../pages/SubmissionReviewPage';
-import ProblemManagementPage from '../pages/ProblemManagementPage';
-import AptitudeManagementPage from '../pages/AptitudeManagementPage';
-import AddProblemPage from '../pages/AddProblemPage';
-import AddAptitudeQuestionPage from '../pages/AddAptitudeQuestionPage';
-import ProgressAnalyticsPage from '../pages/ProgressAnalyticsPage';
-import SubmissionHistoryPage from '../pages/SubmissionHistoryPage';
-import TestResultsHistoryPage from '../pages/TestResultsHistoryPage';
-import ProfilePage from '../pages/ProfilePage';
-import LeaderboardPage from '../pages/LeaderboardPage';
-import RecommendedProblemsPage from '../pages/RecommendedProblemsPage';
-import NotFoundPage from '../pages/NotFoundPage';
-import ForbiddenPage from '../pages/ForbiddenPage';
-import PlacementDrivesPage from '../pages/PlacementDrivesPage';
-import AnnouncementsPage from '../pages/AnnouncementsPage';
-import BulkEmailPage from '../pages/BulkEmailPage';
-import ReportsPage from '../pages/ReportsPage';
+// Lazy-loaded pages for route-level code splitting
+const LoginPage = lazy(() => import('../pages/LoginPage'));
+const DashboardPage = lazy(() => import('../pages/DashboardPage'));
+const CodingPage = lazy(() => import('../pages/CodingPage'));
+const ProblemSolvePage = lazy(() => import('../pages/ProblemSolvePage'));
+const AptitudePage = lazy(() => import('../pages/AptitudePage'));
+const TestTakePage = lazy(() => import('../pages/TestTakePage'));
+const AptitudeTestResultsPage = lazy(() => import('../pages/AptitudeTestResultsPage'));
+const AdminDashboardPage = lazy(() => import('../pages/AdminDashboardPage'));
+const StudentManagementPage = lazy(() => import('../pages/StudentManagementPage'));
+const SubmissionReviewPage = lazy(() => import('../pages/SubmissionReviewPage'));
+const ProblemManagementPage = lazy(() => import('../pages/ProblemManagementPage'));
+const AptitudeManagementPage = lazy(() => import('../pages/AptitudeManagementPage'));
+const AddProblemPage = lazy(() => import('../pages/AddProblemPage'));
+const AddAptitudeQuestionPage = lazy(() => import('../pages/AddAptitudeQuestionPage'));
+const ProgressAnalyticsPage = lazy(() => import('../pages/ProgressAnalyticsPage'));
+const SubmissionHistoryPage = lazy(() => import('../pages/SubmissionHistoryPage'));
+const TestResultsHistoryPage = lazy(() => import('../pages/TestResultsHistoryPage'));
+const ProfilePage = lazy(() => import('../pages/ProfilePage'));
+const LeaderboardPage = lazy(() => import('../pages/LeaderboardPage'));
+const RecommendedProblemsPage = lazy(() => import('../pages/RecommendedProblemsPage'));
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage'));
+const ForbiddenPage = lazy(() => import('../pages/ForbiddenPage'));
+const PlacementDrivesPage = lazy(() => import('../pages/PlacementDrivesPage'));
+const AnnouncementsPage = lazy(() => import('../pages/AnnouncementsPage'));
+const AddPlacementDrivePage = lazy(() => import('../pages/AddPlacementDrivePage'));
+const AddAnnouncementPage = lazy(() => import('../pages/AddAnnouncementPage'));
+const BulkEmailPage = lazy(() => import('../pages/BulkEmailPage'));
+const ReportsPage = lazy(() => import('../pages/ReportsPage'));
+
+const RouteBoundary: React.FC<{ children: ReactNode }> = ({ children }) => (
+  <ErrorBoundary>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <Spinner size="lg" />
+        </div>
+      }
+    >
+      {children}
+    </Suspense>
+  </ErrorBoundary>
+);
 
 const AppRoutes = () => {
   const { user } = useAuth();
@@ -43,21 +62,37 @@ const AppRoutes = () => {
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forbidden" element={<ForbiddenPage />} />
+        <Route
+          path="/login"
+          element={
+            <RouteBoundary>
+              <LoginPage />
+            </RouteBoundary>
+          }
+        />
+        <Route
+          path="/forbidden"
+          element={
+            <RouteBoundary>
+              <ForbiddenPage />
+            </RouteBoundary>
+          }
+        />
 
         {/* Root Route - Redirect based on role */}
         <Route
           path="/"
           element={
             <ProtectedRoute>
-              {user?.role === 'admin' ? (
-                <Navigate to="/admin" replace />
-              ) : (
-                <StudentLayout>
-                  <DashboardPage />
-                </StudentLayout>
-              )}
+              <RouteBoundary>
+                {user?.role === 'admin' ? (
+                  <Navigate to="/admin" replace />
+                ) : (
+                  <StudentLayout>
+                    <DashboardPage />
+                  </StudentLayout>
+                )}
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -67,9 +102,11 @@ const AppRoutes = () => {
           path="/dashboard"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <StudentLayout>
-                <DashboardPage />
-              </StudentLayout>
+              <RouteBoundary>
+                <StudentLayout>
+                  <DashboardPage />
+                </StudentLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -77,9 +114,11 @@ const AppRoutes = () => {
           path="/coding"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <StudentLayout>
-                <CodingPage />
-              </StudentLayout>
+              <RouteBoundary>
+                <StudentLayout>
+                  <CodingPage />
+                </StudentLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -87,7 +126,9 @@ const AppRoutes = () => {
           path="/coding/:id"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <ProblemSolvePage />
+              <RouteBoundary>
+                <ProblemSolvePage />
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -95,9 +136,11 @@ const AppRoutes = () => {
           path="/aptitude"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <StudentLayout>
-                <AptitudePage />
-              </StudentLayout>
+              <RouteBoundary>
+                <StudentLayout>
+                  <AptitudePage />
+                </StudentLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -105,7 +148,9 @@ const AppRoutes = () => {
           path="/aptitude/test/:testId"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <TestTakePage />
+              <RouteBoundary>
+                <TestTakePage />
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -113,7 +158,9 @@ const AppRoutes = () => {
           path="/aptitude/results/:attemptId"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <AptitudeTestResultsPage />
+              <RouteBoundary>
+                <AptitudeTestResultsPage />
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -121,9 +168,11 @@ const AppRoutes = () => {
           path="/progress"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <StudentLayout>
-                <ProgressAnalyticsPage />
-              </StudentLayout>
+              <RouteBoundary>
+                <StudentLayout>
+                  <ProgressAnalyticsPage />
+                </StudentLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -131,9 +180,11 @@ const AppRoutes = () => {
           path="/submissions"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <StudentLayout>
-                <SubmissionHistoryPage />
-              </StudentLayout>
+              <RouteBoundary>
+                <StudentLayout>
+                  <SubmissionHistoryPage />
+                </StudentLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -141,9 +192,11 @@ const AppRoutes = () => {
           path="/test-results"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <StudentLayout>
-                <TestResultsHistoryPage />
-              </StudentLayout>
+              <RouteBoundary>
+                <StudentLayout>
+                  <TestResultsHistoryPage />
+                </StudentLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -151,9 +204,11 @@ const AppRoutes = () => {
           path="/profile"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <StudentLayout>
-                <ProfilePage />
-              </StudentLayout>
+              <RouteBoundary>
+                <StudentLayout>
+                  <ProfilePage />
+                </StudentLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -161,9 +216,11 @@ const AppRoutes = () => {
           path="/leaderboard"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <StudentLayout>
-                <LeaderboardPage />
-              </StudentLayout>
+              <RouteBoundary>
+                <StudentLayout>
+                  <LeaderboardPage />
+                </StudentLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -171,9 +228,11 @@ const AppRoutes = () => {
           path="/recommended"
           element={
             <ProtectedRoute allowedRoles={['student']}>
-              <StudentLayout>
-                <RecommendedProblemsPage />
-              </StudentLayout>
+              <RouteBoundary>
+                <StudentLayout>
+                  <RecommendedProblemsPage />
+                </StudentLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -183,9 +242,11 @@ const AppRoutes = () => {
           path="/admin"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <AdminDashboardPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AdminDashboardPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -193,9 +254,11 @@ const AppRoutes = () => {
           path="/admin/students"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <StudentManagementPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <StudentManagementPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -203,9 +266,11 @@ const AppRoutes = () => {
           path="/admin/submissions"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <SubmissionReviewPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <SubmissionReviewPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -213,9 +278,11 @@ const AppRoutes = () => {
           path="/admin/problems"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <ProblemManagementPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <ProblemManagementPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -223,9 +290,11 @@ const AppRoutes = () => {
           path="/admin/aptitude"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <AptitudeManagementPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AptitudeManagementPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -233,9 +302,11 @@ const AppRoutes = () => {
           path="/admin/problems/new"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <AddProblemPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AddProblemPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -243,9 +314,11 @@ const AppRoutes = () => {
           path="/admin/problems/edit/:id"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <AddProblemPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AddProblemPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -253,9 +326,11 @@ const AppRoutes = () => {
           path="/admin/aptitude/new"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <AddAptitudeQuestionPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AddAptitudeQuestionPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -263,9 +338,11 @@ const AppRoutes = () => {
           path="/admin/aptitude/edit/:id"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <AddAptitudeQuestionPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AddAptitudeQuestionPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -275,9 +352,35 @@ const AppRoutes = () => {
           path="/admin/drives"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <PlacementDrivesPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <PlacementDrivesPage />
+                </AdminLayout>
+              </RouteBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/drives/new"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AddPlacementDrivePage />
+                </AdminLayout>
+              </RouteBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/drives/edit/:id"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AddPlacementDrivePage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -285,9 +388,35 @@ const AppRoutes = () => {
           path="/admin/announcements"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <AnnouncementsPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AnnouncementsPage />
+                </AdminLayout>
+              </RouteBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/announcements/new"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AddAnnouncementPage />
+                </AdminLayout>
+              </RouteBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/announcements/edit/:id"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AddAnnouncementPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -295,9 +424,11 @@ const AppRoutes = () => {
           path="/admin/email"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <BulkEmailPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <BulkEmailPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
@@ -305,15 +436,24 @@ const AppRoutes = () => {
           path="/admin/reports"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout>
-                <ReportsPage />
-              </AdminLayout>
+              <RouteBoundary>
+                <AdminLayout>
+                  <ReportsPage />
+                </AdminLayout>
+              </RouteBoundary>
             </ProtectedRoute>
           }
         />
 
         {/* Fallback */}
-        <Route path="*" element={<NotFoundPage />} />
+        <Route
+          path="*"
+          element={
+            <RouteBoundary>
+              <NotFoundPage />
+            </RouteBoundary>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

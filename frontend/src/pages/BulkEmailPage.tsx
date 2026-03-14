@@ -234,8 +234,9 @@ const BulkEmailPage = () => {
                         ? 'bg-white dark:bg-lc-card text-gray-900 dark:text-lc-text shadow-sm'
                         : 'text-gray-600 dark:text-lc-text-muted hover:text-gray-900 dark:hover:text-lc-text'
                         }`}
+                    aria-pressed={activeTab === 'compose'}
                 >
-                    <Mail className="w-4 h-4 inline mr-1.5" />
+                    <Mail className="w-4 h-4 inline mr-1.5" aria-hidden="true" />
                     Compose
                 </button>
                 <button
@@ -244,8 +245,9 @@ const BulkEmailPage = () => {
                         ? 'bg-white dark:bg-lc-card text-gray-900 dark:text-lc-text shadow-sm'
                         : 'text-gray-600 dark:text-lc-text-muted hover:text-gray-900 dark:hover:text-lc-text'
                         }`}
+                    aria-pressed={activeTab === 'history'}
                 >
-                    <Clock className="w-4 h-4 inline mr-1.5" />
+                    <Clock className="w-4 h-4 inline mr-1.5" aria-hidden="true" />
                     Sent History
                 </button>
             </div>
@@ -257,7 +259,7 @@ const BulkEmailPage = () => {
                         {/* Recipients Filter */}
                         <Card className="p-5">
                             <h3 className="text-sm font-bold text-gray-900 dark:text-lc-text mb-4 flex items-center gap-2">
-                                <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                                 Recipients
                             </h3>
 
@@ -355,7 +357,7 @@ const BulkEmailPage = () => {
                                         onClick={() => setShowPreview(true)}
                                         className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-lc-text-secondary hover:bg-gray-50 dark:hover:bg-lc-elevated border border-gray-300 dark:border-lc-border rounded-lg transition-all"
                                     >
-                                        <Eye className="w-4 h-4" />
+                                        <Eye className="w-4 h-4" aria-hidden="true" />
                                         Preview
                                     </button>
                                     <button
@@ -366,7 +368,7 @@ const BulkEmailPage = () => {
                                             : 'bg-green-600 dark:bg-green-500/15 text-white dark:text-green-400 dark:border dark:border-green-500/30 hover:bg-green-700 dark:hover:bg-green-500/25'
                                             }`}
                                     >
-                                        <Send className="w-4 h-4" />
+                                        <Send className="w-4 h-4" aria-hidden="true" />
                                         {sending ? 'Sending...' : `Send to ${getRecipientCount()} Students`}
                                     </button>
                                 </div>
@@ -378,7 +380,7 @@ const BulkEmailPage = () => {
                     <div className="space-y-4">
                         <Card className="p-5">
                             <h3 className="text-sm font-bold text-gray-900 dark:text-lc-text mb-4 flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-accent-600 dark:text-accent-400" />
+                                <FileText className="w-4 h-4 text-accent-600 dark:text-accent-400" aria-hidden="true" />
                                 Quick Templates
                             </h3>
                             <div className="space-y-2">
@@ -411,21 +413,21 @@ const BulkEmailPage = () => {
                                         <h3 className="text-sm font-bold text-gray-900 dark:text-lc-text mb-1">{email.subject}</h3>
                                         <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-lc-text-muted">
                                             <span className="flex items-center gap-1">
-                                                <Users className="w-3.5 h-3.5" />
+                                                <Users className="w-3.5 h-3.5" aria-hidden="true" />
                                                 {email.recipientCount} recipients
                                             </span>
                                             <span className="flex items-center gap-1">
-                                                <Filter className="w-3.5 h-3.5" />
+                                                <Filter className="w-3.5 h-3.5" aria-hidden="true" />
                                                 {email.filters}
                                             </span>
                                             <span className="flex items-center gap-1">
-                                                <Calendar className="w-3.5 h-3.5" />
+                                                <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
                                                 {formatDate(email.sentAt)}
                                             </span>
                                         </div>
                                     </div>
                                     <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium border bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-lc-border">
-                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" />
                                         {email.status}
                                     </span>
                                 </div>
@@ -437,15 +439,23 @@ const BulkEmailPage = () => {
 
             {/* Preview Modal */}
             {showPreview && (
-                <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+                <div
+                    className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="email-preview-title"
+                >
                     <div className="bg-white dark:bg-lc-card rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto border border-gray-200 dark:border-lc-border">
                         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-lc-border">
-                            <h3 className="text-base font-bold text-gray-900 dark:text-lc-text">Email Preview</h3>
+                            <h3 id="email-preview-title" className="text-base font-bold text-gray-900 dark:text-lc-text">
+                                Email Preview
+                            </h3>
                             <button
                                 onClick={() => setShowPreview(false)}
                                 className="p-1.5 hover:bg-gray-100 dark:hover:bg-lc-elevated rounded-lg transition-all"
+                                aria-label="Close preview"
                             >
-                                <X className="w-5 h-5 text-gray-500 dark:text-lc-text-muted" />
+                                <X className="w-5 h-5 text-gray-500 dark:text-lc-text-muted" aria-hidden="true" />
                             </button>
                         </div>
                         <div className="p-5 space-y-4">
@@ -478,7 +488,7 @@ const BulkEmailPage = () => {
                                 onClick={() => { setShowPreview(false); handleSend(); }}
                                 className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-green-600 dark:bg-green-500/15 text-white dark:text-green-400 dark:border dark:border-green-500/30 rounded-lg hover:bg-green-700 dark:hover:bg-green-500/25 transition-all"
                             >
-                                <Send className="w-4 h-4" />
+                                <Send className="w-4 h-4" aria-hidden="true" />
                                 Confirm & Send
                             </button>
                         </div>

@@ -5,7 +5,7 @@ import { Container } from '../components/Container';
 import { PageHeader } from '../components/PageHeader';
 import { Card } from '../components/Card';
 import type { IAptitudeQuestion, AptitudeCategory } from '../types/models';
-import { mockAptitudeQuestions } from '../services/aptitude.service';
+import { mockAptitudeQuestions } from '../mocks/aptitude.mock';
 
 /**
  * Aptitude Management Page
