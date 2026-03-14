@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { LoadingProvider } from './context/LoadingContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   return (
@@ -11,7 +12,8 @@ function App() {
       <LoadingProvider>
         <AuthProvider>
           <AppRoutes />
-          <Toaster 
+          <Analytics />
+          <Toaster
             position="top-right"
             toastOptions={{
               duration: 4000,

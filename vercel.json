@@ -1,8 +1,23 @@
 {
-  "routes": [
+  "version": 2,
+  "builds": [
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "backend/src/app.ts",
+      "use": "@vercel/node"
     }
+  ],
+  "routes": [
+    { "src": "/health", "dest": "/backend/src/app.ts" },
+    { "src": "/auth/(.*)", "dest": "/backend/src/app.ts" },
+    { "src": "/test/(.*)", "dest": "/backend/src/app.ts" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
