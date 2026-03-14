@@ -80,12 +80,20 @@ const LoginPage = () => {
                 <Code2 className="h-8 w-8 text-white" />
               </div>
               <div className="ml-3">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-lc-text">PlacementPrep</h1>
-                <p className="text-sm text-gray-600 dark:text-lc-text-muted">Engineering Excellence</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-lc-text">
+                  PlacementPrep
+                </h1>
+                <p className="text-sm text-gray-600 dark:text-lc-text-muted">
+                  Engineering Excellence
+                </p>
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-lc-text mb-2">Welcome back</h2>
-            <p className="text-gray-600 dark:text-lc-text-muted">Sign in to continue your preparation journey</p>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-lc-text mb-2">
+              Welcome back
+            </h2>
+            <p className="text-gray-600 dark:text-lc-text-muted">
+              Sign in to continue your preparation journey
+            </p>
           </div>
 
           {/* Login Form */}
@@ -100,7 +108,10 @@ const LoginPage = () => {
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-lc-text-secondary mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-lc-text-secondary mb-2"
+              >
                 Email Address
               </label>
               <input
@@ -112,13 +123,18 @@ const LoginPage = () => {
                 autoComplete="email"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-lc-text-secondary mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-lc-text-secondary mb-2"
+              >
                 Password
               </label>
               <input
@@ -130,7 +146,9 @@ const LoginPage = () => {
                 autoComplete="current-password"
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
@@ -151,18 +169,17 @@ const LoginPage = () => {
             </button>
           </form>
 
-          {/* Demo Credentials */}
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-lc-border">
-            <p className="text-sm text-gray-500 dark:text-lc-text-muted mb-3 font-medium">Demo Credentials:</p>
-            <div className="space-y-2">
-              <div className="bg-gray-50 dark:bg-lc-card p-3 rounded-lg border border-gray-200 dark:border-lc-border">
-                <p className="text-xs font-semibold text-gray-700 dark:text-lc-text-secondary mb-1">Student Account</p>
-                <p className="text-xs text-gray-600 dark:text-lc-text-muted">john.doe@college.edu / student123</p>
-              </div>
-              <div className="bg-gray-50 dark:bg-lc-card p-3 rounded-lg border border-gray-200 dark:border-lc-border">
-                <p className="text-xs font-semibold text-gray-700 dark:text-lc-text-secondary mb-1">Admin Account</p>
-                <p className="text-xs text-gray-600 dark:text-lc-text-muted">admin@college.edu / admin123</p>
-              </div>
+            <div className="rounded-lg border border-gray-200 dark:border-lc-border bg-gray-50 dark:bg-lc-card p-4 space-y-3 min-h-[152px]">
+              <p className="text-sm font-semibold text-gray-800 dark:text-lc-text">Secure Access</p>
+              <p className="text-xs text-gray-600 dark:text-lc-text-muted leading-relaxed">
+                Use your official institute credentials to access coding, aptitude, and placement
+                workflows. Session access is role-based and monitored for security.
+              </p>
+              <p className="text-xs text-gray-600 dark:text-lc-text-muted leading-relaxed">
+                Need account access or having sign-in issues? Contact the Training & Placement Cell
+                administrator.
+              </p>
             </div>
           </div>
 
@@ -176,9 +193,12 @@ const LoginPage = () => {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-600 to-primary-800 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          />
         </div>
 
         {/* Content */}
@@ -190,7 +210,8 @@ const LoginPage = () => {
               </div>
               <h2 className="text-4xl font-bold mb-4">Master Your Skills</h2>
               <p className="text-xl text-primary-100 leading-relaxed">
-                Prepare for placements with our comprehensive platform featuring coding challenges and aptitude tests
+                Prepare for placements with our comprehensive platform featuring coding challenges
+                and aptitude tests
               </p>
             </div>
 
