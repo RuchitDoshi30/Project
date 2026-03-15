@@ -4,15 +4,20 @@ import { AuthProvider } from './context/AuthContext';
 import { LoadingProvider } from './context/LoadingContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
-import { Analytics } from '@vercel/analytics/react';
 
+/**
+ * Root application component.
+ * Provides global providers and application routing.
+ *
+ * @returns {JSX.Element} Wrapped application with providers and routes.
+ */
 function App() {
   return (
     <ErrorBoundary>
       <LoadingProvider>
         <AuthProvider>
           <AppRoutes />
-          <Analytics />
+
           <Toaster
             position="top-right"
             toastOptions={{
