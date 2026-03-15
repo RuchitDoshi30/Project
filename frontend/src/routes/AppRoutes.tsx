@@ -26,6 +26,7 @@ const ProblemManagementPage = lazy(() => import('../pages/ProblemManagementPage'
 const AptitudeManagementPage = lazy(() => import('../pages/AptitudeManagementPage'));
 const AddProblemPage = lazy(() => import('../pages/AddProblemPage'));
 const AddAptitudeQuestionPage = lazy(() => import('../pages/AddAptitudeQuestionPage'));
+const AddStudentPage = lazy(() => import('../pages/AddStudentPage'));
 const ProgressAnalyticsPage = lazy(() => import('../pages/ProgressAnalyticsPage'));
 const SubmissionHistoryPage = lazy(() => import('../pages/SubmissionHistoryPage'));
 const TestResultsHistoryPage = lazy(() => import('../pages/TestResultsHistoryPage'));
@@ -257,6 +258,30 @@ const AppRoutes = () => {
               <RouteBoundary>
                 <AdminLayout>
                   <StudentManagementPage />
+                </AdminLayout>
+              </RouteBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/students/new"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AddStudentPage />
+                </AdminLayout>
+              </RouteBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/students/edit/:id"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <RouteBoundary>
+                <AdminLayout>
+                  <AddStudentPage />
                 </AdminLayout>
               </RouteBoundary>
             </ProtectedRoute>
