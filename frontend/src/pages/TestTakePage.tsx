@@ -54,50 +54,52 @@ const TestTakePage = () => {
       return;
     }
 
-    try {
-      setIsLoading(true);
-      const foundTest = getAptitudeTestById(testId);
-      if (!foundTest) {
-        navigate('/aptitude');
-        return;
-      }
+    const loadTest = async () => {
+      try {
+        setIsLoading(true);
+        const foundTest = await getAptitudeTestById(testId);
+        if (!foundTest) {
+          navigate('/aptitude');
+          return;
+        }
 
-      const testQuestions = getQuestionsForTest(testId);
-      if (testQuestions.length === 0) {
-        navigate('/aptitude');
-        return;
-      }
+        const testQuestions = await getQuestionsForTest(testId);
+        if (testQuestions.length === 0) {
+          navigate('/aptitude');
+          return;
+        }
 
-      setTest(foundTest);
-      setQuestions(testQuestions);
+        setTest(foundTest);
+        setQuestions(testQuestions);
 
-      // Check for in-progress attempt
-      const inProgress = getInProgressAttempt(testId, MOCK_USER_ID);
-      if (inProgress) {
-        const shouldResume = confirm(
-          `You have an in-progress attempt from ${new Date(inProgress.lastSavedAt).toLocaleString()}.\n\nWould you like to resume?`
-        );
-        
-        if (shouldResume) {
-          setCurrentQuestionIndex(inProgress.currentQuestionIndex);
-          setAnswers(inProgress.answers);
-          setConfidenceLevels(inProgress.confidenceLevels);
-          setBookmarkedQuestions(inProgress.bookmarkedQuestions);
-          setTimeRemaining(inProgress.timeRemaining);
-          startTimeRef.current = inProgress.startedAt;
+        // Check for in-progress attempt
+        const inProgress = getInProgressAttempt(testId, MOCK_USER_ID);
+        if (inProgress) {
+          const shouldResume = confirm(
+            `You have an in-progress attempt from ${new Date(inProgress.lastSavedAt).toLocaleString()}.\n\nWould you like to resume?`
+          );
+          
+          if (shouldResume) {
+            setCurrentQuestionIndex(inProgress.currentQuestionIndex);
+            setAnswers(inProgress.answers);
+            setConfidenceLevels(inProgress.confidenceLevels);
+            setBookmarkedQuestions(inProgress.bookmarkedQuestions);
+            setTimeRemaining(inProgress.timeRemaining);
+            startTimeRef.current = inProgress.startedAt;
+          } else {
+            clearInProgressAttempt(testId, MOCK_USER_ID);
+            setTimeRemaining(foundTest.duration * SECONDS_PER_MINUTE);
+          }
         } else {
-          clearInProgressAttempt(testId, MOCK_USER_ID);
           setTimeRemaining(foundTest.duration * SECONDS_PER_MINUTE);
         }
-      } else {
-        setTimeRemaining(foundTest.duration * SECONDS_PER_MINUTE);
-      }
 
-      setIsLoading(false);
-    } catch {
-      // Navigate to aptitude page on error
-      navigate('/aptitude');
-    }
+        setIsLoading(false);
+      } catch {
+        navigate('/aptitude');
+      }
+    };
+    loadTest();
   }, [testId, navigate]);
 
   // Auto-save progress
@@ -127,7 +129,7 @@ const TestTakePage = () => {
     };
   }, [autoSaveProgress]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (isSubmitting) return;
     
     try {
@@ -145,8 +147,8 @@ const TestTakePage = () => {
       }));
 
       // Submit attempt with bookmarks
-      const attempt = submitTestAttempt(testId, MOCK_USER_ID, formattedAnswers);
-      attempt.bookmarkedQuestions = bookmarkedQuestions;
+      const attempt = await submitTestAttempt(testId, MOCK_USER_ID, formattedAnswers);
+      (attempt as any).bookmarkedQuestions = bookmarkedQuestions;
       
       // Clear in-progress attempt
       clearInProgressAttempt(testId, MOCK_USER_ID);

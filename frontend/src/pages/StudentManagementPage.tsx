@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
@@ -17,6 +17,7 @@ import {
 import { Container } from '../components/Container';
 import { PageHeader } from '../components/PageHeader';
 import { Card } from '../components/Card';
+import { api } from '../services/api.client';
 
 /**
  * Student Management Page
@@ -67,135 +68,60 @@ interface ImportSummary {
 
 const allowedDepartments = ['CE', 'IT', 'CSE', 'EC', 'ME', 'CV'] as const;
 
-// Mock Students Data
-const mockStudents: Student[] = [
-  {
-    id: '1',
-    rollNumber: '21CE001',
-    name: 'Rahul Sharma',
-    email: 'rahul.sharma@student.edu',
-    department: 'CE',
-    year: 3,
-    section: 'A',
-    enrollmentDate: '2024-01-15',
-    status: 'active',
-    problemsSolved: 12,
-    testsCompleted: 5,
-    averageScore: 78,
-    lastActive: '2 hours ago',
-  },
-  {
-    id: '2',
-    rollNumber: '21IT014',
-    name: 'Priya Patel',
-    email: 'priya.patel@student.edu',
-    department: 'IT',
-    year: 3,
-    section: 'A',
-    enrollmentDate: '2024-01-16',
-    status: 'active',
-    problemsSolved: 18,
-    testsCompleted: 7,
-    averageScore: 85,
-    lastActive: '1 hour ago',
-  },
-  {
-    id: '3',
-    rollNumber: '22CSE022',
-    name: 'Amit Kumar',
-    email: 'amit.kumar@student.edu',
-    department: 'CSE',
-    year: 2,
-    section: 'B',
-    enrollmentDate: '2024-01-18',
-    status: 'active',
-    problemsSolved: 8,
-    testsCompleted: 3,
-    averageScore: 72,
-    lastActive: '5 hours ago',
-  },
-  {
-    id: '4',
-    rollNumber: '21EC011',
-    name: 'Sneha Reddy',
-    email: 'sneha.reddy@student.edu',
-    department: 'EC',
-    year: 3,
-    section: 'B',
-    enrollmentDate: '2024-01-20',
-    status: 'disabled',
-    problemsSolved: 5,
-    testsCompleted: 2,
-    averageScore: 65,
-    lastActive: '3 days ago',
-  },
-  {
-    id: '5',
-    rollNumber: '20ME041',
-    name: 'Vikram Singh',
-    email: 'vikram.singh@student.edu',
-    department: 'ME',
-    year: 4,
-    section: 'A',
-    enrollmentDate: '2024-01-22',
-    status: 'active',
-    problemsSolved: 15,
-    testsCompleted: 6,
-    averageScore: 82,
-    lastActive: '30 minutes ago',
-  },
-  {
-    id: '6',
-    rollNumber: '22IT028',
-    name: 'Ananya Iyer',
-    email: 'ananya.iyer@student.edu',
-    department: 'IT',
-    year: 2,
-    section: 'C',
-    enrollmentDate: '2024-01-25',
-    status: 'active',
-    problemsSolved: 10,
-    testsCompleted: 4,
-    averageScore: 75,
-    lastActive: '4 hours ago',
-  },
-  {
-    id: '7',
-    rollNumber: '21CSE005',
-    name: 'Rohan Gupta',
-    email: 'rohan.gupta@student.edu',
-    department: 'CSE',
-    year: 3,
-    section: 'A',
-    enrollmentDate: '2024-01-28',
-    status: 'active',
-    problemsSolved: 20,
-    testsCompleted: 8,
-    averageScore: 88,
-    lastActive: '15 minutes ago',
-  },
-  {
-    id: '8',
-    rollNumber: '23CV003',
-    name: 'Kavya Nair',
-    email: 'kavya.nair@student.edu',
-    department: 'CV',
-    year: 1,
-    section: 'A',
-    enrollmentDate: '2024-02-01',
-    status: 'active',
-    problemsSolved: 6,
-    testsCompleted: 2,
-    averageScore: 68,
-    lastActive: '1 day ago',
-  },
-];
-
 const StudentManagementPage = () => {
   const navigate = useNavigate();
   const csvFileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [students, setStudents] = useState<Student[]>(mockStudents);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const mapApiStudent = (s: any): Student => ({
+    id: s._id || s.id,
+    rollNumber: s.universityId || '',
+    name: s.name,
+    email: s.email,
+    department: s.branch || 'N/A',
+    year: Math.ceil((s.semester || 1) / 2),
+    section: 'A',
+    enrollmentDate: s.createdAt ? new Date(s.createdAt).toISOString().slice(0, 10) : 'N/A',
+    status: s.accountStatus === 'active' ? 'active' : 'disabled',
+    problemsSolved: 0,
+    testsCompleted: 0,
+    averageScore: 0,
+    lastActive: s.updatedAt ? new Date(s.updatedAt).toLocaleDateString() : 'N/A',
+  });
+
+  const loadStudents = async (cursor?: string | null) => {
+    try {
+      const params = new URLSearchParams({ limit: '20' });
+      if (cursor) params.append('cursor', cursor);
+      const response = await api.get<{ success: boolean; data: any[]; nextCursor: string | null; hasMore: boolean }>(`/dashboard/students?${params.toString()}`);
+      const mapped = response.data.map(mapApiStudent);
+      if (cursor) {
+        setStudents(prev => [...prev, ...mapped]);
+      } else {
+        setStudents(mapped);
+      }
+      setNextCursor(response.nextCursor);
+      setHasMore(response.hasMore);
+    } catch (e) {
+      console.error('Failed to load students', e);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  useEffect(() => { loadStudents(); }, []);
+
+  const handleLoadMore = () => {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true);
+    loadStudents(nextCursor);
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState<
     'all' | (typeof allowedDepartments)[number]
@@ -503,21 +429,35 @@ const StudentManagementPage = () => {
   });
 
   // Handle delete student
-  const handleDeleteStudent = (id: string) => {
+  const handleDeleteStudent = async (id: string) => {
     if (
       window.confirm('Are you sure you want to delete this student? This action cannot be undone.')
     ) {
-      setStudents(students.filter((s) => s.id !== id));
+      try {
+        await api.delete(`/dashboard/students/${id}`);
+        setStudents(students.filter((s) => s.id !== id));
+        toast.success('Student deleted');
+      } catch (e) {
+        console.error('Failed to delete student', e);
+        toast.error('Failed to delete student');
+      }
     }
   };
 
   // Handle toggle status
-  const handleToggleStatus = (id: string) => {
-    setStudents(
-      students.map((s) =>
-        s.id === id ? { ...s, status: s.status === 'active' ? 'disabled' : 'active' } : s,
-      ),
-    );
+  const handleToggleStatus = async (id: string) => {
+    try {
+      await api.patch(`/dashboard/students/${id}/toggle-status`);
+      setStudents(
+        students.map((s) =>
+          s.id === id ? { ...s, status: s.status === 'active' ? 'disabled' : 'active' } : s,
+        ),
+      );
+      toast.success('Status updated');
+    } catch (e) {
+      console.error('Failed to toggle status', e);
+      toast.error('Failed to update status');
+    }
   };
 
   // Handle reset password
@@ -1017,6 +957,27 @@ const StudentManagementPage = () => {
           </table>
         </div>
       </Card>
+
+      {/* Load More */}
+      {loading ? (
+        <div className="space-y-4 mt-4">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="p-4 animate-pulse">
+              <div className="h-12 bg-gray-200 dark:bg-lc-elevated rounded"></div>
+            </Card>
+          ))}
+        </div>
+      ) : hasMore && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+          >
+            {loadingMore ? 'Loading...' : 'Load More Students'}
+          </button>
+        </div>
+      )}
 
       {/* View Student Modal */}
       {showViewModal && selectedStudent && (

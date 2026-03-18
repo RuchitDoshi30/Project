@@ -77,8 +77,9 @@ const ProblemSolvePage = () => {
   const startTimeRef = useRef<number>(Date.now());
 
   useEffect(() => {
-    if (problemSlug) {
-      const foundProblem = getProblemBySlug(problemSlug);
+    const loadProblem = async () => {
+      if (!problemSlug) return;
+      const foundProblem = await getProblemBySlug(problemSlug);
       if (foundProblem) {
         setProblem(foundProblem);
         
@@ -91,14 +92,25 @@ const ProblemSolvePage = () => {
         }
 
         // Load submission history
-        setSubmissions(getSubmissionHistory(foundProblem._id, userId));
+        try {
+          const history = await getSubmissionHistory(foundProblem._id);
+          setSubmissions(history);
+        } catch {
+          setSubmissions([]);
+        }
         
         // Load all problems for navigation
-        setAllProblems(getProblemsWithStatus(userId));
+        try {
+          const problems = await getProblemsWithStatus(userId);
+          setAllProblems(problems.data);
+        } catch {
+          setAllProblems([]);
+        }
       } else {
         navigate('/coding');
       }
-    }
+    };
+    loadProblem();
   }, [problemSlug, navigate, userId]);
 
   // Timer for tracking time spent

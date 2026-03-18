@@ -1,14 +1,6 @@
 import type { DifficultyLevel, AptitudeCategory } from '../types/models';
-import { mockStatistics, mockRecentSubmissions, mockStudentActivity } from '../mocks/admin.mock';
+import { api } from './api.client';
 
-/**
- * Admin Service
- * 
- * Provides data and operations for the admin dashboard and management interfaces.
- * In production, these would be API calls to the backend.
- */
-
-// Admin Statistics Interface
 export interface AdminStatistics {
   totalStudents: number;
   newStudentsThisMonth: number;
@@ -24,18 +16,20 @@ export interface AdminStatistics {
   aptitudeByCategory: Record<AptitudeCategory, number>;
 }
 
-// Recent Submission Interface
 export interface RecentSubmission {
   id: string;
+  _id?: string;
   problemTitle: string;
+  problemId?: { title: string; slug: string; difficulty: string };
   studentName: string;
   studentId: string;
-  status: 'Pending' | 'Accepted' | 'Rejected' | 'Wrong Answer';
+  userId?: { name: string; email: string; universityId: string };
+  status: 'Pending' | 'Pending Review' | 'Accepted' | 'Rejected' | 'Wrong Answer';
   timestamp: string;
+  submittedAt?: string;
   language?: string;
 }
 
-// Student Activity Interface
 export interface StudentActivity {
   id: string;
   studentName: string;
@@ -45,7 +39,6 @@ export interface StudentActivity {
   timestamp: string;
 }
 
-// System Health Interface
 export interface SystemHealth {
   status: 'healthy' | 'warning' | 'critical';
   message: string;
@@ -53,99 +46,64 @@ export interface SystemHealth {
   lastBackup?: string;
 }
 
-/**
- * Get comprehensive admin statistics
- * 
- * @returns {AdminStatistics} Platform statistics
- */
-export const getAdminStatistics = (): AdminStatistics => {
-  return mockStatistics;
+export const getAdminStatistics = async (): Promise<AdminStatistics> => {
+  const response = await api.get<{ success: boolean; data: AdminStatistics }>('/dashboard/admin-stats');
+  return response.data;
 };
 
-/**
- * Get recent code submissions
- * 
- * @param {number} limit - Number of submissions to retrieve
- * @returns {RecentSubmission[]} Recent submissions
- */
-export const getRecentSubmissions = (limit: number = 10): RecentSubmission[] => {
-  return mockRecentSubmissions.slice(0, limit);
+export const getRecentSubmissions = async (limit: number = 10): Promise<RecentSubmission[]> => {
+  const response = await api.get<{ success: boolean; data: any[] }>(`/submissions/admin?limit=${limit}`);
+  return response.data.map((s: any) => ({
+    id: s._id,
+    problemTitle: s.problemId?.title || 'Unknown',
+    studentName: s.userId?.name || 'Unknown',
+    studentId: s.userId?.universityId || 'Unknown',
+    status: s.status,
+    timestamp: s.submittedAt,
+    language: s.language,
+  }));
 };
 
-/**
- * Get recent student activity
- * 
- * @param {number} limit - Number of activities to retrieve
- * @returns {StudentActivity[]} Recent student activities
- */
-export const getRecentStudentActivity = (limit: number = 10): StudentActivity[] => {
-  return mockStudentActivity.slice(0, limit);
+export const getRecentStudentActivity = async (limit: number = 10): Promise<StudentActivity[]> => {
+  // Derive from recent submissions
+  const submissions = await getRecentSubmissions(limit);
+  return submissions.map((s, i) => ({
+    id: String(i + 1),
+    studentName: s.studentName,
+    studentId: s.studentId,
+    type: 'coding' as const,
+    action: `Submitted solution for ${s.problemTitle}`,
+    timestamp: s.timestamp,
+  }));
 };
 
-/**
- * Get system health status
- * 
- * @returns {SystemHealth} System health information
- */
-export const getSystemHealth = (): SystemHealth => {
-  const pendingCount = mockStatistics.pendingSubmissions;
-  
-  if (pendingCount > 50) {
-    return {
-      status: 'critical',
-      message: 'High number of pending submissions. Immediate attention required.',
-      uptime: 99.8,
-      lastBackup: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    };
-  } else if (pendingCount > 20) {
-    return {
-      status: 'warning',
-      message: 'Moderate number of pending submissions. Review recommended.',
-      uptime: 99.9,
-      lastBackup: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-    };
+export const getSystemHealth = async (): Promise<SystemHealth> => {
+  const stats = await getAdminStatistics();
+  if (stats.pendingSubmissions > 50) {
+    return { status: 'critical', message: 'High number of pending submissions.', uptime: 99.8 };
+  } else if (stats.pendingSubmissions > 20) {
+    return { status: 'warning', message: 'Moderate pending submissions.', uptime: 99.9 };
   }
-  
-  return {
-    status: 'healthy',
-    message: 'All systems operational.',
-    uptime: 99.95,
-    lastBackup: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-  };
+  return { status: 'healthy', message: 'All systems operational.', uptime: 99.95 };
 };
 
-/**
- * Get pending submissions for review
- * 
- * @returns {RecentSubmission[]} Pending submissions
- */
-export const getPendingSubmissions = (): RecentSubmission[] => {
-  return mockRecentSubmissions.filter(s => s.status === 'Pending');
+export const getPendingSubmissions = async (): Promise<RecentSubmission[]> => {
+  const response = await api.get<{ success: boolean; data: any[] }>('/submissions/admin?status=Pending Review');
+  return response.data.map((s: any) => ({
+    id: s._id,
+    problemTitle: s.problemId?.title || 'Unknown',
+    studentName: s.userId?.name || 'Unknown',
+    studentId: s.userId?.universityId || 'Unknown',
+    status: s.status,
+    timestamp: s.submittedAt,
+    language: s.language,
+  }));
 };
 
-/**
- * Approve a submission
- * 
- * @param {string} submissionId - Submission ID
- * @returns {Promise<void>}
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const approveSubmission = async (_submissionId: string): Promise<void> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  // In production, this would update the backend via API call
+export const approveSubmission = async (submissionId: string): Promise<void> => {
+  await api.patch(`/submissions/${submissionId}/approve`);
 };
 
-/**
- * Reject a submission
- * 
- * @param {string} submissionId - Submission ID
- * @param {string} reason - Rejection reason
- * @returns {Promise<void>}
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const rejectSubmission = async (_submissionId: string, _reason: string): Promise<void> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  // In production, this would update the backend via API call with rejection reason
+export const rejectSubmission = async (submissionId: string, _reason: string): Promise<void> => {
+  await api.patch(`/submissions/${submissionId}/reject`);
 };

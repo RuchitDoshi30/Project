@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, PageHeader, Card } from '../components';
 import {
@@ -15,10 +15,24 @@ import {
 
 const PlacementDrivesPage = () => {
   const navigate = useNavigate();
-  const [drives, setDrives] = useState<PlacementDrive[]>(() => getPlacementDrives());
+  const [drives, setDrives] = useState<PlacementDrive[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [expandedDrive, setExpandedDrive] = useState<string | null>(null);
+
+  const loadDrives = async () => {
+    try {
+      const data = await getPlacementDrives();
+      setDrives(data);
+    } catch (e) {
+      console.error('Failed to load drives', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadDrives(); }, []);
 
   const filteredDrives = useMemo(() => drives.filter((drive) => {
     const matchesSearch = drive.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -32,12 +46,8 @@ const PlacementDrivesPage = () => {
     upcoming: drives.filter(d => d.status === 'Upcoming').length,
     ongoing: drives.filter(d => d.status === 'Ongoing').length,
     completed: drives.filter(d => d.status === 'Completed').length,
-    totalRegistered: drives.reduce((sum, d) => sum + d.registeredStudents, 0),
-    totalSelected: drives.reduce((sum, d) => sum + d.selectedStudents, 0),
-  };
-
-  const refreshDrives = () => {
-    setDrives(getPlacementDrives());
+    totalRegistered: drives.reduce((sum, d) => sum + (d.registeredStudents || 0), 0),
+    totalSelected: drives.reduce((sum, d) => sum + (d.selectedStudents || 0), 0),
   };
 
   const formatDate = (dateStr: string) => {
@@ -71,11 +81,25 @@ const PlacementDrivesPage = () => {
     }
   };
 
-  const handleDeleteDrive = (id: string) => {
-    deletePlacementDriveById(id);
-    refreshDrives();
-    toast.success('Placement drive deleted');
+  const handleDeleteDrive = async (id: string) => {
+    try {
+      await deletePlacementDriveById(id);
+      setDrives(drives.filter(d => d.id !== id && d._id !== id));
+      toast.success('Placement drive deleted');
+    } catch (e) {
+      console.error('Failed to delete drive', e);
+      toast.error('Failed to delete drive');
+    }
   };
+
+  if (loading) {
+    return (
+      <Container size="xl" fullHeight>
+        <PageHeader title="📋 Placement Drives" description="Manage campus placement drives, track company visits, and monitor student registrations" />
+        <div className="space-y-4">{[1,2,3].map(i => (<Card key={i} className="p-4 animate-pulse"><div className="h-32 bg-gray-200 dark:bg-lc-elevated rounded"></div></Card>))}</div>
+      </Container>
+    );
+  }
 
   return (
     <Container size="xl" fullHeight>
@@ -215,7 +239,7 @@ const PlacementDrivesPage = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 mb-4">
-                  {drive.eligibleBranches.map(branch => (
+                  {drive.eligibleBranches.map((branch: string) => (
                     <span key={branch} className="px-2 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary rounded-full border border-gray-200 dark:border-lc-border">
                       {branch}
                     </span>
@@ -265,7 +289,7 @@ const PlacementDrivesPage = () => {
                     <div>
                       <h4 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-2">Selection Rounds</h4>
                       <div className="flex flex-wrap gap-2">
-                        {drive.rounds.map((round, idx) => (
+                        {drive.rounds.map((round: string, idx: number) => (
                           <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-gray-50 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary rounded-lg border border-gray-200 dark:border-lc-border">
                             <span className="w-5 h-5 bg-gray-200 dark:bg-lc-border rounded-full flex items-center justify-center text-[10px] font-bold">{idx + 1}</span>
                             {round}

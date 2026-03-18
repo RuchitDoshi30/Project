@@ -16,7 +16,7 @@ export interface IUser {
 
 // Coding Problem Types
 export type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced';
-export type SubmissionStatus = 'Accepted' | 'Wrong Answer' | 'Time Limit Exceeded' | 'Runtime Error' | 'Compilation Error';
+export type SubmissionStatus = 'Accepted' | 'Wrong Answer' | 'Time Limit Exceeded' | 'Runtime Error' | 'Compilation Error' | 'Pending Review';
 
 export interface ITestCase {
   input: string;

@@ -1,38 +1,46 @@
-// backend/src/controllers/auth.controller.ts
-
 import { Request, Response } from 'express';
-import { mockUsers } from '../config/mockUsers';
+import { User } from '../models';
 import { signToken } from '../utils/jwt';
+import { asyncHandler } from '../middlewares/asyncHandler';
+import { ApiError } from '../middlewares/errorHandler';
 
-
-
-export const login = (req: Request, res: Response) => {
+export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password required' });
-  }
-
-  const user = mockUsers.find(
-    (u) => u.email === email && u.password === password,
-  );
-
+  const user = await User.findOne({ email, accountStatus: 'active' }).select('+passwordHash');
   if (!user) {
-    return res.status(401).json({ message: 'Invalid credentials' });
+    throw new ApiError(401, 'Invalid email or password.');
   }
 
-  const token = signToken({
-    id: user.id,
-    email: user.email,
-    role: user.role,
-  });
+  const isMatch = await user.comparePassword(password);
+  if (!isMatch) {
+    throw new ApiError(401, 'Invalid email or password.');
+  }
 
-  return res.status(200).json({
+  const token = signToken({ id: user._id.toString(), email: user.email, role: user.role });
+
+  res.json({
+    success: true,
     token,
     user: {
-      id: user.id,
+      _id: user._id,
+      name: user.name,
       email: user.email,
+      universityId: user.universityId,
       role: user.role,
+      branch: user.branch,
+      semester: user.semester,
+      enrollmentYear: user.enrollmentYear,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     },
   });
-};
+});
+
+export const getMe = asyncHandler(async (req: Request, res: Response) => {
+  const user = await User.findById(req.user!.id);
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+  res.json({ success: true, user });
+});

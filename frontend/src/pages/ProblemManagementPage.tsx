@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, Eye, Code, Filter } from 'lucide-react';
 import { Container } from '../components/Container';
@@ -27,11 +27,26 @@ interface IExtendedProblem extends Omit<IProblem, 'constraints'> {
 
 const ProblemManagementPage = () => {
   const navigate = useNavigate();
-  const [problems, setProblems] = useState<IExtendedProblem[]>(getProblems() as IExtendedProblem[]);
+  const [problems, setProblems] = useState<IExtendedProblem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<'all' | DifficultyLevel>('all');
   const [selectedProblem, setSelectedProblem] = useState<IExtendedProblem | null>(null);
   const [showViewModal, setShowViewModal] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await getProblems();
+        setProblems(data as IExtendedProblem[]);
+      } catch (e) {
+        console.error('Failed to load problems', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   // Filter problems
   const filteredProblems = problems.filter(problem => {
@@ -46,10 +61,17 @@ const ProblemManagementPage = () => {
   });
 
   // Handle delete problem
-  const handleDeleteProblem = (id: string) => {
+  const handleDeleteProblem = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this problem? This action cannot be undone.')) {
-      setProblems(problems.filter(p => p._id !== id));
-      alert('Problem deleted successfully');
+      try {
+        const { api: apiClient } = await import('../services/api.client');
+        await apiClient.delete(`/problems/${id}`);
+        setProblems(problems.filter(p => p._id !== id));
+        alert('Problem deleted successfully');
+      } catch (e) {
+        console.error('Failed to delete problem', e);
+        alert('Failed to delete problem');
+      }
     }
   };
 
@@ -72,6 +94,15 @@ const ProblemManagementPage = () => {
         return 'bg-gray-100 dark:bg-lc-elevated text-gray-800 dark:text-lc-text-secondary';
     }
   };
+
+  if (loading) {
+    return (
+      <Container>
+        <PageHeader title="Problem Management" description="Manage coding problems, test cases, and difficulty levels" />
+        <div className="space-y-4">{[1,2,3].map(i => (<Card key={i} className="p-4 animate-pulse"><div className="h-24 bg-gray-200 dark:bg-lc-elevated rounded"></div></Card>))}</div>
+      </Container>
+    );
+  }
 
   return (
     <Container>

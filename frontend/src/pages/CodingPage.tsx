@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Container, PageHeader, Card } from '../components';
 import { Code2, Search, Filter, CheckCircle, Circle, Clock } from 'lucide-react';
 import { getProblemsWithStatus, getAllTags } from '../services/problems.service';
+import type { IProblem, IProblemProgress } from '../types/models';
 
 type SortOption = 'title' | 'difficulty' | 'time';
 type SortOrder = 'asc' | 'desc';
@@ -15,39 +16,62 @@ const CodingPage = () => {
   const [sortBy, setSortBy] = useState<SortOption>('title');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-  const userId = '2'; // Mock user ID
-  const allProblems = getProblemsWithStatus(userId);
-  const allTags = getAllTags();
+  const [allProblems, setAllProblems] = useState<(IProblem & { progress: IProblemProgress })[]>([]);
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const difficulties = ['Beginner', 'Intermediate', 'Advanced'];
   const statuses = ['Unsolved', 'Attempted', 'Solved'];
 
-  // Advanced filtering and sorting
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProblems, setTotalProblems] = useState(0);
+  const limit = 20;
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const userId = user._id || 'anon';
+        
+        const [problemsRes, tags] = await Promise.all([
+          getProblemsWithStatus(userId, {
+            page,
+            limit,
+            search: searchQuery || undefined,
+            difficulty: selectedDifficulties.length > 0 ? selectedDifficulties.join(',') : undefined,
+            tags: selectedTags.length > 0 ? selectedTags : undefined
+          }),
+          getAllTags(),
+        ]);
+        
+        setAllProblems(problemsRes.data);
+        setTotalPages(problemsRes.totalPages || 1);
+        setTotalProblems(problemsRes.total || 0);
+        setAllTags(tags);
+      } catch (e) {
+        console.error('Failed to load problems', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    // Debounce backend fetch on search/filter change
+    const timer = setTimeout(() => {
+      load();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page, searchQuery, selectedDifficulties, selectedTags]);
+
+  // Reset to page 1 when filters change natively
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, selectedDifficulties, selectedTags]);
+
   const filteredProblems = useMemo(() => {
-    let filtered = allProblems;
+    let filtered = [...allProblems];
 
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        p =>
-          p.title.toLowerCase().includes(query) ||
-          p.tags.some(tag => tag.toLowerCase().includes(query))
-      );
-    }
-
-    // Difficulty filter (multi-select)
-    if (selectedDifficulties.length > 0) {
-      filtered = filtered.filter(p => selectedDifficulties.includes(p.difficulty));
-    }
-
-    // Tags filter (multi-select)
-    if (selectedTags.length > 0) {
-      filtered = filtered.filter(p =>
-        selectedTags.some(tag => p.tags.includes(tag))
-      );
-    }
-
-    // Status filter
     if (selectedStatuses.length > 0) {
       filtered = filtered.filter(p => {
         const status = p.progress.status;
@@ -55,29 +79,26 @@ const CodingPage = () => {
       });
     }
 
-    // Sorting
     filtered.sort((a, b) => {
       let comparison = 0;
-      
       switch (sortBy) {
         case 'title':
           comparison = a.title.localeCompare(b.title);
           break;
         case 'difficulty': {
-          const diffOrder = { Beginner: 1, Intermediate: 2, Advanced: 3 };
-          comparison = diffOrder[a.difficulty] - diffOrder[b.difficulty];
+          const diffOrder: Record<string, number> = { Beginner: 1, Intermediate: 2, Advanced: 3 };
+          comparison = (diffOrder[a.difficulty] || 0) - (diffOrder[b.difficulty] || 0);
           break;
         }
         case 'time':
           comparison = a.progress.timeSpent - b.progress.timeSpent;
           break;
       }
-
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
     return filtered;
-  }, [allProblems, searchQuery, selectedDifficulties, selectedTags, selectedStatuses, sortBy, sortOrder]);
+  }, [allProblems, selectedStatuses, sortBy, sortOrder]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -121,11 +142,27 @@ const CodingPage = () => {
     return `${minutes}m`;
   };
 
-  const hasActiveFilters = 
-    selectedDifficulties.length > 0 || 
-    selectedTags.length > 0 || 
-    selectedStatuses.length > 0 || 
+  const hasActiveFilters =
+    selectedDifficulties.length > 0 ||
+    selectedTags.length > 0 ||
+    selectedStatuses.length > 0 ||
     searchQuery;
+
+  if (loading) {
+    return (
+      <Container size="xl" fullHeight>
+        <PageHeader title="Coding Problems" description="Practice problem-solving and improve your coding skills" />
+        <div className="space-y-3">
+          {[1,2,3,4].map(i => (
+            <Card key={i} className="p-4 animate-pulse">
+              <div className="h-5 bg-gray-200 dark:bg-lc-elevated rounded w-1/3 mb-2"></div>
+              <div className="h-4 bg-gray-200 dark:bg-lc-elevated rounded w-1/4"></div>
+            </Card>
+          ))}
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container size="xl" fullHeight>
@@ -137,7 +174,6 @@ const CodingPage = () => {
       {/* Search and Filter Bar */}
       <div className="mb-6 space-y-3">
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* Search */}
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-lc-text-muted" />
             <input
@@ -149,7 +185,6 @@ const CodingPage = () => {
             />
           </div>
 
-          {/* Sort Dropdown */}
           <select
             value={`${sortBy}_${sortOrder}`}
             onChange={(e) => {
@@ -167,7 +202,6 @@ const CodingPage = () => {
             <option value="time_desc">Time Spent (High to Low)</option>
           </select>
 
-          {/* Filter Toggle Button */}
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
@@ -186,11 +220,9 @@ const CodingPage = () => {
           </button>
         </div>
 
-        {/* Filter Panel */}
         {showFilters && (
           <Card className="p-4">
             <div className="space-y-4">
-              {/* Status Filter */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 dark:text-lc-text-secondary mb-2">Status</label>
                 <div className="flex flex-wrap gap-2">
@@ -209,8 +241,6 @@ const CodingPage = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Difficulty Filter */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 dark:text-lc-text-secondary mb-2">Difficulty</label>
                 <div className="flex flex-wrap gap-2">
@@ -229,8 +259,6 @@ const CodingPage = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Tags Filter */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 dark:text-lc-text-secondary mb-2">Topics</label>
                 <div className="flex flex-wrap gap-2">
@@ -249,8 +277,6 @@ const CodingPage = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Clear Filters */}
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
@@ -279,12 +305,9 @@ const CodingPage = () => {
                 href={`/coding/${problem.slug}`}
                 className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4"
               >
-                {/* Status Icon */}
                 <div className="flex-shrink-0">
                   {getStatusIcon(problem.progress.status)}
                 </div>
-
-                {/* Problem Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start gap-2 mb-1">
                     <h3 className="text-sm font-bold text-gray-900 dark:text-lc-text hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
@@ -306,8 +329,6 @@ const CodingPage = () => {
                     ))}
                   </div>
                 </div>
-
-                {/* Stats */}
                 <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-lc-text-muted sm:flex-shrink-0">
                   {problem.progress.timeSpent > 0 && (
                     <div className="flex items-center gap-1">
@@ -322,10 +343,45 @@ const CodingPage = () => {
         )}
       </div>
 
-      {/* Results Count */}
-      {filteredProblems.length > 0 && (
-        <div className="mt-4 text-center text-sm text-gray-500 dark:text-lc-text-muted">
-          Showing {filteredProblems.length} {filteredProblems.length === 1 ? 'problem' : 'problems'}
+      {filteredProblems.length > 0 && totalPages > 1 && (
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 dark:border-lc-border-light pt-6">
+          <div className="text-sm text-gray-500 dark:text-lc-text-muted mb-4 sm:mb-0">
+            Showing <span className="font-medium">{(page - 1) * limit + 1}</span> to{' '}
+            <span className="font-medium">{Math.min(page * limit, totalProblems)}</span> of{' '}
+            <span className="font-medium">{totalProblems}</span> problems
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 border border-gray-300 dark:border-lc-border-light rounded-md text-sm font-medium text-gray-700 dark:text-lc-text disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-lc-elevated transition-colors"
+            >
+              Previous
+            </button>
+            <div className="flex items-center gap-1">
+              {/* Simple page numbers mapping. Can be improved for many pages. */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium transition-colors ${
+                    page === pageNum
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-700 dark:text-lc-text hover:bg-gray-100 dark:hover:bg-lc-elevated border border-transparent hover:border-gray-200 dark:hover:border-lc-border-light'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 border border-gray-300 dark:border-lc-border-light rounded-md text-sm font-medium text-gray-700 dark:text-lc-text disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-lc-elevated transition-colors"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </Container>

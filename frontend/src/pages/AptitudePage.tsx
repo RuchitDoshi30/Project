@@ -5,16 +5,12 @@ import { Brain, Search, Filter, Clock, Trophy, ChevronRight, Target, RotateCcw, 
 import {
   getAptitudeTests,
   getAllCategories,
-  getTestAttempts,
+  getUserAttempts,
   hasInProgressAttempt
 } from '../services/aptitude.service';
-import type { AptitudeCategory } from '../types/models';
+import type { IAptitudeTest, IAptitudeAttempt, AptitudeCategory } from '../types/models';
 
-// Constants
-const CURRENT_USER_ID = '2'; // TODO: Replace with actual authenticated user ID from auth context
-
-
-
+const CURRENT_USER_ID = '2';
 
 const CATEGORY_EMOJI_ICONS: Record<AptitudeCategory, string> = {
   Quantitative: '🔢',
@@ -23,16 +19,6 @@ const CATEGORY_EMOJI_ICONS: Record<AptitudeCategory, string> = {
   Technical: '💻',
 };
 
-/**
- * AptitudePage Component
- * 
- * Main listing page for aptitude tests featuring:
- * - Search and category filtering
- * - Test cards with stats (duration, questions, passing percentage)
- * - Previous attempt indicators (best score, pass/fail status)
- * - Resume in-progress test feature
- * - Loading skeleton for initial load
- */
 const AptitudePage = () => {
   const navigate = useNavigate();
 
@@ -41,44 +27,69 @@ const AptitudePage = () => {
   const [selectedCategory, setSelectedCategory] = useState<AptitudeCategory | ''>('');
   const [showFilters, setShowFilters] = useState(false);
   const [testsWithInProgress, setTestsWithInProgress] = useState<Set<string>>(new Set());
+  const [tests, setTests] = useState<IAptitudeTest[]>([]);
+  const [attempts, setAttempts] = useState<IAptitudeAttempt[]>([]);
 
   const allAvailableCategories = getAllCategories();
 
-  const filteredAptitudeTests = getAptitudeTests({
-    category: selectedCategory || undefined,
-    search: searchQuery || undefined,
-  });
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalTests, setTotalTests] = useState(0);
+  const limit = 20;
 
-  // Initial load: Check for in-progress tests
+  // Load tests and attempts from API
   useEffect(() => {
-    const checkInProgressTests = () => {
-      const inProgressTestIds = new Set<string>();
+    const load = async () => {
+      setIsLoadingTests(true);
+      try {
+        const [testsRes, fetchedAttempts] = await Promise.all([
+          getAptitudeTests({
+            category: selectedCategory || undefined,
+            search: searchQuery || undefined,
+            page,
+            limit,
+          }),
+          getUserAttempts(),
+        ]);
+        
+        const fetchedTests = testsRes.data || [];
+        setTests(fetchedTests.filter(Boolean));
+        setAttempts((fetchedAttempts || []).filter(Boolean));
+        setTotalPages(testsRes.totalPages || 1);
+        setTotalTests(testsRes.total || 0);
 
-      filteredAptitudeTests.forEach(test => {
-        if (hasInProgressAttempt(test._id, CURRENT_USER_ID)) {
-          inProgressTestIds.add(test._id);
-        }
-      });
-
-      setTestsWithInProgress(inProgressTestIds);
-      setIsLoadingTests(false);
+        // Check in-progress tests (localStorage-based)
+        const inProgressTestIds = new Set<string>();
+        fetchedTests.forEach(test => {
+          if (test && hasInProgressAttempt(test._id, CURRENT_USER_ID)) {
+            inProgressTestIds.add(test._id);
+          }
+        });
+        setTestsWithInProgress(inProgressTestIds);
+      } catch (e) {
+        console.error('Failed to load tests', e);
+      } finally {
+        setIsLoadingTests(false);
+      }
     };
+    
+    const timer = setTimeout(() => {
+      load();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [selectedCategory, searchQuery, page]);
 
-    // Simulate loading delay for better UX
-    const loadTimeout = setTimeout(checkInProgressTests, 300);
-
-    return () => clearTimeout(loadTimeout);
-  }, [filteredAptitudeTests]);
-
-
-
+  // Reset to page 1 when filters change natively
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, selectedCategory]);
 
   const getCategoryIcon = (category: AptitudeCategory): string => {
     return CATEGORY_EMOJI_ICONS[category] || '📋';
   };
 
   const getTestStatistics = (testId: string) => {
-    const completedAttempts = getTestAttempts(testId, CURRENT_USER_ID);
+    const completedAttempts = attempts.filter(a => a.testId === testId);
     if (completedAttempts.length === 0) return null;
 
     const bestAttempt = completedAttempts.reduce((best, current) =>
@@ -104,14 +115,10 @@ const AptitudePage = () => {
 
   const hasActiveFilters = selectedCategory || searchQuery;
 
-  // Loading state
   if (isLoadingTests) {
     return (
       <Container size="xl" fullHeight>
-        <PageHeader
-          title="Aptitude Tests"
-          description="Sharpen your skills with practice tests across multiple categories"
-        />
+        <PageHeader title="Aptitude Tests" description="Sharpen your skills with practice tests across multiple categories" />
         <SkeletonTestList count={6} />
       </Container>
     );
@@ -127,7 +134,6 @@ const AptitudePage = () => {
       {/* Search and Filter Bar */}
       <div className="mb-6 space-y-3">
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* Search */}
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-lc-text-muted" />
             <input
@@ -139,7 +145,6 @@ const AptitudePage = () => {
             />
           </div>
 
-          {/* Filter Toggle Button */}
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${showFilters || hasActiveFilters
@@ -157,11 +162,9 @@ const AptitudePage = () => {
           </button>
         </div>
 
-        {/* Filter Panel */}
         {showFilters && (
           <Card className="p-4">
             <div className="space-y-4">
-              {/* Category Filter */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 dark:text-lc-text-secondary mb-2">Category</label>
                 <div className="flex flex-wrap gap-2">
@@ -180,8 +183,6 @@ const AptitudePage = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Clear Filters */}
               {hasActiveFilters && (
                 <button
                   onClick={clearAllFilters}
@@ -197,7 +198,7 @@ const AptitudePage = () => {
 
       {/* Tests Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredAptitudeTests.length === 0 ? (
+        {tests.length === 0 ? (
           <div className="col-span-full">
             <Card className="p-12 text-center">
               <Brain className="w-12 h-12 text-gray-300 dark:text-lc-text-muted mx-auto mb-3" />
@@ -206,14 +207,14 @@ const AptitudePage = () => {
             </Card>
           </div>
         ) : (
-          filteredAptitudeTests.map((test) => {
+          tests.map((test) => {
             const testStatistics = getTestStatistics(test._id);
             const hasInProgressTest = testsWithInProgress.has(test._id);
+            const questionCount = Array.isArray(test.questions) ? test.questions.length : 0;
 
             return (
               <Card key={test._id} className="p-5 border-l-4 border-l-purple-500 hover:shadow-xl hover:scale-[1.01] transition-all duration-300 bg-gradient-to-r from-white dark:from-lc-card to-purple-50/30 dark:to-purple-900/10">
                 <div className="block">
-                  {/* Header */}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
@@ -238,7 +239,6 @@ const AptitudePage = () => {
                     </div>
                   </div>
 
-                  {/* Test Statistics */}
                   <div className="flex items-center gap-4 mb-3 text-xs text-gray-600 dark:text-lc-text-muted font-medium">
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4 text-blue-500" />
@@ -246,7 +246,7 @@ const AptitudePage = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <Target className="w-4 h-4 text-purple-500" />
-                      <span>{test.questions.length} questions</span>
+                      <span>{questionCount} questions</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Trophy className="w-4 h-4 text-yellow-500" />
@@ -254,7 +254,6 @@ const AptitudePage = () => {
                     </div>
                   </div>
 
-                  {/* Previous Attempts Indicator */}
                   {testStatistics && (
                     <div className={`p-2.5 rounded-lg mb-3 ${testStatistics.hasPassed
                       ? 'bg-gradient-to-r from-green-50 dark:from-green-900/30 to-emerald-50 dark:to-emerald-900/30 border border-green-200 dark:border-green-700'
@@ -273,7 +272,6 @@ const AptitudePage = () => {
                     </div>
                   )}
 
-                  {/* Action Buttons */}
                   <div className="flex gap-2 pt-3 border-t border-gray-200 dark:border-lc-border">
                     {hasInProgressTest ? (
                       <button
@@ -308,10 +306,44 @@ const AptitudePage = () => {
         )}
       </div>
 
-      {/* Results Count */}
-      {filteredAptitudeTests.length > 0 && (
-        <div className="mt-6 text-center text-sm text-gray-500 dark:text-lc-text-muted">
-          Showing {filteredAptitudeTests.length} {filteredAptitudeTests.length === 1 ? 'test' : 'tests'}
+      {tests.length > 0 && totalPages > 1 && (
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 dark:border-lc-border-light pt-6">
+          <div className="text-sm text-gray-500 dark:text-lc-text-muted mb-4 sm:mb-0">
+            Showing <span className="font-medium">{(page - 1) * limit + 1}</span> to{' '}
+            <span className="font-medium">{Math.min(page * limit, totalTests)}</span> of{' '}
+            <span className="font-medium">{totalTests}</span> tests
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-3 py-1.5 border border-gray-300 dark:border-lc-border-light rounded-md text-sm font-medium text-gray-700 dark:text-lc-text disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-lc-elevated transition-colors"
+            >
+              Previous
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium transition-colors ${
+                    page === pageNum
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-700 dark:text-lc-text hover:bg-gray-100 dark:hover:bg-lc-elevated border border-transparent hover:border-gray-200 dark:hover:border-lc-border-light'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 border border-gray-300 dark:border-lc-border-light rounded-md text-sm font-medium text-gray-700 dark:text-lc-text disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-lc-elevated transition-colors"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </Container>

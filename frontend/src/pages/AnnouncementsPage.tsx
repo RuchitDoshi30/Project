@@ -1,4 +1,4 @@
-    import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, PageHeader, Card } from '../components';
 import {
@@ -16,10 +16,24 @@ import {
 
 const AnnouncementsPage = () => {
   const navigate = useNavigate();
-  const [announcements, setAnnouncements] = useState<Announcement[]>(() => getAnnouncements());
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [expandedAnnouncement, setExpandedAnnouncement] = useState<string | null>(null);
+
+  const loadAnnouncements = async () => {
+    try {
+      const data = await getAnnouncements();
+      setAnnouncements(data);
+    } catch (e) {
+      console.error('Failed to load announcements', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadAnnouncements(); }, []);
 
   const filteredAnnouncements = useMemo(() => announcements.filter((ann) => {
     const matchesSearch = ann.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -57,28 +71,45 @@ const AnnouncementsPage = () => {
     }
   };
 
-  const refreshAnnouncements = () => {
-    setAnnouncements(getAnnouncements());
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteAnnouncementById(id);
+      setAnnouncements(announcements.filter(a => a.id !== id && a._id !== id));
+      toast.success('Announcement deleted');
+    } catch (e) {
+      console.error('Failed to delete announcement', e);
+      toast.error('Failed to delete announcement');
+    }
   };
 
-  const handleDelete = (id: string) => {
-    deleteAnnouncementById(id);
-    refreshAnnouncements();
-    toast.success('Announcement deleted');
-  };
-
-  const handleTogglePin = (id: string) => {
-    toggleAnnouncementPin(id);
-    refreshAnnouncements();
-    toast.success('Pin status updated');
+  const handleTogglePin = async (id: string) => {
+    try {
+      await toggleAnnouncementPin(id);
+      setAnnouncements(announcements.map(a =>
+        (a.id === id || a._id === id) ? { ...a, isPinned: !a.isPinned } : a
+      ));
+      toast.success('Pin status updated');
+    } catch (e) {
+      console.error('Failed to toggle pin', e);
+      toast.error('Failed to update pin status');
+    }
   };
 
   const stats = {
     total: announcements.length,
     pinned: announcements.filter(a => a.isPinned).length,
     urgent: announcements.filter(a => a.priority === 'Urgent').length,
-    totalViews: announcements.reduce((sum, a) => sum + a.views, 0),
+    totalViews: announcements.reduce((sum, a) => sum + (a.views || 0), 0),
   };
+
+  if (loading) {
+    return (
+      <Container size="xl" fullHeight>
+        <PageHeader title="📢 Announcements" description="Create and manage notices for students" />
+        <div className="space-y-3">{[1,2,3].map(i => (<Card key={i} className="p-4 animate-pulse"><div className="h-20 bg-gray-200 dark:bg-lc-elevated rounded"></div></Card>))}</div>
+      </Container>
+    );
+  }
 
   return (
     <Container size="xl" fullHeight>

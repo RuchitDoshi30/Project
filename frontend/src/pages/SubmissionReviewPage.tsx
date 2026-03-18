@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Clock, Eye, Code, User, Calendar, Filter } from 'lucide-react';
 import { Container } from '../components/Container';
 import { PageHeader } from '../components/PageHeader';
 import { Card } from '../components/Card';
 import { Link } from 'react-router-dom';
+import { api } from '../services/api.client';
+import toast from 'react-hot-toast';
 
 /**
  * Submission Review Page
@@ -29,201 +31,107 @@ interface Submission {
   memoryUsed?: string;
 }
 
-// Mock Submissions Data
-const mockSubmissions: Submission[] = [
-  {
-    id: '1',
-    problemTitle: 'Two Sum',
-    problemSlug: 'two-sum',
-    studentName: 'Rahul Sharma',
-    studentId: 'ST2024001',
-    submittedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    status: 'Pending',
-    language: 'Python',
-    code: `def twoSum(nums, target):
-    hashmap = {}
-    for i, num in enumerate(nums):
-        complement = target - num
-        if complement in hashmap:
-            return [hashmap[complement], i]
-        hashmap[num] = i
-    return []`,
-    testCasesPassed: 8,
-    totalTestCases: 10,
-    executionTime: '24ms',
-    memoryUsed: '14.2MB',
-  },
-  {
-    id: '2',
-    problemTitle: 'Valid Parentheses',
-    problemSlug: 'valid-parentheses',
-    studentName: 'Priya Patel',
-    studentId: 'ST2024002',
-    submittedAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-    status: 'Accepted',
-    language: 'JavaScript',
-    code: `function isValid(s) {
-    const stack = [];
-    const map = { '(': ')', '{': '}', '[': ']' };
-    
-    for (let char of s) {
-        if (map[char]) {
-            stack.push(char);
-        } else {
-            if (map[stack.pop()] !== char) return false;
-        }
-    }
-    return stack.length === 0;
-}`,
-    testCasesPassed: 10,
-    totalTestCases: 10,
-    executionTime: '18ms',
-    memoryUsed: '10.5MB',
-  },
-  {
-    id: '3',
-    problemTitle: 'Binary Search',
-    problemSlug: 'binary-search',
-    studentName: 'Amit Kumar',
-    studentId: 'ST2024003',
-    submittedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    status: 'Pending',
-    language: 'Java',
-    code: `public int search(int[] nums, int target) {
-    int left = 0, right = nums.length - 1;
-    
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
-        
-        if (nums[mid] == target) {
-            return mid;
-        } else if (nums[mid] < target) {
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
-    }
-    return -1;
-}`,
-    testCasesPassed: 9,
-    totalTestCases: 10,
-    executionTime: '32ms',
-    memoryUsed: '18.7MB',
-  },
-  {
-    id: '4',
-    problemTitle: 'Reverse Linked List',
-    problemSlug: 'reverse-linked-list',
-    studentName: 'Sneha Reddy',
-    studentId: 'ST2024004',
-    submittedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-    status: 'Wrong Answer',
-    language: 'C++',
-    code: `ListNode* reverseList(ListNode* head) {
-    ListNode* prev = nullptr;
-    ListNode* curr = head;
-    
-    while (curr) {
-        ListNode* next = curr->next;
-        curr->next = prev;
-        prev = curr;
-        curr = next;
-    }
-    return prev;
-}`,
-    testCasesPassed: 5,
-    totalTestCases: 10,
-    executionTime: '28ms',
-    memoryUsed: '16.3MB',
-  },
-  {
-    id: '5',
-    problemTitle: 'Maximum Subarray',
-    problemSlug: 'maximum-subarray',
-    studentName: 'Vikram Singh',
-    studentId: 'ST2024005',
-    submittedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-    status: 'Pending',
-    language: 'Python',
-    code: `def maxSubArray(nums):
-    max_sum = current_sum = nums[0]
-    
-    for num in nums[1:]:
-        current_sum = max(num, current_sum + num)
-        max_sum = max(max_sum, current_sum)
-    
-    return max_sum`,
-    testCasesPassed: 10,
-    totalTestCases: 10,
-    executionTime: '45ms',
-    memoryUsed: '20.1MB',
-  },
-  {
-    id: '6',
-    problemTitle: 'Climbing Stairs',
-    problemSlug: 'climbing-stairs',
-    studentName: 'Ananya Iyer',
-    studentId: 'ST2024006',
-    submittedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-    status: 'Pending',
-    language: 'JavaScript',
-    code: `function climbStairs(n) {
-    if (n <= 2) return n;
-    
-    let prev1 = 2, prev2 = 1;
-    
-    for (let i = 3; i <= n; i++) {
-        let current = prev1 + prev2;
-        prev2 = prev1;
-        prev1 = current;
-    }
-    return prev1;
-}`,
-    testCasesPassed: 8,
-    totalTestCases: 10,
-    executionTime: '15ms',
-    memoryUsed: '9.8MB',
-  },
-];
 
 const SubmissionReviewPage = () => {
-  const [submissions, setSubmissions] = useState<Submission[]>(mockSubmissions);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'Pending' | 'Accepted' | 'Rejected'>('all');
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [feedback, setFeedback] = useState('');
 
-  // Filter submissions
-  const filteredSubmissions = submissions.filter(sub => 
-    statusFilter === 'all' || sub.status === statusFilter
-  );
+  const mapApiSubmission = (s: any): Submission => ({
+    id: s._id,
+    problemTitle: s.problemId?.title || 'Unknown',
+    problemSlug: s.problemId?.slug || 'unknown',
+    studentName: s.userId?.name || 'Unknown',
+    studentId: s.userId?.universityId || 'Unknown',
+    submittedAt: s.submittedAt,
+    status: s.status === 'Pending Review' ? 'Pending' : s.status,
+    language: s.language || 'Unknown',
+    code: s.code || '',
+    testCasesPassed: s.testCasesPassed || 0,
+    totalTestCases: s.totalTestCases || 0,
+  });
+
+  const loadSubmissions = async (cursor?: string | null) => {
+    try {
+      const params = new URLSearchParams({ limit: '20' });
+      if (cursor) params.append('cursor', cursor);
+      if (statusFilter !== 'all') {
+        const apiStatus = statusFilter === 'Pending' ? 'Pending Review' : statusFilter;
+        params.append('status', apiStatus);
+      }
+      const response = await api.get<{ success: boolean; data: any[]; nextCursor: string | null; hasMore: boolean }>(`/submissions/admin?${params.toString()}`);
+      const mapped = response.data.map(mapApiSubmission);
+      if (cursor) {
+        setSubmissions(prev => [...prev, ...mapped]);
+      } else {
+        setSubmissions(mapped);
+      }
+      setNextCursor(response.nextCursor);
+      setHasMore(response.hasMore);
+    } catch (e) {
+      console.error('Failed to load submissions', e);
+      toast.error('Failed to load submissions');
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    loadSubmissions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
+
+  const handleLoadMore = () => {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true);
+    loadSubmissions(nextCursor);
+  };
+
+  // Filter submissions (already filtered server-side by status, so show all here)
+  const filteredSubmissions = submissions;
 
   // Handle approve submission
-  const handleApprove = (submission: Submission) => {
-    setSubmissions(submissions.map(s => 
-      s.id === submission.id 
-        ? { ...s, status: 'Accepted' } 
-        : s
-    ));
-    setShowReviewModal(false);
-    setFeedback('');
-    alert(`Submission approved for ${submission.studentName}`);
+  const handleApprove = async (submission: Submission) => {
+    try {
+      await api.patch(`/submissions/${submission.id}/approve`);
+      setSubmissions(submissions.map(s =>
+        s.id === submission.id ? { ...s, status: 'Accepted' as const } : s
+      ));
+      setShowReviewModal(false);
+      setFeedback('');
+      toast.success(`Submission approved for ${submission.studentName}`);
+    } catch (e) {
+      console.error('Failed to approve', e);
+      toast.error('Failed to approve submission');
+    }
   };
 
   // Handle reject submission
-  const handleReject = (submission: Submission) => {
+  const handleReject = async (submission: Submission) => {
     if (!feedback.trim()) {
-      alert('Please provide feedback for rejection');
+      toast.error('Please provide feedback for rejection');
       return;
     }
-    setSubmissions(submissions.map(s => 
-      s.id === submission.id 
-        ? { ...s, status: 'Rejected' } 
-        : s
-    ));
-    setShowReviewModal(false);
-    setFeedback('');
-    alert(`Submission rejected with feedback sent to ${submission.studentName}`);
+    try {
+      await api.patch(`/submissions/${submission.id}/reject`);
+      setSubmissions(submissions.map(s =>
+        s.id === submission.id ? { ...s, status: 'Rejected' as const } : s
+      ));
+      setShowReviewModal(false);
+      setFeedback('');
+      toast.success(`Submission rejected for ${submission.studentName}`);
+    } catch (e) {
+      console.error('Failed to reject', e);
+      toast.error('Failed to reject submission');
+    }
   };
 
   // Handle view submission
@@ -431,6 +339,27 @@ const SubmissionReviewPage = () => {
           ))
         )}
       </div>
+
+      {/* Load More */}
+      {loading ? (
+        <div className="space-y-4 mt-4">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="p-4 animate-pulse">
+              <div className="h-20 bg-gray-200 dark:bg-lc-elevated rounded"></div>
+            </Card>
+          ))}
+        </div>
+      ) : hasMore && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+          >
+            {loadingMore ? 'Loading...' : 'Load More Submissions'}
+          </button>
+        </div>
+      )}
 
       {/* Review Modal */}
       {showReviewModal && selectedSubmission && (

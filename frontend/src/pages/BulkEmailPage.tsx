@@ -1,17 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Container, PageHeader, Card } from '../components';
 import {
     Mail, Send, Users, Filter, FileText, Eye,
-    CheckCircle, Clock, X,
-    Calendar
+    CheckCircle, Clock, X, Calendar, AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { api } from '../services/api.client';
 
 /**
  * Bulk Email Page
  *
  * Admin interface for composing and sending bulk emails to students.
- * Features: Recipient filters, templates, preview, send confirmation.
+ * Features: Recipient filters, templates, preview, send confirmation, dynamic history.
  */
 
 interface EmailTemplate {
@@ -22,10 +22,14 @@ interface EmailTemplate {
 }
 
 interface SentEmail {
-    id: string;
+    _id: string;
     subject: string;
     recipientCount: number;
-    filters: string;
+    filters: {
+        branches: string[];
+        batch: string;
+        minCGPA?: number;
+    };
     sentAt: string;
     status: 'Delivered' | 'Sending' | 'Failed';
 }
@@ -126,41 +130,6 @@ Training & Placement Cell`,
     },
 ];
 
-const recentEmails: SentEmail[] = [
-    {
-        id: '1',
-        subject: '[TCS Digital] Campus Drive Reminder — Feb 20',
-        recipientCount: 45,
-        filters: 'CS, IT · Batch 2026 · CGPA ≥ 7.0',
-        sentAt: '2026-02-14T10:30:00Z',
-        status: 'Delivered',
-    },
-    {
-        id: '2',
-        subject: 'Document Submission Required — Deadline Feb 18',
-        recipientCount: 234,
-        filters: 'All Branches · Final Year',
-        sentAt: '2026-02-12T14:00:00Z',
-        status: 'Delivered',
-    },
-    {
-        id: '3',
-        subject: '[Amazon] Interview Schedule — Feb 10',
-        recipientCount: 38,
-        filters: 'CS, IT · Batch 2026 · CGPA ≥ 7.5',
-        sentAt: '2026-02-08T09:00:00Z',
-        status: 'Delivered',
-    },
-    {
-        id: '4',
-        subject: 'Congratulations! You have been selected by Wipro',
-        recipientCount: 32,
-        filters: 'Selected candidates · Wipro Drive',
-        sentAt: '2026-01-20T16:30:00Z',
-        status: 'Delivered',
-    },
-];
-
 const branches = ['CS', 'IT', 'EC', 'EE', 'ME', 'CE'];
 const batches = ['2024', '2025', '2026', '2027'];
 
@@ -174,16 +143,51 @@ const BulkEmailPage = () => {
     const [sending, setSending] = useState(false);
     const [activeTab, setActiveTab] = useState<'compose' | 'history'>('compose');
 
-    // Calculate mock recipient count based on filters
-    const getRecipientCount = () => {
-        let count = 0;
-        const branchMultiplier = selectedBranches.length === 0 ? branches.length : selectedBranches.length;
-        count = branchMultiplier * 30; // ~30 students per branch
-        if (minCGPA && parseFloat(minCGPA) > 6) {
-            count = Math.round(count * (1 - (parseFloat(minCGPA) - 6) * 0.15));
+    // Dynamic sent history
+    const [sentEmails, setSentEmails] = useState<SentEmail[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [recipientCount, setRecipientCount] = useState(0);
+    const [loadingCount, setLoadingCount] = useState(false);
+
+    // Load sent history from API
+    const loadSentHistory = async () => {
+        setLoadingHistory(true);
+        try {
+            const response = await api.get<{ success: boolean; data: SentEmail[] }>('/bulk-emails');
+            setSentEmails(response.data || []);
+        } catch (e) {
+            console.error('Failed to load email history', e);
+        } finally {
+            setLoadingHistory(false);
         }
-        return Math.max(count, 5);
     };
+
+    useEffect(() => {
+        if (activeTab === 'history') {
+            loadSentHistory();
+        }
+    }, [activeTab]);
+
+    // Fetch real recipient count from API
+    useEffect(() => {
+        const fetchCount = async () => {
+            setLoadingCount(true);
+            try {
+                const params = new URLSearchParams();
+                if (selectedBranches.length > 0) params.set('branches', selectedBranches.join(','));
+                params.set('batch', selectedBatch);
+                if (minCGPA) params.set('minCGPA', minCGPA);
+                const response = await api.get<{ success: boolean; count: number }>(`/bulk-emails/recipients-count?${params}`);
+                setRecipientCount(response.count || 0);
+            } catch (e) {
+                console.error('Failed to fetch recipient count', e);
+            } finally {
+                setLoadingCount(false);
+            }
+        };
+        const timer = setTimeout(fetchCount, 300); // debounce
+        return () => clearTimeout(timer);
+    }, [selectedBranches, selectedBatch, minCGPA]);
 
     const handleBranchToggle = (branch: string) => {
         setSelectedBranches(prev =>
@@ -197,26 +201,77 @@ const BulkEmailPage = () => {
         toast.success(`Template "${template.name}" loaded`);
     };
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!subject.trim() || !body.trim()) {
             toast.error('Please fill in subject and body');
             return;
         }
         setSending(true);
-        setTimeout(() => {
-            setSending(false);
-            toast.success(`📧 Email sent to ${getRecipientCount()} students successfully!`);
+        try {
+            await api.post('/bulk-emails', {
+                subject,
+                body,
+                filters: {
+                    branches: selectedBranches,
+                    batch: selectedBatch,
+                    minCGPA: minCGPA ? parseFloat(minCGPA) : undefined,
+                },
+            }, { timeout: 300000 }); // 5 minutes — bulk sending is slow
+            toast.success(`📧 Email sent successfully!`);
             setSubject('');
             setBody('');
             setSelectedBranches([]);
             setShowPreview(false);
-        }, 1500);
+        } catch (e) {
+            console.error('Failed to send email', e);
+            toast.error('Failed to send email');
+        } finally {
+            setSending(false);
+        }
     };
 
     const formatDate = (dateStr: string) => {
         return new Date(dateStr).toLocaleDateString('en-IN', {
             day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
         });
+    };
+
+    const getFilterLabel = (email: SentEmail) => {
+        const parts: string[] = [];
+        if (email.filters?.branches?.length > 0) {
+            parts.push(email.filters.branches.join(', '));
+        } else {
+            parts.push('All Branches');
+        }
+        if (email.filters?.batch) {
+            parts.push(`Batch ${email.filters.batch}`);
+        }
+        if (email.filters?.minCGPA) {
+            parts.push(`CGPA ≥ ${email.filters.minCGPA}`);
+        }
+        return parts.join(' · ');
+    };
+
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'Delivered':
+                return 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-lc-border';
+            case 'Sending':
+                return 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-lc-border';
+            case 'Failed':
+                return 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-lc-border';
+            default:
+                return 'bg-gray-100 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary';
+        }
+    };
+
+    const getStatusIcon = (status: string) => {
+        switch (status) {
+            case 'Delivered': return <CheckCircle className="w-3.5 h-3.5" />;
+            case 'Sending': return <Clock className="w-3.5 h-3.5" />;
+            case 'Failed': return <AlertCircle className="w-3.5 h-3.5" />;
+            default: return null;
+        }
     };
 
     return (
@@ -316,7 +371,7 @@ const BulkEmailPage = () => {
                             {/* Recipient Count */}
                             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-lc-border">
                                 <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
-                                    📬 Email will be sent to <strong>{getRecipientCount()}</strong> students
+                                    📬 Email will be sent to <strong>{recipientCount.toLocaleString()}</strong> students
                                     <span className="text-blue-500 dark:text-blue-400 text-xs ml-2">
                                         ({selectedBranches.length === 0 ? 'All Branches' : selectedBranches.join(', ')} · Batch {selectedBatch}
                                         {minCGPA && ` · CGPA ≥ ${minCGPA}`})
@@ -369,7 +424,7 @@ const BulkEmailPage = () => {
                                             }`}
                                     >
                                         <Send className="w-4 h-4" aria-hidden="true" />
-                                        {sending ? 'Sending...' : `Send to ${getRecipientCount()} Students`}
+                                        {sending ? 'Sending...' : `Send to ${recipientCount.toLocaleString()} Students`}
                                     </button>
                                 </div>
                             </div>
@@ -403,37 +458,51 @@ const BulkEmailPage = () => {
                     </div>
                 </div>
             ) : (
-                /* Sent History Tab */
+                /* Sent History Tab — now dynamic */
                 <div className="space-y-3">
-                    {recentEmails.map(email => (
-                        <Card key={email.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                            <div className="p-4">
-                                <div className="flex items-start justify-between mb-2">
-                                    <div className="flex-1">
-                                        <h3 className="text-sm font-bold text-gray-900 dark:text-lc-text mb-1">{email.subject}</h3>
-                                        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-lc-text-muted">
-                                            <span className="flex items-center gap-1">
-                                                <Users className="w-3.5 h-3.5" aria-hidden="true" />
-                                                {email.recipientCount} recipients
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <Filter className="w-3.5 h-3.5" aria-hidden="true" />
-                                                {email.filters}
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
-                                                {formatDate(email.sentAt)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium border bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-lc-border">
-                                        <CheckCircle className="w-3.5 h-3.5" aria-hidden="true" />
-                                        {email.status}
-                                    </span>
-                                </div>
-                            </div>
+                    {loadingHistory ? (
+                        [1, 2, 3].map(i => (
+                            <Card key={i} className="p-4 animate-pulse">
+                                <div className="h-16 bg-gray-200 dark:bg-lc-elevated rounded"></div>
+                            </Card>
+                        ))
+                    ) : sentEmails.length === 0 ? (
+                        <Card className="p-12 text-center">
+                            <Mail className="w-12 h-12 text-gray-300 dark:text-lc-text-muted mx-auto mb-3" />
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text mb-1">No emails sent yet</h3>
+                            <p className="text-sm text-gray-500 dark:text-lc-text-muted">Switch to Compose to send your first email</p>
                         </Card>
-                    ))}
+                    ) : (
+                        sentEmails.map(email => (
+                            <Card key={email._id} className="overflow-hidden hover:shadow-md transition-shadow">
+                                <div className="p-4">
+                                    <div className="flex items-start justify-between mb-2">
+                                        <div className="flex-1">
+                                            <h3 className="text-sm font-bold text-gray-900 dark:text-lc-text mb-1">{email.subject}</h3>
+                                            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-lc-text-muted">
+                                                <span className="flex items-center gap-1">
+                                                    <Users className="w-3.5 h-3.5" aria-hidden="true" />
+                                                    {email.recipientCount} recipients
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <Filter className="w-3.5 h-3.5" aria-hidden="true" />
+                                                    {getFilterLabel(email)}
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
+                                                    {formatDate(email.sentAt)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium border ${getStatusBadge(email.status)}`}>
+                                            {getStatusIcon(email.status)}
+                                            {email.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))
+                    )}
                 </div>
             )}
 
@@ -462,7 +531,7 @@ const BulkEmailPage = () => {
                             <div>
                                 <p className="text-xs font-semibold text-gray-500 dark:text-lc-text-muted mb-1">To</p>
                                 <p className="text-sm text-gray-900 dark:text-lc-text">
-                                    {getRecipientCount()} students
+                                    {recipientCount.toLocaleString()} students
                                     ({selectedBranches.length === 0 ? 'All Branches' : selectedBranches.join(', ')} · Batch {selectedBatch})
                                 </p>
                             </div>

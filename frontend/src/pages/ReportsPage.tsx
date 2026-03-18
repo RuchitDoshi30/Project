@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Container, PageHeader, Card } from '../components';
 import {
     BarChart3, TrendingUp, Users, GraduationCap, Award,
     Code2, Brain, Building2, Target, PieChart, ArrowUp,
     ArrowDown, Minus
 } from 'lucide-react';
+import { api } from '../services/api.client';
 
 /**
  * Reports & Analytics Page
@@ -16,51 +17,81 @@ import {
  * - Weak areas analysis
  */
 
-const mockReports = {
+interface ReportsData {
     placementStats: {
-        totalEligible: 340,
-        totalPlaced: 85,
-        placementRate: 25,
-        avgPackage: '5.8',
-        highestPackage: '16.0',
-        companiesVisited: 6,
-    },
-    branchPerformance: [
-        { branch: 'CS', students: 90, placed: 35, avgCoding: 72, avgAptitude: 78, placementRate: 39 },
-        { branch: 'IT', students: 85, placed: 28, avgCoding: 68, avgAptitude: 75, placementRate: 33 },
-        { branch: 'EC', students: 60, placed: 12, avgCoding: 55, avgAptitude: 70, placementRate: 20 },
-        { branch: 'EE', students: 55, placed: 6, avgCoding: 48, avgAptitude: 65, placementRate: 11 },
-        { branch: 'ME', students: 50, placed: 4, avgCoding: 35, avgAptitude: 60, placementRate: 8 },
-    ],
-    topPerformers: [
-        { rank: 1, name: 'Rahul Sharma', branch: 'CS', codingScore: 95, aptitudeScore: 92, overall: 93.5, status: 'Placed', company: 'Amazon' },
-        { rank: 2, name: 'Priya Patel', branch: 'CS', codingScore: 92, aptitudeScore: 90, overall: 91.0, status: 'Placed', company: 'Google' },
-        { rank: 3, name: 'Amit Kumar', branch: 'IT', codingScore: 88, aptitudeScore: 91, overall: 89.5, status: 'Placed', company: 'TCS Digital' },
-        { rank: 4, name: 'Sneha Reddy', branch: 'CS', codingScore: 90, aptitudeScore: 85, overall: 87.5, status: 'Placed', company: 'Amazon' },
-        { rank: 5, name: 'Vikram Singh', branch: 'IT', codingScore: 85, aptitudeScore: 88, overall: 86.5, status: 'Unplaced', company: '-' },
-        { rank: 6, name: 'Ananya Iyer', branch: 'EC', codingScore: 82, aptitudeScore: 86, overall: 84.0, status: 'Placed', company: 'Infosys' },
-        { rank: 7, name: 'Rohan Joshi', branch: 'CS', codingScore: 80, aptitudeScore: 85, overall: 82.5, status: 'Unplaced', company: '-' },
-        { rank: 8, name: 'Kavya Nair', branch: 'IT', codingScore: 78, aptitudeScore: 84, overall: 81.0, status: 'Unplaced', company: '-' },
-        { rank: 9, name: 'Deepak Verma', branch: 'EE', codingScore: 75, aptitudeScore: 82, overall: 78.5, status: 'Placed', company: 'Wipro' },
-        { rank: 10, name: 'Meera Krishnan', branch: 'EC', codingScore: 72, aptitudeScore: 80, overall: 76.0, status: 'Unplaced', company: '-' },
-    ],
-    weakTopics: [
-        { topic: 'Dynamic Programming', avgScore: 35, totalAttempts: 180, category: 'Coding' },
-        { topic: 'Graph Algorithms', avgScore: 42, totalAttempts: 150, category: 'Coding' },
-        { topic: 'System Design', avgScore: 38, totalAttempts: 90, category: 'Coding' },
-        { topic: 'Verbal Reasoning', avgScore: 48, totalAttempts: 220, category: 'Aptitude' },
-        { topic: 'Data Interpretation', avgScore: 52, totalAttempts: 200, category: 'Aptitude' },
-    ],
+        totalEligible: number;
+        totalPlaced: number;
+        placementRate: number;
+        avgPackage: string;
+        highestPackage: string;
+        companiesVisited: number;
+    };
+    branchPerformance: {
+        branch: string;
+        students: number;
+        placed: number;
+        avgCoding: number;
+        avgAptitude: number;
+        placementRate: number;
+    }[];
+    topPerformers: {
+        rank: number;
+        name: string;
+        branch: string;
+        codingScore: number;
+        aptitudeScore: number;
+        overall: number;
+        status: string;
+        company: string;
+    }[];
+    weakTopics: {
+        topic: string;
+        avgScore: number;
+        totalAttempts: number;
+        category: string;
+    }[];
     readiness: {
-        ready: 85,
-        needsWork: 155,
-        notStarted: 100,
-    },
-};
+        ready: number;
+        needsWork: number;
+        notStarted: number;
+    };
+}
 
 const ReportsPage = () => {
     const [activeSection, setActiveSection] = useState<'overview' | 'branch' | 'performers' | 'weak'>('overview');
-    const { placementStats, branchPerformance, topPerformers, weakTopics, readiness } = mockReports;
+    const [data, setData] = useState<ReportsData | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const response = await api.get<{ success: boolean; data: ReportsData }>('/dashboard/reports');
+                setData(response.data);
+            } catch (e) {
+                console.error('Failed to load reports', e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
+    if (loading || !data) {
+        return (
+            <Container size="xl" fullHeight>
+                <PageHeader title="📊 Reports & Analytics" description="Loading..." />
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <Card key={i} className="p-4 animate-pulse">
+                            <div className="h-16 bg-gray-200 dark:bg-lc-elevated rounded" />
+                        </Card>
+                    ))}
+                </div>
+            </Container>
+        );
+    }
+
+    const { placementStats, branchPerformance, topPerformers, weakTopics, readiness } = data;
 
     const getTrendIcon = (value: number) => {
         if (value >= 30) return <ArrowUp className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />;
@@ -108,14 +139,14 @@ const ReportsPage = () => {
                         <Card className="hover:shadow-md transition-shadow">
                             <div className="p-4 text-center">
                                 <Users className="w-5 h-5 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-                                <p className="text-xl font-bold text-gray-900 dark:text-lc-text">{placementStats.totalEligible}</p>
+                                <p className="text-xl font-bold text-gray-900 dark:text-lc-text">{placementStats.totalEligible.toLocaleString()}</p>
                                 <p className="text-xs text-gray-500 dark:text-lc-text-muted">Eligible</p>
                             </div>
                         </Card>
                         <Card className="hover:shadow-md transition-shadow">
                             <div className="p-4 text-center">
                                 <Award className="w-5 h-5 text-green-600 dark:text-green-400 mx-auto mb-2" />
-                                <p className="text-xl font-bold text-green-600 dark:text-green-400">{placementStats.totalPlaced}</p>
+                                <p className="text-xl font-bold text-green-600 dark:text-green-400">{placementStats.totalPlaced.toLocaleString()}</p>
                                 <p className="text-xs text-gray-500 dark:text-lc-text-muted">Placed</p>
                             </div>
                         </Card>
@@ -157,19 +188,19 @@ const ReportsPage = () => {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-lc-border text-center">
-                                <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">{readiness.ready}</p>
+                                <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">{readiness.ready.toLocaleString()}</p>
                                 <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted">✅ Placement Ready</p>
-                                <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1">Scored ≥70% in both Coding & Aptitude</p>
+                                <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1">Scored ≥70% in Coding</p>
                             </div>
                             <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-lc-border text-center">
-                                <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">{readiness.needsWork}</p>
+                                <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">{readiness.needsWork.toLocaleString()}</p>
                                 <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted">⚠️ Needs Improvement</p>
-                                <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1">Scored 40-70% — need more practice</p>
+                                <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1">Started but needs practice</p>
                             </div>
                             <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-lc-border text-center">
-                                <p className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">{readiness.notStarted}</p>
+                                <p className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">{readiness.notStarted.toLocaleString()}</p>
                                 <p className="text-xs font-semibold text-gray-600 dark:text-lc-text-muted">❌ Not Started</p>
-                                <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1">Haven't attempted enough problems/tests</p>
+                                <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1">Haven't attempted problems/tests</p>
                             </div>
                         </div>
                     </Card>
@@ -201,8 +232,8 @@ const ReportsPage = () => {
                                                 <span className="text-sm font-bold text-gray-900 dark:text-lc-text">{branch.branch}</span>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm text-gray-700 dark:text-lc-text-secondary">{branch.students}</td>
-                                        <td className="px-4 py-3 text-center text-sm font-semibold text-green-600 dark:text-green-400">{branch.placed}</td>
+                                        <td className="px-4 py-3 text-center text-sm text-gray-700 dark:text-lc-text-secondary">{branch.students.toLocaleString()}</td>
+                                        <td className="px-4 py-3 text-center text-sm font-semibold text-green-600 dark:text-green-400">{branch.placed.toLocaleString()}</td>
                                         <td className="px-4 py-3 text-center">
                                             <span className={`text-sm font-bold ${branch.placementRate >= 30 ? 'text-green-600 dark:text-green-400' :
                                                     branch.placementRate >= 15 ? 'text-orange-600 dark:text-orange-400' :
@@ -297,50 +328,54 @@ const ReportsPage = () => {
                             <Target className="w-4 h-4 text-red-600 dark:text-red-400" />
                             Topics Needing Attention
                             <span className="text-xs text-gray-500 dark:text-lc-text-muted font-normal ml-2">
-                                (avg score below 55% — consider arranging workshops)
+                                (low acceptance rate — consider arranging workshops)
                             </span>
                         </h3>
                         <div className="space-y-4">
-                            {weakTopics.map((topic, idx) => (
-                                <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-lc-elevated rounded-lg border border-gray-200 dark:border-lc-border">
-                                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
-                                        {topic.category === 'Coding' ? (
-                                            <Code2 className="w-4 h-4 text-red-600 dark:text-red-400" />
-                                        ) : (
-                                            <Brain className="w-4 h-4 text-red-600 dark:text-red-400" />
-                                        )}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-lc-text">{topic.topic}</p>
-                                            <span className="text-xs font-medium text-gray-500 dark:text-lc-text-muted">{topic.totalAttempts} attempts</span>
+                            {weakTopics.length === 0 ? (
+                                <p className="text-sm text-gray-500 text-center py-8">No topic data available yet.</p>
+                            ) : (
+                                weakTopics.map((topic, idx) => (
+                                    <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-lc-elevated rounded-lg border border-gray-200 dark:border-lc-border">
+                                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
+                                            {topic.category === 'Coding' ? (
+                                                <Code2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                                            ) : (
+                                                <Brain className="w-4 h-4 text-red-600 dark:text-red-400" />
+                                            )}
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex-1 h-2 bg-gray-200 dark:bg-lc-border rounded-full overflow-hidden">
-                                                <div
-                                                    className={`h-full rounded-full ${topic.avgScore < 40 ? 'bg-red-500' :
-                                                            topic.avgScore < 50 ? 'bg-orange-500' :
-                                                                'bg-yellow-500'
-                                                        }`}
-                                                    style={{ width: `${topic.avgScore}%` }}
-                                                />
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <p className="text-sm font-semibold text-gray-900 dark:text-lc-text">{topic.topic}</p>
+                                                <span className="text-xs font-medium text-gray-500 dark:text-lc-text-muted">{topic.totalAttempts.toLocaleString()} attempts</span>
                                             </div>
-                                            <span className={`text-xs font-bold ${topic.avgScore < 40 ? 'text-red-600 dark:text-red-400' :
-                                                    topic.avgScore < 50 ? 'text-orange-600 dark:text-orange-400' :
-                                                        'text-yellow-600 dark:text-yellow-400'
-                                                }`}>
-                                                {topic.avgScore}%
-                                            </span>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex-1 h-2 bg-gray-200 dark:bg-lc-border rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full ${topic.avgScore < 40 ? 'bg-red-500' :
+                                                                topic.avgScore < 50 ? 'bg-orange-500' :
+                                                                    'bg-yellow-500'
+                                                            }`}
+                                                        style={{ width: `${topic.avgScore}%` }}
+                                                    />
+                                                </div>
+                                                <span className={`text-xs font-bold ${topic.avgScore < 40 ? 'text-red-600 dark:text-red-400' :
+                                                        topic.avgScore < 50 ? 'text-orange-600 dark:text-orange-400' :
+                                                            'text-yellow-600 dark:text-yellow-400'
+                                                    }`}>
+                                                    {topic.avgScore}%
+                                                </span>
+                                            </div>
                                         </div>
+                                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${topic.category === 'Coding'
+                                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                                                : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                                            }`}>
+                                            {topic.category}
+                                        </span>
                                     </div>
-                                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${topic.category === 'Coding'
-                                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                                            : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
-                                        }`}>
-                                        {topic.category}
-                                    </span>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </Card>
                 </div>

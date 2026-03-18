@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, Eye, FileQuestion, Filter } from 'lucide-react';
 import { Container } from '../components/Container';
 import { PageHeader } from '../components/PageHeader';
 import { Card } from '../components/Card';
 import type { IAptitudeQuestion, AptitudeCategory } from '../types/models';
-import { mockAptitudeQuestions } from '../mocks/aptitude.mock';
+import { api } from '../services/api.client';
+import toast from 'react-hot-toast';
 
 /**
  * Aptitude Management Page
@@ -16,8 +17,24 @@ import { mockAptitudeQuestions } from '../mocks/aptitude.mock';
 
 const AptitudeManagementPage = () => {
   const navigate = useNavigate();
-  // Get all questions from the mock data
-  const [questions, setQuestions] = useState<IAptitudeQuestion[]>(mockAptitudeQuestions);
+  // Get all questions from API
+  const [questions, setQuestions] = useState<IAptitudeQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        const response = await api.get<{ success: boolean; data: IAptitudeQuestion[] }>('/aptitude/questions?limit=100');
+        setQuestions(response.data);
+      } catch (e) {
+        console.error('Failed to load questions', e);
+        toast.error('Failed to load questions');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadQuestions();
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | AptitudeCategory>('all');
   const [selectedQuestion, setSelectedQuestion] = useState<IAptitudeQuestion | null>(null);
@@ -72,10 +89,16 @@ const AptitudeManagementPage = () => {
   });
 
   // Handle delete question
-  const handleDeleteQuestion = (id: string) => {
+  const handleDeleteQuestion = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this question? This action cannot be undone.')) {
-      setQuestions(questions.filter(q => q._id !== id));
-      alert('Question deleted successfully');
+      try {
+        await api.delete(`/aptitude/questions/${id}`);
+        setQuestions(questions.filter(q => q._id !== id));
+        toast.success('Question deleted successfully');
+      } catch (e) {
+        console.error('Failed to delete question', e);
+        toast.error('Failed to delete question');
+      }
     }
   };
 

@@ -14,9 +14,6 @@ import {
 import { Card, SkeletonResults } from '../components';
 import type { IAptitudeAttempt, IAptitudeTest, IAptitudeQuestion, AptitudeCategory } from '../types/models';
 
-// Constants
-const CURRENT_USER_ID = '2'; // TODO: Replace with actual authenticated user ID from auth context
-
 // Category color mapping for consistent UI
 const CATEGORY_THEME_COLORS: Record<AptitudeCategory, { bg: string; text: string; border: string }> = {
   Quantitative: { bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-200 dark:border-blue-700/40' },
@@ -52,7 +49,7 @@ const AptitudeTestResultsPage = () => {
 
     const loadResults = async () => {
       try {
-        const foundAttempt = getAttemptById(attemptId, CURRENT_USER_ID);
+        const foundAttempt = await getAttemptById(attemptId);
         if (!foundAttempt) {
           navigate('/aptitude');
           return;
@@ -60,13 +57,13 @@ const AptitudeTestResultsPage = () => {
 
         setTestAttempt(foundAttempt);
         
-        const foundTest = getAptitudeTestById(foundAttempt.testId);
+        const foundTest = await getAptitudeTestById(foundAttempt.testId);
         if (!foundTest) {
           navigate('/aptitude');
           return;
         }
 
-        const questionsInTest = getQuestionsForTest(foundTest._id);
+        const questionsInTest = await getQuestionsForTest(foundTest._id);
         setAptitudeTest(foundTest);
         setTestQuestions(questionsInTest);
         setIsLoadingResults(false);
@@ -165,8 +162,8 @@ const AptitudeTestResultsPage = () => {
   const correctAnswersCount = testQuestions.filter(q => isAnswerCorrect(q._id)).length;
   const incorrectAnswersCount = testQuestions.length - correctAnswersCount;
   const scorePercentage = Math.round((correctAnswersCount / testQuestions.length) * 100);
-  const categoryPerformanceData = getCategoryPerformance(testAttempt);
-  const intelligentRecommendations = getSmartRecommendations(testAttempt);
+  const categoryPerformanceData = getCategoryPerformance(testAttempt, testQuestions);
+  const intelligentRecommendations = getSmartRecommendations(testAttempt, testQuestions);
   
   // Confidence analysis
   const confidentAnswers = testAttempt.answers.filter(a => a.isConfident);
