@@ -12,6 +12,7 @@ export interface ISubmission extends Document {
   memory?: number;
   testCasesPassed?: number;
   totalTestCases?: number;
+  idempotencyHash?: string;
   submittedAt: Date;
 }
 
@@ -31,6 +32,7 @@ const SubmissionSchema: Schema<ISubmission> = new Schema(
     memory: { type: Number }, // in kilobytes
     testCasesPassed: { type: Number },
     totalTestCases: { type: Number },
+    idempotencyHash: { type: String, index: false }, // Covered by compound index below
     submittedAt: { type: Date, default: Date.now },
   },
   {
@@ -44,6 +46,9 @@ SubmissionSchema.index({ userId: 1, problemId: 1, submittedAt: -1 });
 
 // Filtering submissions by status (e.g. admin reviewing Pending ones)
 SubmissionSchema.index({ status: 1, submittedAt: -1 });
+
+// Idempotency: prevent duplicate submissions (same user + same content hash)
+SubmissionSchema.index({ userId: 1, idempotencyHash: 1 }, { unique: true, sparse: true });
 
 
 // Mongoose Pre-Hook

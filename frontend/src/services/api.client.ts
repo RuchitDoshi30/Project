@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
  * Currently configured for mock/development mode.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
 // Create axios instance with default config
 export const apiClient: AxiosInstance = axios.create({
@@ -45,7 +45,21 @@ apiClient.interceptors.request.use(
  */
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    const config = error.config as InternalAxiosRequestConfig & { _retryCount?: number };
+
+    // Retry logic: 1 retry for 5xx or network errors (not for auth failures)
+    if (
+      config &&
+      (!config._retryCount || config._retryCount < 1) &&
+      (error.response?.status === undefined || error.response.status >= 500) &&
+      error.response?.status !== 401
+    ) {
+      config._retryCount = (config._retryCount || 0) + 1;
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return apiClient(config);
+    }
+
     // Handle authentication errors
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token');
@@ -61,13 +75,13 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle server errors
+    // Handle server errors (after retry exhausted)
     if (error.response?.status && error.response.status >= 500) {
       toast.error('Server error. Please try again later.');
       return Promise.reject(error);
     }
 
-    // Handle network errors
+    // Handle network errors (after retry exhausted)
     if (!error.response) {
       toast.error('Network error. Please check your connection.');
       return Promise.reject(error);
@@ -127,9 +141,6 @@ export const API_ENDPOINTS = {
   // Authentication
   AUTH: {
     LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-    LOGOUT: '/auth/logout',
-    REFRESH: '/auth/refresh',
     ME: '/auth/me',
   },
 
@@ -137,33 +148,40 @@ export const API_ENDPOINTS = {
   PROBLEMS: {
     LIST: '/problems',
     DETAIL: (slug: string) => `/problems/${slug}`,
-    SUBMIT: '/problems/submit',
-    SUBMISSIONS: (problemId: string) => `/problems/${problemId}/submissions`,
+  },
+
+  // Submissions
+  SUBMISSIONS: {
+    CREATE: '/submissions',
+    MY: '/submissions/me',
+    FOR_PROBLEM: (problemId: string) => `/submissions/me/problem/${problemId}`,
+    ADMIN: '/submissions/admin',
+    APPROVE: (id: string) => `/submissions/${id}/approve`,
+    REJECT: (id: string) => `/submissions/${id}/reject`,
   },
 
   // Aptitude Tests
   APTITUDE: {
     TESTS: '/aptitude/tests',
     TEST_DETAIL: (id: string) => `/aptitude/tests/${id}`,
-    QUESTIONS: (testId: string) => `/aptitude/tests/${testId}/questions`,
-    SUBMIT: '/aptitude/submit',
+    QUESTIONS: '/aptitude/questions',
     ATTEMPTS: '/aptitude/attempts',
+    MY_ATTEMPTS: '/aptitude/attempts/me',
     ATTEMPT_DETAIL: (id: string) => `/aptitude/attempts/${id}`,
   },
 
   // Dashboard
   DASHBOARD: {
     STATS: '/dashboard/stats',
-    PROGRESS: '/dashboard/progress',
+    ADMIN_STATS: '/dashboard/admin-stats',
     ACTIVITY: '/dashboard/activity',
+    LEADERBOARD: '/dashboard/leaderboard',
+    REPORTS: '/dashboard/reports',
+    STUDENTS: '/dashboard/students',
   },
 
-  // Admin
-  ADMIN: {
-    STATS: '/admin/statistics',
-    STUDENTS: '/admin/students',
-    SUBMISSIONS: '/admin/submissions',
-    APPROVE: (id: string) => `/admin/submissions/${id}/approve`,
-    REJECT: (id: string) => `/admin/submissions/${id}/reject`,
-  },
+  // Content
+  ANNOUNCEMENTS: '/announcements',
+  DRIVES: '/drives',
+  BULK_EMAILS: '/bulk-emails',
 } as const;

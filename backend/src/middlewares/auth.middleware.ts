@@ -17,7 +17,7 @@ export const authenticate = (
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Missing or invalid token' });
+    return res.status(401).json({ success: false, message: 'Missing or invalid token' });
   }
 
   const token = authHeader.split(' ')[1];
@@ -27,6 +27,6 @@ export const authenticate = (
     req.user = decoded;
     next();
   } catch {
-    return res.status(401).json({ message: 'Token invalid or expired' });
+    return res.status(401).json({ success: false, message: 'Token invalid or expired' });
   }
 };

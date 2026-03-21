@@ -58,7 +58,7 @@ export const getRecipientsCount = async (req: Request, res: Response, next: Next
 export const sendBulkEmail = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { subject, body, filters } = req.body;
-    const userId = (req as any).user?._id;
+    const userId = req.user?.id;
 
     if (!subject || !body) {
       res.status(400).json({ success: false, message: 'Subject and body are required' });

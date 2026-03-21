@@ -141,7 +141,7 @@ export const getProblemStatusAndTime = (problemId: string, userId: string): IPro
   return getProblemProgress(problemId, userId);
 };
 
-// Get all problems with local status
+// Get all problems with real submission-based status
 export const getProblemsWithStatus = async (
   userId: string,
   filters?: {
@@ -153,10 +153,37 @@ export const getProblemsWithStatus = async (
   }
 ): Promise<PaginatedResponse<IProblem & { progress: IProblemProgress }>> => {
   const parsedResponse = await getProblems(filters);
-  const data = parsedResponse.data.map(problem => ({
-    ...problem,
-    progress: getProblemProgress(problem._id, userId),
-  }));
+
+  // Fetch real submissions from backend to determine solved/attempted status
+  let submissionMap: Record<string, 'solved' | 'attempted'> = {};
+  try {
+    const res = await api.get<{ success: boolean; data: ISubmission[] }>('/submissions/me?limit=500');
+    const submissions = res.data || [];
+    for (const sub of submissions) {
+      const pid = typeof sub.problemId === 'string' ? sub.problemId : (sub.problemId as any)?._id?.toString?.() || (sub.problemId as any)?.toString?.() || '';
+      if (!pid) continue;
+      if (sub.status === 'Accepted') {
+        submissionMap[pid] = 'solved';
+      } else if (!submissionMap[pid]) {
+        submissionMap[pid] = 'attempted';
+      }
+    }
+  } catch {
+    // If fetch fails, fall back to localStorage progress
+  }
+
+  const data = parsedResponse.data.map(problem => {
+    // Prefer real submission status, fall back to localStorage
+    const realStatus = submissionMap[problem._id];
+    const localProgress = getProblemProgress(problem._id, userId);
+    return {
+      ...problem,
+      progress: {
+        ...localProgress,
+        status: realStatus || localProgress.status,
+      },
+    };
+  });
   
   return {
     ...parsedResponse,

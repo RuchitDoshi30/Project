@@ -219,19 +219,16 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
 
   // Count placed students from drives
   const drives = await PlacementDrive.find().select('selectedStudents packageLPA').lean();
-  const placedStudentIds = new Set<string>();
+  let totalPlaced = 0;
   let totalPackage = 0;
   let highestPackage = 0;
   for (const drive of drives) {
-    const selected = (drive as any).selectedStudents || [];
-    for (const sid of selected) {
-      placedStudentIds.add(sid.toString());
-    }
-    const pkg = (drive as any).packageLPA || 0;
+    const selected = (drive as any).selectedStudents || 0;
+    totalPlaced += typeof selected === 'number' ? selected : 0;
+    const pkg = parseFloat((drive as any).packageLPA) || 0;
     if (pkg > highestPackage) highestPackage = pkg;
-    totalPackage += pkg * selected.length;
+    totalPackage += pkg * (typeof selected === 'number' ? selected : 0);
   }
-  const totalPlaced = placedStudentIds.size;
 
   const placementStats = {
     totalEligible: totalStudents,
@@ -266,7 +263,7 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
         totalAptitudeScore += a.score || 0;
       }
 
-      const placed = studentIds.filter(id => placedStudentIds.has(id.toString())).length;
+      const placed = 0; // selectedStudents is a count, not an array of IDs
 
       return {
         branch,
@@ -300,7 +297,7 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
         codingScore,
         aptitudeScore: 0, // Will be enriched below
         overall,
-        status: placedStudentIds.has(p.userId.toString()) ? 'Placed' : 'Unplaced',
+        status: 'Active',
         company: '-',
         _userId: p.userId.toString(),
       };
@@ -372,3 +369,227 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
   });
 });
 
+/**
+ * Student: Smart Recommendations
+ * 
+ * Multi-signal scoring algorithm:
+ *  1. Retry-worthy: problems the student attempted but didn't solve
+ *  2. Weak tags: tags where the student has low acceptance rate
+ *  3. Difficulty progression: next appropriate difficulty based on solve count
+ *  4. Fresh topics: tags the student hasn't explored yet
+ *  5. Popular: problems with high submission count the student hasn't tried
+ */
+export const getRecommendations = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user!.id;
+
+  // 1. Fetch all user data in parallel
+  const [submissions, attempts, progress, allProblems] = await Promise.all([
+    Submission.find({ userId }).select('problemId status').lean(),
+    AptitudeAttempt.find({ userId }).select('testId score passed').populate('testId', 'category').lean(),
+    UserProgress.findOne({ userId }).lean(),
+    Problem.find().select('slug title difficulty tags').lean(),
+  ]);
+
+  // 2. Build user profile from submissions
+  const solvedProblemIds = new Set<string>();
+  const attemptedProblemIds = new Set<string>();
+  const tagSubmissions: Record<string, { total: number; accepted: number }> = {};
+
+  for (const sub of submissions) {
+    const pid = sub.problemId.toString();
+    if (sub.status === 'Accepted') {
+      solvedProblemIds.add(pid);
+    } else {
+      attemptedProblemIds.add(pid);
+    }
+  }
+
+  // Remove solved from attempted (attempted = tried but NOT yet solved)
+  for (const pid of solvedProblemIds) {
+    attemptedProblemIds.delete(pid);
+  }
+
+  // Build tag performance from submissions + problems
+  for (const sub of submissions) {
+    const pid = sub.problemId.toString();
+    const problem = allProblems.find(p => p._id.toString() === pid);
+    if (problem) {
+      for (const tag of problem.tags) {
+        if (!tagSubmissions[tag]) tagSubmissions[tag] = { total: 0, accepted: 0 };
+        tagSubmissions[tag].total++;
+        if (sub.status === 'Accepted') tagSubmissions[tag].accepted++;
+      }
+    }
+  }
+
+  // 3. Compute skill level
+  const easy = progress?.problemsSolved?.easy || 0;
+  const medium = progress?.problemsSolved?.medium || 0;
+  const hard = progress?.problemsSolved?.hard || 0;
+  const totalSolved = easy + medium + hard;
+
+  // Determine target difficulty
+  let targetDifficulties: string[];
+  if (totalSolved < 5) {
+    targetDifficulties = ['Beginner', 'Intermediate'];
+  } else if (totalSolved < 15) {
+    targetDifficulties = ['Intermediate', 'Beginner', 'Advanced'];
+  } else {
+    targetDifficulties = ['Advanced', 'Intermediate'];
+  }
+
+  // 4. Identify weak tags (acceptance rate < 50%) and fresh tags
+  const weakTags = new Set<string>();
+  const exploredTags = new Set<string>(Object.keys(tagSubmissions));
+  for (const [tag, stats] of Object.entries(tagSubmissions)) {
+    const rate = stats.total > 0 ? stats.accepted / stats.total : 0;
+    if (rate < 0.5 && stats.total >= 1) weakTags.add(tag);
+  }
+
+  // All unique tags from all problems
+  const allTags = new Set<string>();
+  for (const p of allProblems) {
+    for (const tag of p.tags) allTags.add(tag);
+  }
+  const freshTags = new Set<string>([...allTags].filter(t => !exploredTags.has(t)));
+
+  // 5. Aptitude weak categories
+  const categoryScores: Record<string, { total: number; sum: number }> = {};
+  for (const attempt of attempts) {
+    const category = (attempt.testId as any)?.category;
+    if (category) {
+      if (!categoryScores[category]) categoryScores[category] = { total: 0, sum: 0 };
+      categoryScores[category].total++;
+      categoryScores[category].sum += attempt.score;
+    }
+  }
+  const weakAptitudeCategories = Object.entries(categoryScores)
+    .filter(([, stats]) => stats.total > 0 && (stats.sum / stats.total) < 60)
+    .map(([cat]) => cat);
+
+  // 6. Score each unsolved problem
+  type ScoredProblem = {
+    _id: string;
+    slug: string;
+    title: string;
+    difficulty: string;
+    tags: string[];
+    score: number;
+    reason: string;
+    category: 'retry' | 'weak-area' | 'progression' | 'explore' | 'popular';
+  };
+
+  const scoredProblems: ScoredProblem[] = [];
+
+  for (const problem of allProblems) {
+    const pid = problem._id.toString();
+    
+    // Skip already solved
+    if (solvedProblemIds.has(pid)) continue;
+
+    let score = 0;
+    let reason = '';
+    let category: ScoredProblem['category'] = 'explore';
+
+    // Signal 1: Retry-worthy (attempted but not solved) — highest priority
+    if (attemptedProblemIds.has(pid)) {
+      score += 50;
+      reason = '🔄 You attempted this but haven\'t solved it yet — try again!';
+      category = 'retry';
+    }
+
+    // Signal 2: Matches weak tags
+    const matchedWeakTags = problem.tags.filter(t => weakTags.has(t));
+    if (matchedWeakTags.length > 0) {
+      score += 30 * matchedWeakTags.length;
+      if (!reason) {
+        reason = `💪 Practice your weak area: ${matchedWeakTags.join(', ')}`;
+        category = 'weak-area';
+      }
+    }
+
+    // Signal 3: Matches target difficulty
+    const difficultyIdx = targetDifficulties.indexOf(problem.difficulty);
+    if (difficultyIdx !== -1) {
+      score += 20 - (difficultyIdx * 5); // Higher score for primary target difficulty
+      if (!reason) {
+        if (totalSolved < 5) reason = '🌱 Great for building your foundation';
+        else if (totalSolved < 15) reason = '📈 Perfect challenge for your level';
+        else reason = '🔥 Push your limits with this one';
+        category = 'progression';
+      }
+    }
+
+    // Signal 4: Fresh tags (exploration)
+    const matchedFreshTags = problem.tags.filter(t => freshTags.has(t));
+    if (matchedFreshTags.length > 0) {
+      score += 15 * matchedFreshTags.length;
+      if (!reason) {
+        reason = `📚 Explore new topic: ${matchedFreshTags.join(', ')}`;
+        category = 'explore';
+      }
+    }
+
+    // Signal 5: Base score for unsolved (ensures all unsolved problems have some score)
+    if (score === 0) {
+      score = 5;
+      reason = '✨ Try something new';
+      category = 'explore';
+    }
+
+    scoredProblems.push({
+      _id: pid,
+      slug: problem.slug,
+      title: problem.title,
+      difficulty: problem.difficulty,
+      tags: problem.tags,
+      score,
+      reason,
+      category,
+    });
+  }
+
+  // Sort by score descending, take top 15
+  scoredProblems.sort((a, b) => b.score - a.score);
+  const recommendations = scoredProblems.slice(0, 15);
+
+  // 7. Build aptitude recommendations
+  const aptitudeTests = await AptitudeTest.find().select('title category').lean();
+  const attemptedTestIds = new Set(attempts.map(a => (a.testId as any)?._id?.toString() || a.testId?.toString()));
+  
+  const aptitudeRecommendations = aptitudeTests
+    .filter(t => !attemptedTestIds.has(t._id.toString()))
+    .map(t => ({
+      _id: t._id,
+      title: t.title,
+      category: t.category,
+      reason: weakAptitudeCategories.includes(t.category)
+        ? `💪 Strengthen your ${t.category} skills`
+        : '📝 Haven\'t attempted yet',
+    }))
+    .slice(0, 5);
+
+  // 8. Build summary stats for the UI
+  const summary = {
+    totalSolved,
+    totalAttempted: attemptedProblemIds.size,
+    totalProblems: allProblems.length,
+    skillLevel: totalSolved < 5 ? 'Beginner' : totalSolved < 15 ? 'Intermediate' : 'Advanced',
+    weakTags: [...weakTags].slice(0, 5),
+    strongTags: Object.entries(tagSubmissions)
+      .filter(([, s]) => s.total >= 2 && (s.accepted / s.total) >= 0.7)
+      .map(([tag]) => tag)
+      .slice(0, 5),
+    weakAptitudeCategories,
+    aptitudeTestsTaken: attempts.length,
+  };
+
+  res.json({
+    success: true,
+    data: {
+      problems: recommendations,
+      aptitudeTests: aptitudeRecommendations,
+      summary,
+    },
+  });
+});

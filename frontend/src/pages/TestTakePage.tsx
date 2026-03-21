@@ -13,10 +13,10 @@ import {
   clearInProgressAttempt
 } from '../services/aptitude.service';
 import { Card, SkeletonQuestion } from '../components';
+import { useAuth } from '../context/AuthContext';
 import type { IAptitudeTest, IAptitudeQuestion } from '../types/models';
 
 // Constants
-const MOCK_USER_ID = '2'; // TODO: Replace with actual authenticated user ID
 const TIMER_INTERVAL_MS = 1000;
 const SECONDS_PER_MINUTE = 60;
 const AUTO_SAVE_INTERVAL = 30000; // 30 seconds
@@ -30,6 +30,8 @@ const AUTO_SAVE_INTERVAL = 30000; // 30 seconds
 const TestTakePage = () => {
   const { testId } = useParams<{ testId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const currentUserId = user?._id || 'anon';
   
   const [isLoading, setIsLoading] = useState(true);
   const [test, setTest] = useState<IAptitudeTest | null>(null);
@@ -73,7 +75,7 @@ const TestTakePage = () => {
         setQuestions(testQuestions);
 
         // Check for in-progress attempt
-        const inProgress = getInProgressAttempt(testId, MOCK_USER_ID);
+        const inProgress = getInProgressAttempt(testId, currentUserId);
         if (inProgress) {
           const shouldResume = confirm(
             `You have an in-progress attempt from ${new Date(inProgress.lastSavedAt).toLocaleString()}.\n\nWould you like to resume?`
@@ -87,7 +89,7 @@ const TestTakePage = () => {
             setTimeRemaining(inProgress.timeRemaining);
             startTimeRef.current = inProgress.startedAt;
           } else {
-            clearInProgressAttempt(testId, MOCK_USER_ID);
+            clearInProgressAttempt(testId, currentUserId);
             setTimeRemaining(foundTest.duration * SECONDS_PER_MINUTE);
           }
         } else {
@@ -106,7 +108,7 @@ const TestTakePage = () => {
   const autoSaveProgress = useCallback(() => {
     if (!testId) return;
     
-    saveInProgressAttempt(testId, MOCK_USER_ID, {
+    saveInProgressAttempt(testId, currentUserId, {
       currentQuestionIndex,
       answers,
       confidenceLevels,
@@ -147,11 +149,11 @@ const TestTakePage = () => {
       }));
 
       // Submit attempt with bookmarks
-      const attempt = await submitTestAttempt(testId, MOCK_USER_ID, formattedAnswers);
+      const attempt = await submitTestAttempt(testId, currentUserId, formattedAnswers);
       (attempt as any).bookmarkedQuestions = bookmarkedQuestions;
       
       // Clear in-progress attempt
-      clearInProgressAttempt(testId, MOCK_USER_ID);
+      clearInProgressAttempt(testId, currentUserId);
       
       toast.success('Test submitted successfully! Redirecting to results...');
       

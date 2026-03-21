@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getStudentStats, getAdminStats, getStudents, createStudent, updateStudent, deleteStudent, toggleStudentStatus, getRecentActivity, getLeaderboard, getReports } from '../controllers/dashboard.controller';
+import { getStudentStats, getAdminStats, getStudents, createStudent, updateStudent, deleteStudent, toggleStudentStatus, getRecentActivity, getLeaderboard, getReports, getRecommendations } from '../controllers/dashboard.controller';
 import { authenticate } from '../middlewares/auth.middleware';
 import { authorize } from '../middlewares/role.middleware';
 import { validate } from '../middlewares/validate';
@@ -22,6 +22,7 @@ const studentSchema = z.object({
 router.get('/stats', authenticate, getStudentStats);
 router.get('/activity', authenticate, getRecentActivity);
 router.get('/leaderboard', authenticate, getLeaderboard);
+router.get('/recommendations', authenticate, getRecommendations);
 
 // Admin dashboard
 router.get('/admin-stats', authenticate, authorize(['admin']), getAdminStats);

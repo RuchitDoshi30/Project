@@ -2,16 +2,15 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Container, PageHeader, Card, SkeletonDashboard, LoadingState } from '../components';
 import { Code2, Trophy, Target, TrendingUp, Clock, CheckCircle2, XCircle, ArrowRight, AlertCircle, Play, Zap, Timer } from 'lucide-react';
-import { fetchUserProgress, fetchRecentActivity, calculateSuccessRate } from '../services/dashboard.service';
-import { api } from '../services/api.client';
+import { fetchUserProgress, fetchRecentActivity, calculateSuccessRate, fetchRecommendations } from '../services/dashboard.service';
 import type { IUserProgress } from '../types/models';
-import type { RecentActivity } from '../services/dashboard.service';
+import type { RecentActivity, RecommendedProblem } from '../services/dashboard.service';
 
 const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState<IUserProgress | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [recommendedProblems, setRecommendedProblems] = useState<any[]>([]);
+  const [recommendedProblems, setRecommendedProblems] = useState<RecommendedProblem[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -23,10 +22,10 @@ const DashboardPage = () => {
         setProgress(progressData);
         setRecentActivity(activityData);
 
-        // Fetch a few unsolved problems for recommendations
+        // Fetch smart recommendations from backend
         try {
-          const problemsRes = await api.get<{ success: boolean; data: any[] }>('/problems?limit=5');
-          setRecommendedProblems(Array.isArray(problemsRes.data) ? problemsRes.data.slice(0, 5) : []);
+          const recs = await fetchRecommendations();
+          setRecommendedProblems(recs.problems.slice(0, 5));
         } catch {
           setRecommendedProblems([]);
         }
@@ -59,7 +58,7 @@ const DashboardPage = () => {
       icon: Code2,
       color: 'text-blue-600 dark:text-blue-400',
       bgColor: 'bg-blue-50 dark:bg-blue-500/10',
-      subtext: `${progress.problemsSolved.easy}E / ${progress.problemsSolved.medium}M / ${progress.problemsSolved.hard}H`,
+      subtext: `${progress.problemsSolved.easy}B / ${progress.problemsSolved.medium}I / ${progress.problemsSolved.hard}A`,
     },
     {
       label: 'Tests Completed',
@@ -245,15 +244,15 @@ const DashboardPage = () => {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 bg-green-500 rounded-sm" />
-                  <span className="text-gray-600 dark:text-lc-text-muted">Easy</span>
+                  <span className="text-gray-600 dark:text-lc-text-muted">Beginner</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 bg-orange-400 rounded-sm" />
-                  <span className="text-gray-600 dark:text-lc-text-muted">Medium</span>
+                  <span className="text-gray-600 dark:text-lc-text-muted">Intermediate</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div className="w-3 h-3 bg-red-500 rounded-sm" />
-                  <span className="text-gray-600 dark:text-lc-text-muted">Hard</span>
+                  <span className="text-gray-600 dark:text-lc-text-muted">Advanced</span>
                 </div>
               </div>
             </div>
@@ -261,15 +260,15 @@ const DashboardPage = () => {
             {/* Counts */}
             <div className="grid grid-cols-3 gap-4 pt-3 border-t border-gray-100 dark:border-lc-border">
               <div className="text-center">
-                <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Easy</p>
+                <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Beginner</p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">{progress.problemsSolved.easy}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Medium</p>
+                <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Intermediate</p>
                 <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{progress.problemsSolved.medium}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Hard</p>
+                <p className="text-xs text-gray-500 dark:text-lc-text-muted mb-1">Advanced</p>
                 <p className="text-2xl font-bold text-red-600 dark:text-red-400">{progress.problemsSolved.hard}</p>
               </div>
             </div>
@@ -361,6 +360,7 @@ const DashboardPage = () => {
                           </span>
                         )}
                       </div>
+                      <p className="text-xs text-purple-600 dark:text-purple-400 font-medium mt-0.5">{item.reason}</p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-gray-300 dark:text-lc-text-muted group-hover:text-primary-600 dark:group-hover:text-primary-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
                   </a>

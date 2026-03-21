@@ -12,6 +12,7 @@ export interface IAptitudeAttempt extends Document {
   totalQuestions: number;
   passed: boolean;
   timeSpentPerQuestion?: Record<string, number>;
+  idempotencyHash?: string;
   completedAt: Date;
 }
 
@@ -32,6 +33,7 @@ const AptitudeAttemptSchema: Schema<IAptitudeAttempt> = new Schema(
     passed: { type: Boolean, required: true },
     timeSpentPerQuestion: { type: Map, of: Number }, // Map of questionId string to Number (seconds)
     completedAt: { type: Date, default: Date.now },
+    idempotencyHash: { type: String, index: false }, // Covered by compound index below
   },
   { timestamps: false }
 );
@@ -42,6 +44,9 @@ AptitudeAttemptSchema.index({ userId: 1, testId: 1, completedAt: -1 });
 
 // Analytics query: Get attempts for a specific test over time
 AptitudeAttemptSchema.index({ testId: 1, completedAt: -1 });
+
+// Idempotency: prevent duplicate attempts (same user + same content hash)
+AptitudeAttemptSchema.index({ userId: 1, idempotencyHash: 1 }, { unique: true, sparse: true });
 
 // Post hook to update UserProgress stat
 AptitudeAttemptSchema.post('save', async function (doc: IAptitudeAttempt) {

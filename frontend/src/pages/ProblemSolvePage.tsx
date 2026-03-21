@@ -16,8 +16,10 @@ import {
   validateTestCases,
   formatCode,
   codeSnippets,
-  getProblemsWithStatus
+  getProblemsWithStatus,
+  submitCode
 } from '../services/problems.service';
+import { useAuth } from '../context/AuthContext';
 import { Card } from '../components';
 import type { IProblem, ISubmission, ITestCaseResult, IProblemProgress } from '../types/models';
 import { sanitizeHtml } from '../utils/sanitize';
@@ -58,7 +60,8 @@ const getDifficultyColor = (difficulty: string) => {
 const ProblemSolvePage = () => {
   const { id: problemSlug } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const userId = '2'; // Mock user ID
+  const { user } = useAuth();
+  const userId = user?._id || 'anon';
   
   const [problem, setProblem] = useState<IProblem | null>(null);
   const [language, setLanguage] = useState('javascript');
@@ -99,9 +102,9 @@ const ProblemSolvePage = () => {
           setSubmissions([]);
         }
         
-        // Load all problems for navigation
+        // Load all problems for navigation (high limit to enable prev/next)
         try {
-          const problems = await getProblemsWithStatus(userId);
+          const problems = await getProblemsWithStatus(userId, { limit: 500 });
           setAllProblems(problems.data);
         } catch {
           setAllProblems([]);
@@ -173,37 +176,28 @@ const ProblemSolvePage = () => {
     setSaveStatus('unsaved');
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!problem) return;
     
-    // Run test cases
+    // Run local test cases for immediate feedback
     const results = validateTestCases(problem._id, code);
     setTestResults(results);
     setActiveTab('results');
     
-    // Update status based on results
-    const allPassed = results.every(r => r.passed);
-    if (allPassed) {
-      updateProblemStatus(problem._id, userId, 'solved');
-    } else {
+    // Submit to backend (persists to DB)
+    try {
+      const submission = await submitCode(problem._id, code, language);
+      setSubmissions(prev => [submission, ...prev]);
+      
+      // Update local progress status
+      const status = submission.status === 'Accepted' ? 'solved' : 'attempted';
+      updateProblemStatus(problem._id, userId, status as 'solved' | 'attempted');
+      toast.success('Code submitted successfully!');
+    } catch {
+      toast.error('Failed to submit code. Please try again.');
+      // Fallback: still update local status
       updateProblemStatus(problem._id, userId, 'attempted');
     }
-    
-    // Mock: add to submission history
-    const newSubmission: ISubmission = {
-      _id: `s${Date.now()}`,
-      problemId: problem._id,
-      userId,
-      code,
-      language,
-      status: allPassed ? 'Accepted' : 'Wrong Answer',
-      executionTime: Math.floor(Math.random() * 100) + 20,
-      memory: Math.random() * 50 + 30,
-      testCasesPassed: results.filter(r => r.passed).length,
-      totalTestCases: results.length,
-      submittedAt: new Date().toISOString(),
-    };
-    setSubmissions(prev => [newSubmission, ...prev]);
   };
 
   const insertSnippet = (snippetCode: string) => {

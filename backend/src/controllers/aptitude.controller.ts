@@ -111,17 +111,34 @@ export const submitAttempt = asyncHandler(async (req: Request, res: Response) =>
   const score = Math.round((correctCount / questions.length) * 100);
   const passed = score >= (test.passingPercentage || 60);
 
-  const attempt = await AptitudeAttempt.create({
-    testId,
-    userId: req.user!.id,
-    answers,
-    score,
-    totalQuestions: questions.length,
-    passed,
-    completedAt: new Date(),
-  });
+  // Content-hash idempotency: hash(userId + testId + answers)
+  const crypto = await import('crypto');
+  const idempotencyHash = crypto
+    .createHash('sha256')
+    .update(`${req.user!.id}:${testId}:${JSON.stringify(answers)}`)
+    .digest('hex');
 
-  res.status(201).json({ success: true, data: attempt });
+  try {
+    const attempt = await AptitudeAttempt.create({
+      testId,
+      userId: req.user!.id,
+      answers,
+      score,
+      totalQuestions: questions.length,
+      passed,
+      completedAt: new Date(),
+      idempotencyHash,
+    });
+
+    res.status(201).json({ success: true, data: attempt });
+  } catch (err: any) {
+    // Catch MongoDB duplicate key error from unique index on (userId, idempotencyHash)
+    if (err.code === 11000 && err.keyPattern?.idempotencyHash) {
+      const existing = await AptitudeAttempt.findOne({ userId: req.user!.id, idempotencyHash }).lean();
+      return res.status(200).json({ success: true, data: existing, duplicate: true });
+    }
+    throw err;
+  }
 });
 
 export const getMyAttempts = asyncHandler(async (req: Request, res: Response) => {
@@ -145,7 +162,10 @@ export const getMyAttempts = asyncHandler(async (req: Request, res: Response) =>
 
 export const getAttemptById = asyncHandler(async (req: Request, res: Response) => {
   const attempt = await AptitudeAttempt.findById(req.params.id)
-    .populate('testId');
+    .populate({
+      path: 'testId',
+      populate: { path: 'questions' }, // Deep-populate questions with correctOptionIndex for results
+    });
   if (!attempt) throw new ApiError(404, 'Attempt not found');
 
   // Ownership check: students can only see their own

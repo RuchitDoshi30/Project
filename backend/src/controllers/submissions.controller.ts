@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
-import { Submission, Problem } from '../models';
+import crypto from 'crypto';
+import mongoose from 'mongoose';
+import { Submission, Problem, UserProgress } from '../models';
 import { asyncHandler } from '../middlewares/asyncHandler';
 import { ApiError } from '../middlewares/errorHandler';
 
@@ -10,16 +12,32 @@ export const createSubmission = asyncHandler(async (req: Request, res: Response)
   const problem = await Problem.findById(problemId);
   if (!problem) throw new ApiError(404, 'Problem not found');
 
-  const submission = await Submission.create({
-    problemId,
-    userId: req.user!.id,
-    code,
-    language,
-    status: 'Pending Review',
-    totalTestCases: problem.testCases.length,
-  });
+  // Content-hash idempotency: hash(userId + problemId + code)
+  const idempotencyHash = crypto
+    .createHash('sha256')
+    .update(`${req.user!.id}:${problemId}:${code}`)
+    .digest('hex');
 
-  res.status(201).json({ success: true, data: submission });
+  try {
+    const submission = await Submission.create({
+      problemId,
+      userId: req.user!.id,
+      code,
+      language,
+      status: 'Pending Review',
+      totalTestCases: problem.testCases.length,
+      idempotencyHash,
+    });
+
+    res.status(201).json({ success: true, data: submission });
+  } catch (err: any) {
+    // Catch MongoDB duplicate key error (E11000) from unique index on (userId, idempotencyHash)
+    if (err.code === 11000 && err.keyPattern?.idempotencyHash) {
+      const existing = await Submission.findOne({ userId: req.user!.id, idempotencyHash }).lean();
+      return res.status(200).json({ success: true, data: existing, duplicate: true });
+    }
+    throw err;
+  }
 });
 
 /** Student: get own submissions */
@@ -74,15 +92,54 @@ export const getAllSubmissions = asyncHandler(async (req: Request, res: Response
   res.json({ success: true, data, nextCursor, hasMore });
 });
 
-/** Admin: approve submission */
+/** Admin: approve submission (wrapped in transaction for atomic consistency) */
 export const approveSubmission = asyncHandler(async (req: Request, res: Response) => {
-  const submission = await Submission.findByIdAndUpdate(
-    req.params.id,
-    { status: 'Accepted' },
-    { new: true }
-  );
-  if (!submission) throw new ApiError(404, 'Submission not found');
-  res.json({ success: true, data: submission });
+  const session = await mongoose.startSession();
+  try {
+    let result: any;
+    await session.withTransaction(async () => {
+      // Use findByIdAndUpdate to skip post-save hook (we handle UserProgress explicitly below)
+      const submission = await Submission.findByIdAndUpdate(
+        req.params.id,
+        { status: 'Accepted' },
+        { new: true, session }
+      );
+      if (!submission) throw new ApiError(404, 'Submission not found');
+
+      // Check if this was already accepted (skip UserProgress update if so)
+      const previousAccepted = await Submission.countDocuments({
+        userId: submission.userId,
+        problemId: submission.problemId,
+        status: 'Accepted',
+        _id: { $ne: submission._id },
+      }).session(session);
+
+      // Only update UserProgress if this is the first accepted submission for this problem
+      if (previousAccepted === 0) {
+        const problem = await Problem.findById(submission.problemId).select('difficulty').session(session);
+        if (problem) {
+          const difficultyMap: Record<string, string> = {
+            'Beginner': 'problemsSolved.easy',
+            'Intermediate': 'problemsSolved.medium',
+            'Advanced': 'problemsSolved.hard',
+          };
+          const field = difficultyMap[problem.difficulty];
+          if (field) {
+            await UserProgress.findOneAndUpdate(
+              { userId: submission.userId },
+              { $inc: { [field]: 1 }, $set: { lastActiveDate: new Date() } },
+              { upsert: true, session }
+            );
+          }
+        }
+      }
+
+      result = submission;
+    });
+    res.json({ success: true, data: result });
+  } finally {
+    await session.endSession();
+  }
 });
 
 /** Admin: reject submission */

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { createSubmission, getMySubmissions, getMySubmissionsForProblem, getAllSubmissions, approveSubmission, rejectSubmission } from '../controllers/submissions.controller';
 import { authenticate } from '../middlewares/auth.middleware';
 import { authorize } from '../middlewares/role.middleware';
-import { submissionLimiter } from '../middlewares/rateLimiter';
+import { userSubmissionLimiter } from '../middlewares/rateLimiter';
 import { validate } from '../middlewares/validate';
 import { z } from 'zod';
 
@@ -15,7 +15,7 @@ const submissionSchema = z.object({
 });
 
 // Student routes (uses req.user.id)
-router.post('/', authenticate, submissionLimiter, validate(submissionSchema), createSubmission);
+router.post('/', authenticate, userSubmissionLimiter, validate(submissionSchema), createSubmission);
 router.get('/me', authenticate, getMySubmissions);
 router.get('/me/problem/:problemId', authenticate, getMySubmissionsForProblem);
 

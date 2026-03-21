@@ -66,3 +66,44 @@ export const calculateSuccessRate = (progress: IUserProgress): number => {
   if (progress.totalSubmissions === 0) return 0;
   return Math.round((totalSolved / progress.totalSubmissions) * 100);
 };
+
+// Smart Recommendations
+export interface RecommendedProblem {
+  _id: string;
+  slug: string;
+  title: string;
+  difficulty: string;
+  tags: string[];
+  score: number;
+  reason: string;
+  category: 'retry' | 'weak-area' | 'progression' | 'explore' | 'popular';
+}
+
+export interface RecommendedTest {
+  _id: string;
+  title: string;
+  category: string;
+  reason: string;
+}
+
+export interface RecommendationSummary {
+  totalSolved: number;
+  totalAttempted: number;
+  totalProblems: number;
+  skillLevel: string;
+  weakTags: string[];
+  strongTags: string[];
+  weakAptitudeCategories: string[];
+  aptitudeTestsTaken: number;
+}
+
+export interface RecommendationsResponse {
+  problems: RecommendedProblem[];
+  aptitudeTests: RecommendedTest[];
+  summary: RecommendationSummary;
+}
+
+export const fetchRecommendations = async (): Promise<RecommendationsResponse> => {
+  const response = await api.get<{ success: boolean; data: RecommendationsResponse }>('/dashboard/recommendations');
+  return response.data;
+};

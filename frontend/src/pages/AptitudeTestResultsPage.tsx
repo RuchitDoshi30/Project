@@ -57,7 +57,11 @@ const AptitudeTestResultsPage = () => {
 
         setTestAttempt(foundAttempt);
         
-        const foundTest = await getAptitudeTestById(foundAttempt.testId);
+        // testId may be populated (object) or a plain string
+        const testIdValue = typeof foundAttempt.testId === 'string' 
+          ? foundAttempt.testId 
+          : (foundAttempt.testId as any)?._id || foundAttempt.testId;
+        const foundTest = await getAptitudeTestById(testIdValue);
         if (!foundTest) {
           navigate('/aptitude');
           return;

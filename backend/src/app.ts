@@ -3,6 +3,7 @@ import cors from 'cors';
 
 import { generalLimiter } from './middlewares/rateLimiter';
 import { errorHandler } from './middlewares/errorHandler';
+import { requestLogger } from './middlewares/requestLogger';
 
 import authRoutes from './routes/auth.routes';
 import problemsRoutes from './routes/problems.routes';
@@ -22,6 +23,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(requestLogger);
 app.use(generalLimiter);
 
 // Health check (no auth)
@@ -29,15 +31,15 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/problems', problemsRoutes);
-app.use('/api/submissions', submissionsRoutes);
-app.use('/api/aptitude', aptitudeRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/announcements', announcementsRoutes);
-app.use('/api/drives', drivesRoutes);
-app.use('/api/bulk-emails', bulkEmailRoutes);
+// API Routes (v1)
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/problems', problemsRoutes);
+app.use('/api/v1/submissions', submissionsRoutes);
+app.use('/api/v1/aptitude', aptitudeRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/announcements', announcementsRoutes);
+app.use('/api/v1/drives', drivesRoutes);
+app.use('/api/v1/bulk-emails', bulkEmailRoutes);
 
 // Global error handler — must be LAST
 app.use(errorHandler);

@@ -8,9 +8,8 @@ import {
   getUserAttempts,
   hasInProgressAttempt
 } from '../services/aptitude.service';
+import { useAuth } from '../context/AuthContext';
 import type { IAptitudeTest, IAptitudeAttempt, AptitudeCategory } from '../types/models';
-
-const CURRENT_USER_ID = '2';
 
 const CATEGORY_EMOJI_ICONS: Record<AptitudeCategory, string> = {
   Quantitative: '🔢',
@@ -21,6 +20,8 @@ const CATEGORY_EMOJI_ICONS: Record<AptitudeCategory, string> = {
 
 const AptitudePage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const currentUserId = user?._id || 'anon';
 
   const [isLoadingTests, setIsLoadingTests] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,7 +62,7 @@ const AptitudePage = () => {
         // Check in-progress tests (localStorage-based)
         const inProgressTestIds = new Set<string>();
         fetchedTests.forEach(test => {
-          if (test && hasInProgressAttempt(test._id, CURRENT_USER_ID)) {
+          if (test && hasInProgressAttempt(test._id, currentUserId)) {
             inProgressTestIds.add(test._id);
           }
         });

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { getQuestions, createQuestion, updateQuestion, deleteQuestion, getTests, getTestById, createTest, submitAttempt, getMyAttempts, getAttemptById } from '../controllers/aptitude.controller';
 import { authenticate } from '../middlewares/auth.middleware';
 import { authorize } from '../middlewares/role.middleware';
-import { submissionLimiter } from '../middlewares/rateLimiter';
+import { userAttemptLimiter } from '../middlewares/rateLimiter';
 import { validate } from '../middlewares/validate';
 import { z } from 'zod';
 
@@ -46,7 +46,7 @@ router.get('/tests/:id', authenticate, getTestById);
 router.post('/tests', authenticate, authorize(['admin']), validate(testSchema), createTest);
 
 // Attempts
-router.post('/attempts', authenticate, submissionLimiter, validate(attemptSchema), submitAttempt);
+router.post('/attempts', authenticate, userAttemptLimiter, validate(attemptSchema), submitAttempt);
 router.get('/attempts/me', authenticate, getMyAttempts);
 router.get('/attempts/:id', authenticate, getAttemptById);
 

@@ -85,7 +85,7 @@ export const getAttemptById = async (attemptId: string): Promise<IAptitudeAttemp
 
 export const getUserAttempts = async (): Promise<IAptitudeAttempt[]> => {
   try {
-    const response = await api.get<{ success: boolean; data: IAptitudeAttempt[] }>('/aptitude/attempts/me');
+    const response = await api.get<{ success: boolean; data: IAptitudeAttempt[] }>('/aptitude/attempts/me?limit=50');
     return response.data;
   } catch {
     return [];
@@ -94,7 +94,10 @@ export const getUserAttempts = async (): Promise<IAptitudeAttempt[]> => {
 
 export const getTestAttempts = async (testId: string): Promise<IAptitudeAttempt[]> => {
   const allAttempts = await getUserAttempts();
-  return allAttempts.filter(a => a.testId === testId);
+  return allAttempts.filter(a => {
+    const attemptTestId = typeof a.testId === 'string' ? a.testId : (a.testId as any)?._id;
+    return attemptTestId === testId;
+  });
 };
 
 export const getAllCategories = (): AptitudeCategory[] => {
