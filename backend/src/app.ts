@@ -16,9 +16,20 @@ import bulkEmailRoutes from './routes/bulk-email.routes';
 
 const app = express();
 
-// CORS: allow frontend origin
+// Trust proxy (required on Render/Heroku for rate limiting + req.ip)
+app.set('trust proxy', 1);
+
+// CORS: allow frontend origins (comma-separated in CORS_ORIGIN env var)
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(o => o.trim());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, health checks)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 
