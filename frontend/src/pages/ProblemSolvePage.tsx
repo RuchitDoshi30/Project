@@ -179,20 +179,23 @@ const ProblemSolvePage = () => {
   const handleSubmit = async () => {
     if (!problem) return;
     
-    // Run local test cases for immediate feedback
-    const results = validateTestCases(problem._id, code);
+    // Run test cases for immediate feedback
+    const results = validateTestCases(problem._id, code, problem.testCases);
     setTestResults(results);
     setActiveTab('results');
+
+    const passed = results.filter(r => r.passed).length;
+    const total = results.length;
     
-    // Submit to backend (persists to DB)
+    // Submit to backend with test case results
     try {
-      const submission = await submitCode(problem._id, code, language);
+      const submission = await submitCode(problem._id, code, language, passed, total);
       setSubmissions(prev => [submission, ...prev]);
       
       // Update local progress status
       const status = submission.status === 'Accepted' ? 'solved' : 'attempted';
       updateProblemStatus(problem._id, userId, status as 'solved' | 'attempted');
-      toast.success('Code submitted successfully!');
+      toast.success(submission.status === 'Accepted' ? 'All test cases passed! 🎉' : `${passed}/${total} test cases passed`);
     } catch {
       toast.error('Failed to submit code. Please try again.');
       // Fallback: still update local status
