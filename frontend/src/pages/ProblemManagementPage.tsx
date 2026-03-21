@@ -37,8 +37,8 @@ const ProblemManagementPage = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await getProblems();
-        setProblems(data as IExtendedProblem[]);
+        const result = await getProblems({ limit: 500 });
+        setProblems((result.data || []) as IExtendedProblem[]);
       } catch (e) {
         console.error('Failed to load problems', e);
       } finally {
