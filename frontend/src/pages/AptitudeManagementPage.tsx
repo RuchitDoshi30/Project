@@ -79,12 +79,12 @@ const AptitudeManagementPage = () => {
 
   // Filter questions
   const filteredQuestions = questions.filter(question => {
-    const matchesSearch = 
+    const matchesSearch =
       question.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       question.options.some(opt => opt.toLowerCase().includes(searchQuery.toLowerCase()));
-    
+
     const matchesCategory = categoryFilter === 'all' || question.category === categoryFilter;
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -123,6 +123,21 @@ const AptitudeManagementPage = () => {
         return 'bg-gray-100 dark:bg-lc-elevated text-gray-800 dark:text-lc-text-secondary';
     }
   };
+
+  if (loading) {
+    return (
+      <Container>
+        <PageHeader title="Aptitude Question Management" description="Manage aptitude questions, categories, and test configurations" />
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="p-4 animate-pulse">
+              <div className="h-24 bg-gray-200 dark:bg-lc-elevated rounded"></div>
+            </Card>
+          ))}
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container>
@@ -263,11 +278,10 @@ const AptitudeManagementPage = () => {
                   {question.options.map((option, optIndex) => (
                     <div
                       key={optIndex}
-                      className={`p-3 rounded-lg border-2 ${
-                        optIndex === question.correctOptionIndex
+                      className={`p-3 rounded-lg border-2 ${optIndex === question.correctOptionIndex
                           ? 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/30'
                           : 'border-gray-200 dark:border-lc-border-light bg-gray-50 dark:bg-lc-elevated'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start gap-2">
                         <span className="font-semibold text-gray-700 dark:text-lc-text-secondary min-w-[24px]">
@@ -320,14 +334,14 @@ const AptitudeManagementPage = () => {
         ) : (
           // Show category accordion when not searching
           (['Quantitative', 'Logical', 'Verbal', 'Technical'] as AptitudeCategory[]).map(category => {
-            const categoryQuestions = categoryFilter === 'all' 
-              ? groupedQuestions[category] 
-              : categoryFilter === category 
-                ? groupedQuestions[category] 
+            const categoryQuestions = categoryFilter === 'all'
+              ? groupedQuestions[category]
+              : categoryFilter === category
+                ? groupedQuestions[category]
                 : [];
-            
+
             if (categoryQuestions.length === 0 && categoryFilter !== 'all') return null;
-            
+
             const isExpanded = expandedCategories.has(category);
             const categoryColors = {
               'Quantitative': { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', badge: 'bg-blue-100' },
@@ -360,9 +374,8 @@ const AptitudeManagementPage = () => {
                       {categoryQuestions.length}
                     </span>
                     <svg
-                      className={`w-6 h-6 text-gray-400 transition-transform duration-200 ${
-                        isExpanded ? 'rotate-180' : ''
-                      }`}
+                      className={`w-6 h-6 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                        }`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -386,53 +399,52 @@ const AptitudeManagementPage = () => {
                         <>
                           {paginatedQuestions.map((question, index) => (
                             <div key={question._id} className="bg-white dark:bg-lc-card rounded-lg p-4 shadow-sm border border-gray-200 dark:border-lc-border">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-semibold text-gray-500 dark:text-lc-text-muted">Q{index + 1}</span>
-                            <p className="text-sm text-gray-900 dark:text-lc-text line-clamp-2 flex-1">{question.question}</p>
-                          </div>
-                        </div>
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-sm font-semibold text-gray-500 dark:text-lc-text-muted">Q{index + 1}</span>
+                                  <p className="text-sm text-gray-900 dark:text-lc-text line-clamp-2 flex-1">{question.question}</p>
+                                </div>
+                              </div>
 
-                        {/* Compact Options */}
-                        <div className="grid grid-cols-2 gap-2 mb-3">
-                          {question.options.map((option, optIndex) => (
-                            <div
-                              key={optIndex}
-                              className={`p-2 rounded text-xs border ${
-                                optIndex === question.correctOptionIndex
-                                  ? 'border-green-300 bg-green-50 text-green-800'
-                                  : 'border-gray-200 bg-gray-50 text-gray-700'
-                              }`}
-                            >
-                              <span className="font-semibold">{String.fromCharCode(65 + optIndex)}.</span> {option}
-                            </div>
-                          ))}
-                        </div>
+                              {/* Compact Options */}
+                              <div className="grid grid-cols-2 gap-2 mb-3">
+                                {question.options.map((option, optIndex) => (
+                                  <div
+                                    key={optIndex}
+                                    className={`p-2 rounded text-xs border ${optIndex === question.correctOptionIndex
+                                        ? 'border-green-300 bg-green-50 text-green-800'
+                                        : 'border-gray-200 bg-gray-50 text-gray-700'
+                                      }`}
+                                  >
+                                    <span className="font-semibold">{String.fromCharCode(65 + optIndex)}.</span> {option}
+                                  </div>
+                                ))}
+                              </div>
 
-                        {/* Actions */}
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleViewQuestion(question)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            View
-                          </button>
-                          <button
-                            onClick={() => navigate(`/admin/aptitude/edit/${question._id}`)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary rounded-lg hover:bg-gray-200 dark:hover:bg-lc-border-light transition-colors text-xs"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteQuestion(question._id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs ml-auto"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            Delete
-                          </button>
-                        </div>
+                              {/* Actions */}
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleViewQuestion(question)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                  View
+                                </button>
+                                <button
+                                  onClick={() => navigate(`/admin/aptitude/edit/${question._id}`)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-lc-elevated text-gray-700 dark:text-lc-text-secondary rounded-lg hover:bg-gray-200 dark:hover:bg-lc-border-light transition-colors text-xs"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteQuestion(question._id)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs ml-auto"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  Delete
+                                </button>
+                              </div>
                             </div>
                           ))}
 
@@ -450,7 +462,7 @@ const AptitudeManagementPage = () => {
                                 >
                                   Previous
                                 </button>
-                                
+
                                 <div className="flex items-center gap-1">
                                   {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                                     let pageNum;
@@ -463,16 +475,15 @@ const AptitudeManagementPage = () => {
                                     } else {
                                       pageNum = currentPage - 2 + i;
                                     }
-                                    
+
                                     return (
                                       <button
                                         key={pageNum}
                                         onClick={() => changePage(category, pageNum)}
-                                        className={`w-8 h-8 text-sm font-medium rounded-lg transition-colors ${
-                                          currentPage === pageNum
+                                        className={`w-8 h-8 text-sm font-medium rounded-lg transition-colors ${currentPage === pageNum
                                             ? `${colors.badge} ${colors.text}`
                                             : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                                        }`}
+                                          }`}
                                       >
                                         {pageNum}
                                       </button>
@@ -532,11 +543,10 @@ const AptitudeManagementPage = () => {
                 {selectedQuestion.options.map((option, optIndex) => (
                   <div
                     key={optIndex}
-                    className={`p-4 rounded-lg border-2 ${
-                      optIndex === selectedQuestion.correctOptionIndex
+                    className={`p-4 rounded-lg border-2 ${optIndex === selectedQuestion.correctOptionIndex
                         ? 'border-green-300 bg-green-50 dark:bg-green-900/30 dark:border-green-600'
                         : 'border-gray-200 dark:border-lc-border-light bg-gray-50 dark:bg-lc-elevated'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start gap-3">
                       <span className="font-semibold text-gray-700 dark:text-lc-text-secondary min-w-[32px]">

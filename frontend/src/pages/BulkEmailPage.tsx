@@ -147,7 +147,6 @@ const BulkEmailPage = () => {
     const [sentEmails, setSentEmails] = useState<SentEmail[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [recipientCount, setRecipientCount] = useState(0);
-    const [loadingCount, setLoadingCount] = useState(false);
 
     // Load sent history from API
     const loadSentHistory = async () => {
@@ -171,7 +170,6 @@ const BulkEmailPage = () => {
     // Fetch real recipient count from API
     useEffect(() => {
         const fetchCount = async () => {
-            setLoadingCount(true);
             try {
                 const params = new URLSearchParams();
                 if (selectedBranches.length > 0) params.set('branches', selectedBranches.join(','));
@@ -181,8 +179,6 @@ const BulkEmailPage = () => {
                 setRecipientCount(response.count || 0);
             } catch (e) {
                 console.error('Failed to fetch recipient count', e);
-            } finally {
-                setLoadingCount(false);
             }
         };
         const timer = setTimeout(fetchCount, 300); // debounce

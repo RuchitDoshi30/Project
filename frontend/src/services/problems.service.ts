@@ -213,7 +213,7 @@ export const submitCode = async (problemId: string, code: string, language: stri
 
 // Mock test case validation (kept local since backend doesn't execute code)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const validateTestCases = (problemId: string, ..._args: string[]): ITestCaseResult[] => {
+export const validateTestCases = (_problemId: string, ..._args: string[]): ITestCaseResult[] => {
   return [
     { input: 'test', expectedOutput: 'test', actualOutput: 'test', passed: true, executionTime: 32 },
   ];
