@@ -31,28 +31,41 @@ const AddPlacementDrivePage = () => {
   useEffect(() => {
     if (!isEditMode || !id) return;
 
-    const drive = getPlacementDriveById(id);
-    if (!drive) {
-      toast.error('Placement drive not found');
-      navigate('/admin/drives');
-      return;
-    }
+    const fetchDrive = async () => {
+      const drive = await getPlacementDriveById(id);
+      if (!drive) {
+        toast.error('Placement drive not found');
+        navigate('/admin/drives');
+        return;
+      }
 
-    setCompanyName(drive.companyName);
-    setJobRole(drive.jobRole);
-    setPackageLPA(drive.packageLPA);
-    setDriveDate(drive.driveDate);
-    setLastDateToApply(drive.lastDateToApply);
-    setLocation(drive.location);
-    setEligibleBranchesInput(drive.eligibleBranches.join(', '));
-    setMinCGPA(String(drive.minCGPA));
-    setStatus(drive.status);
-    setRoundsInput(drive.rounds.join('\n'));
-    setDescription(drive.description);
+      setCompanyName(drive.companyName);
+      setJobRole(drive.jobRole);
+      setPackageLPA(drive.packageLPA);
+      setDriveDate(drive.driveDate);
+      setLastDateToApply(drive.lastDateToApply);
+      setLocation(drive.location);
+      setEligibleBranchesInput(drive.eligibleBranches.join(', '));
+      setMinCGPA(String(drive.minCGPA));
+      setStatus(drive.status);
+      setRoundsInput(drive.rounds.join('\n'));
+      setDescription(drive.description);
+    };
+
+    fetchDrive();
   }, [id, isEditMode, navigate]);
 
   const handleSubmit = async () => {
-    if (!companyName.trim() || !jobRole.trim() || !packageLPA.trim() || !driveDate || !lastDateToApply || !location.trim() || !eligibleBranchesInput.trim() || !description.trim()) {
+    if (
+      !companyName.trim() ||
+      !jobRole.trim() ||
+      !packageLPA.trim() ||
+      !driveDate ||
+      !lastDateToApply ||
+      !location.trim() ||
+      !eligibleBranchesInput.trim() ||
+      !description.trim()
+    ) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -69,7 +82,7 @@ const AddPlacementDrivePage = () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const existing = isEditMode && id ? getPlacementDriveById(id) : undefined;
+      const existing = isEditMode && id ? await getPlacementDriveById(id) : undefined;
       const payload: PlacementDrive = {
         id: existing?.id || Date.now().toString(),
         companyName: companyName.trim(),
@@ -96,7 +109,9 @@ const AddPlacementDrivePage = () => {
 
       savePlacementDrive(payload);
 
-      toast.success(`Placement drive ${isEditMode ? 'updated' : 'created'} successfully!`, { id: toastId });
+      toast.success(`Placement drive ${isEditMode ? 'updated' : 'created'} successfully!`, {
+        id: toastId,
+      });
       navigate('/admin/drives');
     } catch {
       toast.error('Failed to save drive. Please try again.', { id: toastId });
@@ -121,7 +136,9 @@ const AddPlacementDrivePage = () => {
               {isEditMode ? 'Edit Placement Drive' : 'Create New Placement Drive'}
             </h1>
             <p className="text-sm text-gray-600 dark:text-lc-text-muted">
-              {isEditMode ? 'Update drive details and eligibility criteria' : 'Create a new placement drive announcement'}
+              {isEditMode
+                ? 'Update drive details and eligibility criteria'
+                : 'Create a new placement drive announcement'}
             </p>
           </div>
         </div>
@@ -130,8 +147,12 @@ const AddPlacementDrivePage = () => {
           <div className="lg:col-span-3 space-y-6">
             <Card className="p-6">
               <div className="border-b border-gray-200 dark:border-lc-border pb-4 mb-6">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">Drive Details</h2>
-                <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">Provide complete company and drive information</p>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">
+                  Drive Details
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">
+                  Provide complete company and drive information
+                </p>
               </div>
 
               <div className="space-y-5">
@@ -274,7 +295,9 @@ const AddPlacementDrivePage = () => {
 
           <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Publish Settings</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">
+                Publish Settings
+              </h3>
 
               <div className="space-y-4">
                 <div>

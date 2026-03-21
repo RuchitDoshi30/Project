@@ -27,20 +27,24 @@ const AddAnnouncementPage = () => {
   useEffect(() => {
     if (!isEditMode || !id) return;
 
-    const announcement = getAnnouncementById(id);
-    if (!announcement) {
-      toast.error('Announcement not found');
-      navigate('/admin/announcements');
-      return;
-    }
+    const fetchAnnouncement = async () => {
+      const announcement = await getAnnouncementById(id);
+      if (!announcement) {
+        toast.error('Announcement not found');
+        navigate('/admin/announcements');
+        return;
+      }
 
-    setTitle(announcement.title);
-    setBody(announcement.body);
-    setPriority(announcement.priority);
-    setTargetAudience(announcement.targetAudience);
-    setExpiresAt(announcement.expiresAt.slice(0, 10));
-    setIsPinned(announcement.isPinned);
-    setAuthor(announcement.author);
+      setTitle(announcement.title);
+      setBody(announcement.body);
+      setPriority(announcement.priority);
+      setTargetAudience(announcement.targetAudience);
+      setExpiresAt(announcement.expiresAt.slice(0, 10));
+      setIsPinned(announcement.isPinned);
+      setAuthor(announcement.author);
+    };
+
+    fetchAnnouncement();
   }, [id, isEditMode, navigate]);
 
   const handleSubmit = async () => {
@@ -55,7 +59,7 @@ const AddAnnouncementPage = () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const existing = isEditMode && id ? getAnnouncementById(id) : undefined;
+      const existing = isEditMode && id ? await getAnnouncementById(id) : undefined;
       const payload: Announcement = {
         id: existing?.id || Date.now().toString(),
         title: title.trim(),
@@ -71,7 +75,9 @@ const AddAnnouncementPage = () => {
 
       saveAnnouncement(payload);
 
-      toast.success(`Announcement ${isEditMode ? 'updated' : 'created'} successfully!`, { id: toastId });
+      toast.success(`Announcement ${isEditMode ? 'updated' : 'created'} successfully!`, {
+        id: toastId,
+      });
       navigate('/admin/announcements');
     } catch {
       toast.error('Failed to save announcement. Please try again.', { id: toastId });
@@ -96,7 +102,9 @@ const AddAnnouncementPage = () => {
               {isEditMode ? 'Edit Announcement' : 'Create New Announcement'}
             </h1>
             <p className="text-sm text-gray-600 dark:text-lc-text-muted">
-              {isEditMode ? 'Update notice details and publish settings' : 'Create a new notice for students'}
+              {isEditMode
+                ? 'Update notice details and publish settings'
+                : 'Create a new notice for students'}
             </p>
           </div>
         </div>
@@ -105,8 +113,12 @@ const AddAnnouncementPage = () => {
           <div className="lg:col-span-3 space-y-6">
             <Card className="p-6">
               <div className="border-b border-gray-200 dark:border-lc-border pb-4 mb-6">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">Announcement Details</h2>
-                <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">Provide clear information for students</p>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">
+                  Announcement Details
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">
+                  Provide clear information for students
+                </p>
               </div>
 
               <div className="space-y-5">
@@ -141,7 +153,9 @@ const AddAnnouncementPage = () => {
 
           <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Publish Settings</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">
+                Publish Settings
+              </h3>
 
               <div className="space-y-4">
                 <div>
@@ -185,7 +199,9 @@ const AddAnnouncementPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-lc-text-secondary mb-2">Author</label>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-lc-text-secondary mb-2">
+                    Author
+                  </label>
                   <input
                     type="text"
                     value={author}
