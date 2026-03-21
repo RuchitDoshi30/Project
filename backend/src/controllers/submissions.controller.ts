@@ -5,12 +5,22 @@ import { Submission, Problem, UserProgress } from '../models';
 import { asyncHandler } from '../middlewares/asyncHandler';
 import { ApiError } from '../middlewares/errorHandler';
 
-/** Student: submit code for review */
+/** Student: submit code with test case results */
 export const createSubmission = asyncHandler(async (req: Request, res: Response) => {
-  const { problemId, code, language } = req.body;
+  const { problemId, code, language, testCasesPassed, totalTestCases } = req.body;
 
   const problem = await Problem.findById(problemId);
   if (!problem) throw new ApiError(404, 'Problem not found');
+
+  // Determine status dynamically based on test results
+  const total = totalTestCases ?? problem.testCases.length;
+  const passed = testCasesPassed ?? 0;
+  let status: string;
+  if (passed === total && total > 0) {
+    status = 'Accepted';
+  } else {
+    status = 'Wrong Answer';
+  }
 
   // Content-hash idempotency: hash(userId + problemId + code)
   const idempotencyHash = crypto
@@ -24,8 +34,9 @@ export const createSubmission = asyncHandler(async (req: Request, res: Response)
       userId: req.user!.id,
       code,
       language,
-      status: 'Pending Review',
-      totalTestCases: problem.testCases.length,
+      status,
+      testCasesPassed: passed,
+      totalTestCases: total,
       idempotencyHash,
     });
 
