@@ -24,7 +24,7 @@ const problemSchema = z.object({
 router.get('/', authenticate, getProblems);
 router.get('/:slug', authenticate, getProblemBySlug);
 router.post('/', authenticate, authorize(['admin']), validate(problemSchema), createProblem);
-router.put('/:id', authenticate, authorize(['admin']), updateProblem);
+router.put('/:id', authenticate, authorize(['admin']), validate(problemSchema.partial()), updateProblem);
 router.delete('/:id', authenticate, authorize(['admin']), deleteProblem);
 
 export default router;

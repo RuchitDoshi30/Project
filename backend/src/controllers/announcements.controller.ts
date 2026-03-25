@@ -8,8 +8,14 @@ export const getAnnouncements = asyncHandler(async (req: Request, res: Response)
   const limit = Math.min(parseInt(req.query.limit as string, 10) || 20, 50);
   const skip = (page - 1) * limit;
 
-  const total = await Announcement.countDocuments();
-  const announcements = await Announcement.find()
+  // Non-admin users only see non-expired announcements
+  const filter: any = {};
+  if (req.user?.role !== 'admin') {
+    filter.expiresAt = { $gte: new Date() };
+  }
+
+  const total = await Announcement.countDocuments(filter);
+  const announcements = await Announcement.find(filter)
     .sort({ isPinned: -1, createdAt: -1 })
     .skip(skip)
     .limit(limit);

@@ -21,43 +21,36 @@ export const getStudentStats = asyncHandler(async (req: Request, res: Response) 
 
 /** Admin: get aggregate platform stats */
 export const getAdminStats = asyncHandler(async (req: Request, res: Response) => {
-  const [totalStudents, totalProblems, totalAptitudeQuestions, pendingSubmissions, totalSubmissions] =
-    await Promise.all([
-      User.countDocuments({ role: 'student' }),
-      Problem.countDocuments(),
-      AptitudeQuestion.countDocuments(),
-      Submission.countDocuments({ status: 'Pending Review' }),
-      Submission.countDocuments(),
-    ]);
-
-  const activeStudents = await User.countDocuments({ role: 'student', accountStatus: 'active' });
-
-  // Submissions this week
   const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const submissionsThisWeek = await Submission.countDocuments({ submittedAt: { $gte: oneWeekAgo } });
-
-  // Submissions today
   const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
-  const submissionsToday = await Submission.countDocuments({ submittedAt: { $gte: startOfDay } });
 
-  // Approval rate
-  const acceptedSubmissions = await Submission.countDocuments({ status: 'Accepted' });
+  // All counts in parallel
+  const [
+    totalStudents, activeStudents, totalProblems, totalAptitudeQuestions,
+    pendingSubmissions, totalSubmissions, acceptedSubmissions,
+    submissionsThisWeek, submissionsToday,
+    difficultyAgg, categoryAgg,
+  ] = await Promise.all([
+    User.countDocuments({ role: 'student' }),
+    User.countDocuments({ role: 'student', accountStatus: 'active' }),
+    Problem.countDocuments(),
+    AptitudeQuestion.countDocuments(),
+    Submission.countDocuments({ status: 'Pending Review' }),
+    Submission.countDocuments(),
+    Submission.countDocuments({ status: 'Accepted' }),
+    Submission.countDocuments({ submittedAt: { $gte: oneWeekAgo } }),
+    Submission.countDocuments({ submittedAt: { $gte: startOfDay } }),
+    Problem.aggregate([{ $group: { _id: '$difficulty', count: { $sum: 1 } } }]),
+    AptitudeQuestion.aggregate([{ $group: { _id: '$category', count: { $sum: 1 } } }]),
+  ]);
+
   const approvalRate = totalSubmissions > 0 ? Math.round((acceptedSubmissions / totalSubmissions) * 100) : 0;
 
-  // Problems by difficulty
-  const problemsByDifficulty = {
-    Beginner: await Problem.countDocuments({ difficulty: 'Beginner' }),
-    Intermediate: await Problem.countDocuments({ difficulty: 'Intermediate' }),
-    Advanced: await Problem.countDocuments({ difficulty: 'Advanced' }),
-  };
+  const problemsByDifficulty: Record<string, number> = { Beginner: 0, Intermediate: 0, Advanced: 0 };
+  for (const d of difficultyAgg) { if (d._id) problemsByDifficulty[d._id] = d.count; }
 
-  // Aptitude by category
-  const aptitudeByCategory = {
-    Quantitative: await AptitudeQuestion.countDocuments({ category: 'Quantitative' }),
-    Logical: await AptitudeQuestion.countDocuments({ category: 'Logical' }),
-    Verbal: await AptitudeQuestion.countDocuments({ category: 'Verbal' }),
-    Technical: await AptitudeQuestion.countDocuments({ category: 'Technical' }),
-  };
+  const aptitudeByCategory: Record<string, number> = { Quantitative: 0, Logical: 0, Verbal: 0, Technical: 0 };
+  for (const c of categoryAgg) { if (c._id) aptitudeByCategory[c._id] = c.count; }
 
   res.json({
     success: true,
@@ -239,48 +232,60 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
     companiesVisited: totalDrives,
   };
 
-  // --- Branch-wise Performance ---
-  const branchPerformance = await Promise.all(
-    branches.map(async (branch) => {
-      const branchStudents = await User.find({ role: 'student', branch }).select('_id').lean();
-      const studentIds = branchStudents.map(s => s._id);
-      const count = studentIds.length;
-      if (count === 0) return { branch, students: 0, placed: 0, avgCoding: 0, avgAptitude: 0, placementRate: 0 };
+  // --- Bulk fetch all data (eliminates N+1 queries) ---
+  const [allStudents, allProgress, allAttempts] = await Promise.all([
+    User.find({ role: 'student' }).select('_id branch name universityId').lean(),
+    UserProgress.find().lean(),
+    AptitudeAttempt.find().select('userId score').lean(),
+  ]);
 
-      // Aggregate coding performance
-      const progressRecords = await UserProgress.find({ userId: { $in: studentIds } }).lean();
-      let totalCodingScore = 0;
-      for (const p of progressRecords) {
+  // Build lookup maps
+  const progressByUser = new Map(allProgress.map(p => [p.userId.toString(), p]));
+  const attemptsByUser = new Map<string, typeof allAttempts>();
+  for (const a of allAttempts) {
+    const uid = a.userId.toString();
+    if (!attemptsByUser.has(uid)) attemptsByUser.set(uid, []);
+    attemptsByUser.get(uid)!.push(a);
+  }
+
+  // --- Branch-wise Performance (computed in memory) ---
+  const branchPerformance = branches.map(branch => {
+    const branchStudents = allStudents.filter(s => (s as any).branch === branch);
+    const count = branchStudents.length;
+    if (count === 0) return { branch, students: 0, placed: 0, avgCoding: 0, avgAptitude: 0, placementRate: 0 };
+
+    let totalCodingScore = 0;
+    let progressCount = 0;
+    let totalAptitudeScore = 0;
+    let aptitudeCount = 0;
+
+    for (const s of branchStudents) {
+      const p = progressByUser.get(s._id.toString());
+      if (p) {
         const solved = (p.problemsSolved?.easy || 0) + (p.problemsSolved?.medium || 0) + (p.problemsSolved?.hard || 0);
         const rate = p.totalSubmissions > 0 ? (solved / p.totalSubmissions) * 100 : 0;
         totalCodingScore += rate;
+        progressCount++;
       }
-
-      // Aggregate aptitude performance
-      const attempts = await AptitudeAttempt.find({ userId: { $in: studentIds } }).lean();
-      let totalAptitudeScore = 0;
-      for (const a of attempts) {
+      const userAttempts = attemptsByUser.get(s._id.toString()) || [];
+      for (const a of userAttempts) {
         totalAptitudeScore += a.score || 0;
+        aptitudeCount++;
       }
+    }
 
-      const placed = 0; // selectedStudents is a count, not an array of IDs
+    return {
+      branch,
+      students: count,
+      placed: 0,
+      avgCoding: progressCount > 0 ? Math.round(totalCodingScore / progressCount) : 0,
+      avgAptitude: aptitudeCount > 0 ? Math.round(totalAptitudeScore / aptitudeCount) : 0,
+      placementRate: 0,
+    };
+  });
 
-      return {
-        branch,
-        students: count,
-        placed,
-        avgCoding: progressRecords.length > 0 ? Math.round(totalCodingScore / progressRecords.length) : 0,
-        avgAptitude: attempts.length > 0 ? Math.round(totalAptitudeScore / attempts.length) : 0,
-        placementRate: count > 0 ? Math.round((placed / count) * 100) : 0,
-      };
-    })
-  );
-
-  // --- Top Performers ---
-  const allProgress = await UserProgress.find().lean();
-  const allUserIds = allProgress.map(p => p.userId);
-  const allUsers = await User.find({ _id: { $in: allUserIds }, role: 'student' }).select('name branch universityId').lean();
-  const allUserMap = new Map(allUsers.map(u => [u._id.toString(), u]));
+  // --- Top Performers (computed in memory) ---
+  const allUserMap = new Map(allStudents.map(u => [u._id.toString(), u]));
 
   const topPerformers = allProgress
     .map(p => {
@@ -290,16 +295,19 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
       const med = p.problemsSolved?.medium || 0;
       const hard = p.problemsSolved?.hard || 0;
       const codingScore = p.totalSubmissions > 0 ? Math.round(((easy + med + hard) / p.totalSubmissions) * 100) : 0;
-      const overall = codingScore; // Simplified — could incorporate aptitude
+      const userAttempts = attemptsByUser.get(p.userId.toString()) || [];
+      const aptitudeScore = userAttempts.length > 0
+        ? Math.round(userAttempts.reduce((sum, a) => sum + (a.score || 0), 0) / userAttempts.length)
+        : 0;
+      const overall = userAttempts.length > 0 ? Math.round((codingScore + aptitudeScore) / 2) : codingScore;
       return {
         name: user.name,
         branch: (user as any).branch || '',
         codingScore,
-        aptitudeScore: 0, // Will be enriched below
+        aptitudeScore,
         overall,
         status: 'Active',
         company: '-',
-        _userId: p.userId.toString(),
       };
     })
     .filter(Boolean)
@@ -307,26 +315,24 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
     .slice(0, 10)
     .map((entry: any, idx: number) => ({ rank: idx + 1, ...entry }));
 
-  // Enrich top performers with aptitude scores
-  for (const performer of topPerformers) {
-    const attempts = await AptitudeAttempt.find({ userId: (performer as any)._userId }).lean();
-    if (attempts.length > 0) {
-      const avgScore = Math.round(attempts.reduce((sum, a) => sum + (a.score || 0), 0) / attempts.length);
-      (performer as any).aptitudeScore = avgScore;
-      (performer as any).overall = Math.round(((performer as any).codingScore + avgScore) / 2);
-    }
-  }
+  // --- Weak Topics (aggregation pipeline instead of N+1) ---
+  const [submissionTagAgg] = await Promise.all([
+    Submission.aggregate([
+      { $group: { _id: { problemId: '$problemId', status: '$status' }, count: { $sum: 1 } } },
+    ]),
+  ]);
 
-  // --- Weak Topics (from problem tags with low pass rates) ---
+  // Map problem IDs to tags
   const problemsWithTags = await Problem.find().select('_id tags').lean();
+  const problemTagMap = new Map(problemsWithTags.map(p => [p._id.toString(), p.tags || []]));
+
   const tagStats: Record<string, { attempts: number; passed: number }> = {};
-  for (const prob of problemsWithTags) {
-    const subs = await Submission.countDocuments({ problemId: prob._id });
-    const accepted = await Submission.countDocuments({ problemId: prob._id, status: 'Accepted' });
-    for (const tag of prob.tags || []) {
+  for (const agg of submissionTagAgg) {
+    const tags = problemTagMap.get(agg._id.problemId.toString()) || [];
+    for (const tag of tags) {
       if (!tagStats[tag]) tagStats[tag] = { attempts: 0, passed: 0 };
-      tagStats[tag].attempts += subs;
-      tagStats[tag].passed += accepted;
+      tagStats[tag].attempts += agg.count;
+      if (agg._id.status === 'Accepted') tagStats[tag].passed += agg.count;
     }
   }
 
@@ -384,10 +390,10 @@ export const getRecommendations = asyncHandler(async (req: Request, res: Respons
 
   // 1. Fetch all user data in parallel
   const [submissions, attempts, progress, allProblems] = await Promise.all([
-    Submission.find({ userId }).select('problemId status').lean(),
-    AptitudeAttempt.find({ userId }).select('testId score passed').populate('testId', 'category').lean(),
+    Submission.find({ userId }).select('problemId status').limit(500).lean(),
+    AptitudeAttempt.find({ userId }).select('testId score passed').limit(100).populate('testId', 'category').lean(),
     UserProgress.findOne({ userId }).lean(),
-    Problem.find().select('slug title difficulty tags').lean(),
+    Problem.find().select('slug title difficulty tags').limit(1000).lean(),
   ]);
 
   // 2. Build user profile from submissions

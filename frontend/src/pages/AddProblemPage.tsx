@@ -8,7 +8,7 @@ import type { DifficultyLevel } from '../types/models';
 
 /**
  * Add/Edit Problem Page
- * 
+ *
  * Comprehensive form for creating and editing coding problems.
  * Features: Rich text editor, test cases, examples, tags management, validation.
  */
@@ -38,11 +38,9 @@ const AddProblemPage = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [constraints, setConstraints] = useState('');
-  const [examples, setExamples] = useState<Example[]>([
-    { input: '', output: '', explanation: '' }
-  ]);
+  const [examples, setExamples] = useState<Example[]>([{ input: '', output: '', explanation: '' }]);
   const [testCases, setTestCases] = useState<TestCase[]>([
-    { input: '', expectedOutput: '', isHidden: false }
+    { input: '', expectedOutput: '', isHidden: false },
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -67,7 +65,7 @@ const AddProblemPage = () => {
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
   // Example Management
@@ -100,7 +98,6 @@ const AddProblemPage = () => {
     setTestCases(updated);
   };
 
-  // Form Submission
   const handleSubmit = async () => {
     // Validation
     if (!title.trim() || !slug.trim() || !description.trim()) {
@@ -108,16 +105,45 @@ const AddProblemPage = () => {
       return;
     }
 
+    if (testCases.length === 0 || testCases.every((tc) => !tc.input.trim())) {
+      alert('Please add at least one test case');
+      return;
+    }
+
     setIsSubmitting(true);
+    const toastId = toast.loading(`${isEditMode ? 'Updating' : 'Creating'} problem...`);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const { api } = await import('../services/api.client');
+      const payload = {
+        title: title.trim(),
+        slug: slug.trim(),
+        description: description.trim(),
+        difficulty,
+        tags,
+        constraints: constraints.trim() || undefined,
+        testCases: testCases
+          .filter((tc) => tc.input.trim())
+          .map((tc) => ({
+            input: tc.input.trim(),
+            expectedOutput: tc.expectedOutput.trim(),
+            isHidden: tc.isHidden,
+          })),
+      };
 
-    // In production, this would call the API to save problem data
+      if (isEditMode && id) {
+        await api.put(`/problems/${id}`, payload);
+      } else {
+        await api.post('/problems', payload);
+      }
 
-    setIsSubmitting(false);
-    toast.success(`Problem ${isEditMode ? 'updated' : 'created'} successfully!`);
-    navigate('/admin/problems');
+      toast.success(`Problem ${isEditMode ? 'updated' : 'created'} successfully!`, { id: toastId });
+      navigate('/admin/problems');
+    } catch {
+      toast.error('Failed to save problem. Please try again.', { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -137,7 +163,9 @@ const AddProblemPage = () => {
               {isEditMode ? 'Edit Problem' : 'Add New Problem'}
             </h1>
             <p className="text-sm text-gray-600 dark:text-lc-text-muted">
-              {isEditMode ? 'Update problem details and test cases' : 'Create a new coding problem for students'}
+              {isEditMode
+                ? 'Update problem details and test cases'
+                : 'Create a new coding problem for students'}
             </p>
           </div>
         </div>
@@ -148,10 +176,14 @@ const AddProblemPage = () => {
             {/* Basic Information */}
             <Card className="p-6">
               <div className="border-b border-gray-200 dark:border-lc-border pb-4 mb-6">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">Basic Information</h2>
-                <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">General details about the problem</p>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">
+                  Basic Information
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">
+                  General details about the problem
+                </p>
               </div>
-              
+
               <div className="space-y-5">
                 {/* Title & Slug in Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -194,7 +226,9 @@ const AddProblemPage = () => {
                     rows={6}
                     className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
                   />
-                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">Write a clear and detailed problem statement</p>
+                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">
+                    Write a clear and detailed problem statement
+                  </p>
                 </div>
 
                 {/* Constraints */}
@@ -209,7 +243,9 @@ const AddProblemPage = () => {
                     rows={3}
                     className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono transition-all"
                   />
-                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">One constraint per line (optional)</p>
+                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">
+                    One constraint per line (optional)
+                  </p>
                 </div>
               </div>
             </Card>
@@ -218,8 +254,12 @@ const AddProblemPage = () => {
             <Card className="p-6">
               <div className="border-b border-gray-200 dark:border-lc-border pb-4 mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">Examples</h2>
-                  <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">Provide sample inputs and outputs to illustrate the problem</p>
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">
+                    Examples
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">
+                    Provide sample inputs and outputs to illustrate the problem
+                  </p>
                 </div>
                 <button
                   onClick={handleAddExample}
@@ -232,9 +272,14 @@ const AddProblemPage = () => {
 
               <div className="space-y-3">
                 {examples.map((example, index) => (
-                  <div key={index} className="border border-gray-200 dark:border-lc-border rounded-lg p-4 bg-gray-50 dark:bg-lc-elevated hover:bg-gray-100 dark:hover:bg-lc-border-light transition-colors group">
+                  <div
+                    key={index}
+                    className="border border-gray-200 dark:border-lc-border rounded-lg p-4 bg-gray-50 dark:bg-lc-elevated hover:bg-gray-100 dark:hover:bg-lc-border-light transition-colors group"
+                  >
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide">Example {index + 1}</span>
+                      <span className="text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide">
+                        Example {index + 1}
+                      </span>
                       <button
                         onClick={() => handleRemoveExample(index)}
                         className="p-1 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all"
@@ -242,10 +287,12 @@ const AddProblemPage = () => {
                         <X className="w-4 h-4" />
                       </button>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">Input</label>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">
+                          Input
+                        </label>
                         <textarea
                           value={example.input}
                           onChange={(e) => handleExampleChange(index, 'input', e.target.value)}
@@ -255,7 +302,9 @@ const AddProblemPage = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">Output</label>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">
+                          Output
+                        </label>
                         <textarea
                           value={example.output}
                           onChange={(e) => handleExampleChange(index, 'output', e.target.value)}
@@ -267,7 +316,9 @@ const AddProblemPage = () => {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">Explanation</label>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">
+                        Explanation
+                      </label>
                       <textarea
                         value={example.explanation}
                         onChange={(e) => handleExampleChange(index, 'explanation', e.target.value)}
@@ -285,8 +336,12 @@ const AddProblemPage = () => {
             <Card className="p-6">
               <div className="border-b border-gray-200 dark:border-lc-border pb-4 mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">Test Cases</h2>
-                  <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">Define test cases to validate student solutions</p>
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">
+                    Test Cases
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">
+                    Define test cases to validate student solutions
+                  </p>
                 </div>
                 <button
                   onClick={handleAddTestCase}
@@ -299,12 +354,19 @@ const AddProblemPage = () => {
 
               <div className="space-y-3">
                 {testCases.map((testCase, index) => (
-                  <div key={index} className="border border-gray-200 dark:border-lc-border rounded-lg p-4 bg-gray-50 dark:bg-lc-elevated hover:bg-gray-100 dark:hover:bg-lc-border-light transition-colors group">
+                  <div
+                    key={index}
+                    className="border border-gray-200 dark:border-lc-border rounded-lg p-4 bg-gray-50 dark:bg-lc-elevated hover:bg-gray-100 dark:hover:bg-lc-border-light transition-colors group"
+                  >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide">Test {index + 1}</span>
+                        <span className="text-xs font-semibold text-gray-700 dark:text-lc-text-secondary uppercase tracking-wide">
+                          Test {index + 1}
+                        </span>
                         {testCase.isHidden && (
-                          <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded">Hidden</span>
+                          <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded">
+                            Hidden
+                          </span>
                         )}
                       </div>
                       <button
@@ -317,7 +379,9 @@ const AddProblemPage = () => {
 
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">Input</label>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">
+                          Input
+                        </label>
                         <textarea
                           value={testCase.input}
                           onChange={(e) => handleTestCaseChange(index, 'input', e.target.value)}
@@ -327,10 +391,14 @@ const AddProblemPage = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">Expected Output</label>
+                        <label className="block text-xs font-medium text-gray-600 dark:text-lc-text-muted mb-1.5">
+                          Expected Output
+                        </label>
                         <textarea
                           value={testCase.expectedOutput}
-                          onChange={(e) => handleTestCaseChange(index, 'expectedOutput', e.target.value)}
+                          onChange={(e) =>
+                            handleTestCaseChange(index, 'expectedOutput', e.target.value)
+                          }
                           placeholder="[0,1]"
                           rows={2}
                           className="w-full px-3 py-2 text-xs border border-gray-300 dark:border-lc-border-light rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono bg-white dark:bg-lc-card dark:text-lc-text"
@@ -357,8 +425,10 @@ const AddProblemPage = () => {
           <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             {/* Publish Settings */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Publish Settings</h3>
-              
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">
+                Publish Settings
+              </h3>
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 dark:text-lc-text-secondary mb-2">
@@ -406,8 +476,10 @@ const AddProblemPage = () => {
 
             {/* Tags */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Tags</h3>
-              
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">
+                Tags
+              </h3>
+
               <div className="space-y-3">
                 <div className="flex gap-2">
                   <input
@@ -444,34 +516,48 @@ const AddProblemPage = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-500 dark:text-lc-text-muted text-center py-4">No tags added yet</p>
+                  <p className="text-xs text-gray-500 dark:text-lc-text-muted text-center py-4">
+                    No tags added yet
+                  </p>
                 )}
               </div>
             </Card>
 
             {/* Quick Stats */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Summary</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">
+                Summary
+              </h3>
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between items-center py-1">
                   <span className="text-gray-600 dark:text-lc-text-muted">Examples</span>
-                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">{examples.length}</span>
+                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">
+                    {examples.length}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1">
                   <span className="text-gray-600 dark:text-lc-text-muted">Test Cases</span>
-                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">{testCases.length}</span>
+                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">
+                    {testCases.length}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1">
                   <span className="text-gray-600 dark:text-lc-text-muted">Tags</span>
-                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">{tags.length}</span>
+                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">
+                    {tags.length}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1">
                   <span className="text-gray-600 dark:text-lc-text-muted">Difficulty</span>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                    difficulty === 'Beginner' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
-                    difficulty === 'Intermediate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
-                    'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                  }`}>
+                  <span
+                    className={`text-xs font-medium px-2 py-0.5 rounded ${
+                      difficulty === 'Beginner'
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                        : difficulty === 'Intermediate'
+                          ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                          : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                    }`}
+                  >
                     {difficulty}
                   </span>
                 </div>

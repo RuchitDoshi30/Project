@@ -31,7 +31,7 @@ router.get('/reports', authenticate, authorize(['admin']), getReports);
 // Admin student management
 router.get('/students', authenticate, authorize(['admin']), getStudents);
 router.post('/students', authenticate, authorize(['admin']), validate(studentSchema), createStudent);
-router.put('/students/:id', authenticate, authorize(['admin']), updateStudent);
+router.put('/students/:id', authenticate, authorize(['admin']), validate(studentSchema.partial()), updateStudent);
 router.delete('/students/:id', authenticate, authorize(['admin']), deleteStudent);
 router.patch('/students/:id/toggle-status', authenticate, authorize(['admin']), toggleStudentStatus);
 

@@ -31,6 +31,11 @@ function buildStudentQuery(filters: any) {
     query.enrollmentYear = parseInt(filters.batch, 10) || undefined;
   }
 
+  // Filter by minimum CGPA if provided
+  if (filters?.minCgpa && typeof filters.minCgpa === 'number') {
+    query.cgpa = { $gte: filters.minCgpa };
+  }
+
   return query;
 }
 

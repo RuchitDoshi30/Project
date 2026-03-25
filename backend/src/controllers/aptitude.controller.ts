@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AptitudeQuestion, AptitudeTest, AptitudeAttempt } from '../models';
+import { AptitudeQuestion, AptitudeTest, AptitudeAttempt, UserProgress } from '../models';
 import { asyncHandler } from '../middlewares/asyncHandler';
 import { ApiError } from '../middlewares/errorHandler';
 
@@ -129,6 +129,13 @@ export const submitAttempt = asyncHandler(async (req: Request, res: Response) =>
       completedAt: new Date(),
       idempotencyHash,
     });
+
+    // Increment aptitudeTestsTaken counter in UserProgress
+    await UserProgress.findOneAndUpdate(
+      { userId: req.user!.id },
+      { $inc: { aptitudeTestsTaken: 1 }, $set: { lastActiveDate: new Date() } },
+      { upsert: true }
+    );
 
     res.status(201).json({ success: true, data: attempt });
   } catch (err: any) {

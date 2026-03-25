@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
+import onFinished from 'on-finished';
 
 // Extend Express Request to include requestId
 declare global {
@@ -25,9 +26,8 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
   req.requestId = crypto.randomUUID();
   res.setHeader('X-Request-Id', req.requestId);
 
-  // Capture original end to log after response
-  const originalEnd = res.end.bind(res);
-  const wrappedEnd = (...args: Parameters<typeof res.end>) => {
+  // Use on-finished for safe response logging (L1 fix)
+  onFinished(res, () => {
     const duration = Date.now() - start;
 
     const logEntry = {
@@ -64,10 +64,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
         duration: logEntry.duration,
       }));
     }
-
-    return originalEnd(...args);
-  };
-  res.end = wrappedEnd as typeof res.end;
+  });
 
   next();
 };

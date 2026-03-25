@@ -76,7 +76,7 @@ export const getMySubmissionsForProblem = asyncHandler(async (req: Request, res:
   const submissions = await Submission.find({
     userId: req.user!.id,
     problemId: req.params.problemId,
-  }).sort({ submittedAt: -1 });
+  }).sort({ submittedAt: -1 }).limit(50);
 
   res.json({ success: true, data: submissions });
 });

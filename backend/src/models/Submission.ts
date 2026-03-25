@@ -60,11 +60,10 @@ SubmissionSchema.pre('save', function(this: ISubmission) {
 });
 
 // Mongoose Post-Hook for Stats Update (Trigger Equivalent)
-// When a submission is marked as 'Accepted', update the User's solved stats
+// Increment totalSubmissions count and update lastActiveDate
 SubmissionSchema.post('save', async function (doc: ISubmission) {
   try {
     if (mongoose.models.UserProgress) {
-      // Always increment total submissions
       await mongoose.models.UserProgress.findOneAndUpdate(
         { userId: doc.userId },
         { 
@@ -73,28 +72,8 @@ SubmissionSchema.post('save', async function (doc: ISubmission) {
         },
         { upsert: true }
       );
-
-      // If status changed to 'Accepted', we might want to check if it's the first time they solved it.
-      // Usually requires checking if a "Solved" record already exists in a UserProblemProgress mapping.
-      // For this simplified derived hook, we'd fire an event or pipeline, but here's a basic integration:
-      if (doc.status === 'Accepted') {
-        const problem = await mongoose.models.Problem.findById(doc.problemId).select('difficulty');
-        if (problem) {
-          const difficultyMap: Record<string, string> = {
-            'Beginner': 'problemsSolved.easy',
-            'Intermediate': 'problemsSolved.medium',
-            'Advanced': 'problemsSolved.hard'
-          };
-          
-          const difficultyField = difficultyMap[problem.difficulty as string];
-          if (difficultyField) {
-             await mongoose.models.UserProgress.findOneAndUpdate(
-               { userId: doc.userId },
-               { $inc: { [difficultyField]: 1 } }
-             );
-          }
-        }
-      }
+      // NOTE: problemsSolved is managed exclusively by approveSubmission controller
+      // inside a transaction to prevent double-counting.
     }
   } catch (err) {
     console.error('Trigger error in Submission post-save:', err);

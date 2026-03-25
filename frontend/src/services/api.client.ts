@@ -3,15 +3,15 @@ import toast from 'react-hot-toast';
 
 /**
  * API Client Service
- * 
+ *
  * Centralized HTTP client for all API requests.
  * Handles authentication, error handling, and request/response interceptors.
- * 
+ *
  * In production, this will communicate with the backend API.
  * Currently configured for mock/development mode.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
 // Create axios instance with default config
 export const apiClient: AxiosInstance = axios.create({
@@ -36,7 +36,7 @@ apiClient.interceptors.request.use(
   },
   (error: AxiosError) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 /**
@@ -56,7 +56,7 @@ apiClient.interceptors.response.use(
       error.response?.status !== 401
     ) {
       config._retryCount = (config._retryCount || 0) + 1;
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       return apiClient(config);
     }
 
@@ -95,7 +95,7 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 /**

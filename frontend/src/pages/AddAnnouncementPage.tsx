@@ -73,7 +73,7 @@ const AddAnnouncementPage = () => {
         views: existing?.views || 0,
       };
 
-      saveAnnouncement(payload);
+      await saveAnnouncement(payload);
 
       toast.success(`Announcement ${isEditMode ? 'updated' : 'created'} successfully!`, {
         id: toastId,

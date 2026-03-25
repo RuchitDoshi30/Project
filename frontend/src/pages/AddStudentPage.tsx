@@ -146,7 +146,23 @@ const AddStudentPage = () => {
     const toastId = toast.loading(`${isEditMode ? 'Updating' : 'Creating'} student account...`);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 900));
+      const { api } = await import('../services/api.client');
+      const payload = {
+        name: fullName.trim(),
+        email: universityEmail.trim(),
+        universityId: studentId.trim(),
+        passwordHash: temporaryPassword,
+        branch: branch,
+        semester: Number(semester),
+        enrollmentYear: Number(enrollmentYear),
+        role: 'student' as const,
+      };
+
+      if (isEditMode && id) {
+        await api.put(`/dashboard/students/${id}`, payload);
+      } else {
+        await api.post('/dashboard/students', payload);
+      }
 
       toast.success(`Student account ${isEditMode ? 'updated' : 'created'} successfully!`, {
         id: toastId,

@@ -8,7 +8,7 @@ import type { AptitudeCategory, DifficultyLevel } from '../types/models';
 
 /**
  * Add/Edit Aptitude Question Page
- * 
+ *
  * Comprehensive form for creating and editing aptitude questions.
  * Features: Multiple options, correct answer selection, explanation, validation, loading states.
  */
@@ -42,21 +42,35 @@ const AddAptitudeQuestionPage = () => {
       return;
     }
 
-    if (options.some(opt => !opt.trim())) {
+    if (options.some((opt) => !opt.trim())) {
       toast.error('Please fill in all options');
       return;
     }
 
     setIsSubmitting(true);
 
-    // Simulate API call with toast feedback
     const toastId = toast.loading(`${isEditMode ? 'Updating' : 'Creating'} question...`);
-    
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // In production, this would call the API to save question data
-      
-      toast.success(`Question ${isEditMode ? 'updated' : 'created'} successfully!`, { id: toastId });
+      const { api } = await import('../services/api.client');
+      const payload = {
+        question: question.trim(),
+        options: options.map((o) => o.trim()),
+        correctOptionIndex: correctAnswer,
+        category,
+        difficulty,
+        explanation: explanation.trim() || undefined,
+      };
+
+      if (isEditMode && id) {
+        await api.put(`/aptitude/questions/${id}`, payload);
+      } else {
+        await api.post('/aptitude/questions', payload);
+      }
+
+      toast.success(`Question ${isEditMode ? 'updated' : 'created'} successfully!`, {
+        id: toastId,
+      });
       navigate('/admin/aptitude');
     } catch {
       toast.error('Failed to save question. Please try again.', { id: toastId });
@@ -82,7 +96,9 @@ const AddAptitudeQuestionPage = () => {
               {isEditMode ? 'Edit Question' : 'Add New Question'}
             </h1>
             <p className="text-sm text-gray-600 dark:text-lc-text-muted">
-              {isEditMode ? 'Update question details and options' : 'Create a new aptitude question for tests'}
+              {isEditMode
+                ? 'Update question details and options'
+                : 'Create a new aptitude question for tests'}
             </p>
           </div>
         </div>
@@ -93,10 +109,14 @@ const AddAptitudeQuestionPage = () => {
             {/* Question Details */}
             <Card className="p-6">
               <div className="border-b border-gray-200 dark:border-lc-border pb-4 mb-6">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">Question Details</h2>
-                <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">Write your question and provide multiple choice options</p>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-lc-text">
+                  Question Details
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-lc-text-muted mt-1">
+                  Write your question and provide multiple choice options
+                </p>
               </div>
-              
+
               <div className="space-y-5">
                 {/* Question Text */}
                 <div>
@@ -110,7 +130,9 @@ const AddAptitudeQuestionPage = () => {
                     rows={3}
                     className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
                   />
-                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">Write a clear and unambiguous question</p>
+                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">
+                    Write a clear and unambiguous question
+                  </p>
                 </div>
 
                 {/* Options */}
@@ -169,20 +191,22 @@ const AddAptitudeQuestionPage = () => {
                     rows={3}
                     className="w-full px-3.5 py-2.5 text-sm border border-gray-300 dark:border-lc-border-light dark:bg-lc-card dark:text-lc-text rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
                   />
-                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">Provide a detailed explanation to help students learn</p>
+                  <p className="text-xs text-gray-500 dark:text-lc-text-muted mt-1.5">
+                    Provide a detailed explanation to help students learn
+                  </p>
                 </div>
               </div>
             </Card>
-
-
           </div>
 
           {/* Sidebar - Sticky */}
           <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             {/* Publish Settings */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Publish Settings</h3>
-              
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">
+                Publish Settings
+              </h3>
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 dark:text-lc-text-secondary mb-2">
@@ -246,28 +270,45 @@ const AddAptitudeQuestionPage = () => {
 
             {/* Quick Info */}
             <Card className="p-5">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">Question Info</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text mb-4 uppercase tracking-wide">
+                Question Info
+              </h3>
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between items-center py-1">
                   <span className="text-gray-600 dark:text-lc-text-muted">Category</span>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                    category === 'Quantitative' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
-                    category === 'Logical' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' :
-                    category === 'Verbal' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
-                    'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
-                  }`}>{category}</span>
+                  <span
+                    className={`text-xs font-medium px-2 py-0.5 rounded ${
+                      category === 'Quantitative'
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                        : category === 'Logical'
+                          ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                          : category === 'Verbal'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                            : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
+                    }`}
+                  >
+                    {category}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1">
                   <span className="text-gray-600 dark:text-lc-text-muted">Difficulty</span>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                    difficulty === 'Beginner' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
-                    difficulty === 'Intermediate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
-                    'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                  }`}>{difficulty}</span>
+                  <span
+                    className={`text-xs font-medium px-2 py-0.5 rounded ${
+                      difficulty === 'Beginner'
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                        : difficulty === 'Intermediate'
+                          ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                          : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                    }`}
+                  >
+                    {difficulty}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1">
                   <span className="text-gray-600 dark:text-lc-text-muted">Options</span>
-                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">4</span>
+                  <span className="font-semibold text-gray-900 dark:text-lc-text bg-gray-100 dark:bg-lc-elevated px-2 py-0.5 rounded">
+                    4
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1">
                   <span className="text-gray-600 dark:text-lc-text-muted">Correct Answer</span>
@@ -277,9 +318,13 @@ const AddAptitudeQuestionPage = () => {
                 </div>
                 <div className="flex justify-between items-center py-1">
                   <span className="text-gray-600 dark:text-lc-text-muted">Has Explanation</span>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                    explanation ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-lc-elevated text-gray-600 dark:text-lc-text-muted'
-                  }`}>
+                  <span
+                    className={`text-xs font-medium px-2 py-0.5 rounded ${
+                      explanation
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                        : 'bg-gray-100 dark:bg-lc-elevated text-gray-600 dark:text-lc-text-muted'
+                    }`}
+                  >
                     {explanation ? 'Yes' : 'No'}
                   </span>
                 </div>
@@ -292,11 +337,26 @@ const AddAptitudeQuestionPage = () => {
                 <span>💡</span> Best Practices
               </h3>
               <ul className="text-xs text-amber-900 space-y-2 leading-relaxed">
-                <li className="flex gap-2"><span>•</span><span>Write clear, unambiguous questions</span></li>
-                <li className="flex gap-2"><span>•</span><span>Make all options plausible</span></li>
-                <li className="flex gap-2"><span>•</span><span>Provide detailed explanations</span></li>
-                <li className="flex gap-2"><span>•</span><span>Avoid negative phrasing</span></li>
-                <li className="flex gap-2"><span>•</span><span>Match difficulty with complexity</span></li>
+                <li className="flex gap-2">
+                  <span>•</span>
+                  <span>Write clear, unambiguous questions</span>
+                </li>
+                <li className="flex gap-2">
+                  <span>•</span>
+                  <span>Make all options plausible</span>
+                </li>
+                <li className="flex gap-2">
+                  <span>•</span>
+                  <span>Provide detailed explanations</span>
+                </li>
+                <li className="flex gap-2">
+                  <span>•</span>
+                  <span>Avoid negative phrasing</span>
+                </li>
+                <li className="flex gap-2">
+                  <span>•</span>
+                  <span>Match difficulty with complexity</span>
+                </li>
               </ul>
             </Card>
           </div>

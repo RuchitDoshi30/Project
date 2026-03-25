@@ -38,7 +38,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getMe = asyncHandler(async (req: Request, res: Response) => {
-  const user = await User.findById(req.user!.id);
+  const user = await User.findById(req.user!.id)
+    .select('name email universityId role branch semester enrollmentYear accountStatus createdAt updatedAt');
   if (!user) {
     throw new ApiError(404, 'User not found');
   }

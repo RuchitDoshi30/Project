@@ -107,7 +107,7 @@ const AddPlacementDrivePage = () => {
         companyLogo: existing?.companyLogo,
       };
 
-      savePlacementDrive(payload);
+      await savePlacementDrive(payload);
 
       toast.success(`Placement drive ${isEditMode ? 'updated' : 'created'} successfully!`, {
         id: toastId,
