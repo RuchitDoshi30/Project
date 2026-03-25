@@ -31,9 +31,10 @@ function buildStudentQuery(filters: any) {
     query.enrollmentYear = parseInt(filters.batch, 10) || undefined;
   }
 
-  // Filter by minimum CGPA if provided
-  if (filters?.minCgpa && typeof filters.minCgpa === 'number') {
-    query.cgpa = { $gte: filters.minCgpa };
+  // Filter by minimum CGPA if provided (handle both minCgpa and minCGPA keys)
+  const cgpaVal = filters?.minCgpa ?? filters?.minCGPA;
+  if (cgpaVal && typeof cgpaVal === 'number') {
+    query.cgpa = { $gte: cgpaVal };
   }
 
   return query;
@@ -47,7 +48,8 @@ export const getRecipientsCount = async (req: Request, res: Response, next: Next
   try {
     const branches = (req.query.branches as string)?.split(',').filter(Boolean) || [];
     const batch = req.query.batch as string || '2026';
-    const query = buildStudentQuery({ branches, batch });
+    const minCGPA = req.query.minCGPA ? parseFloat(req.query.minCGPA as string) : undefined;
+    const query = buildStudentQuery({ branches, batch, minCGPA });
 
     const count = await User.countDocuments(query);
     res.json({ success: true, count });
