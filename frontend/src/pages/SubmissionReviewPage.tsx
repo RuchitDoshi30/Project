@@ -39,6 +39,7 @@ const SubmissionReviewPage = () => {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'Pending' | 'Accepted' | 'Rejected'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [feedback, setFeedback] = useState('');
@@ -57,10 +58,11 @@ const SubmissionReviewPage = () => {
     totalTestCases: s.totalTestCases || 0,
   });
 
-  const loadSubmissions = async (cursor?: string | null) => {
+  const loadSubmissions = async (cursor?: string | null, search?: string) => {
     try {
       const params = new URLSearchParams({ limit: '20' });
       if (cursor) params.append('cursor', cursor);
+      if (search) params.append('search', search);
       if (statusFilter !== 'all') {
         const apiStatus = statusFilter === 'Pending' ? 'Pending Review' : statusFilter;
         params.append('status', apiStatus);
@@ -85,14 +87,24 @@ const SubmissionReviewPage = () => {
 
   useEffect(() => {
     setLoading(true);
-    loadSubmissions();
+    loadSubmissions(null, searchQuery);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
+
+  // Debounce search: re-fetch from server when searchQuery changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(true);
+      loadSubmissions(null, searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   const handleLoadMore = () => {
     if (!hasMore || loadingMore) return;
     setLoadingMore(true);
-    loadSubmissions(nextCursor);
+    loadSubmissions(nextCursor, searchQuery);
   };
 
   // Filter submissions (already filtered server-side by status, so show all here)
@@ -234,10 +246,18 @@ const SubmissionReviewPage = () => {
 
       {/* Filters */}
       <Card className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+          <div className="relative flex-1">
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" aria-hidden="true" />
+            <input
+              type="text"
+              placeholder="Search by problem title or student name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 dark:focus:ring-accent-500 focus:border-transparent"
+            />
+          </div>
           <div className="flex items-center gap-4">
-            <Filter className="text-gray-400 w-5 h-5" aria-hidden="true" />
-            <span className="text-sm font-medium text-gray-700">Filter by Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as 'all' | 'Pending' | 'Accepted' | 'Rejected')}
@@ -248,9 +268,9 @@ const SubmissionReviewPage = () => {
               <option value="Accepted">Accepted</option>
               <option value="Rejected">Rejected</option>
             </select>
-          </div>
-          <div className="text-sm text-gray-600">
-            Showing {filteredSubmissions.length} of {submissions.length} submissions
+            <div className="text-sm text-gray-600 whitespace-nowrap">
+              Showing {filteredSubmissions.length} submissions
+            </div>
           </div>
         </div>
       </Card>

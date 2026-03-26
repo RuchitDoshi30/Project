@@ -94,10 +94,11 @@ const StudentManagementPage = () => {
     lastActive: s.updatedAt ? new Date(s.updatedAt).toLocaleDateString() : 'N/A',
   });
 
-  const loadStudents = async (cursor?: string | null) => {
+  const loadStudents = async (cursor?: string | null, search?: string) => {
     try {
       const params = new URLSearchParams({ limit: '20' });
       if (cursor) params.append('cursor', cursor);
+      if (search) params.append('search', search);
       const response = await api.get<{ success: boolean; data: any[]; nextCursor: string | null; hasMore: boolean }>(`/dashboard/students?${params.toString()}`);
       const mapped = response.data.map(mapApiStudent);
       if (cursor) {
@@ -120,7 +121,7 @@ const StudentManagementPage = () => {
   const handleLoadMore = () => {
     if (!hasMore || loadingMore) return;
     setLoadingMore(true);
-    loadStudents(nextCursor);
+    loadStudents(nextCursor, searchQuery);
   };
   const [searchQuery, setSearchQuery] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState<
@@ -415,17 +416,22 @@ const StudentManagementPage = () => {
     toast.success('Student added manually');
   };
 
-  const filteredStudents = students.filter((student) => {
-    const matchesSearch =
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.rollNumber.toLowerCase().includes(searchQuery.toLowerCase());
+  // Debounce search: re-fetch from server when searchQuery changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(true);
+      loadStudents(null, searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
+  // Client-side filters for department/year/status (these are small enough to filter locally)
+  const filteredStudents = students.filter((student) => {
     const matchesDepartment = departmentFilter === 'all' || student.department === departmentFilter;
     const matchesYear = yearFilter === 'all' || String(student.year) === yearFilter;
-
     const matchesStatus = statusFilter === 'all' || student.status === statusFilter;
-
-    return matchesSearch && matchesDepartment && matchesYear && matchesStatus;
+    return matchesDepartment && matchesYear && matchesStatus;
   });
 
   // Handle delete student

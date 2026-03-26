@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
-import { Submission, Problem, UserProgress } from '../models';
+import { Submission, Problem, UserProgress, User } from '../models';
 import { asyncHandler } from '../middlewares/asyncHandler';
 import { ApiError } from '../middlewares/errorHandler';
 
@@ -83,12 +83,32 @@ export const getMySubmissionsForProblem = asyncHandler(async (req: Request, res:
 
 /** Admin: get all submissions with filters */
 export const getAllSubmissions = asyncHandler(async (req: Request, res: Response) => {
-  const { status, cursor, limit = '20' } = req.query;
+  const { status, cursor, limit = '20', search } = req.query;
   const pageLimit = Math.min(parseInt(limit as string, 10) || 20, 50);
 
   const filter: any = {};
   if (status) filter.status = status;
   if (cursor) filter._id = { $lt: cursor };
+
+  // Server-side search: find matching problem IDs and user IDs first
+  if (search && typeof search === 'string' && search.trim()) {
+    const searchRegex = new RegExp(search.trim(), 'i');
+    const [matchingProblems, matchingUsers] = await Promise.all([
+      Problem.find({ title: { $regex: searchRegex } }).select('_id').lean(),
+      User.find({ $or: [{ name: { $regex: searchRegex } }, { universityId: { $regex: searchRegex } }] }).select('_id').lean(),
+    ]);
+    const problemIds = matchingProblems.map(p => p._id);
+    const userIds = matchingUsers.map(u => u._id);
+    filter.$or = [
+      ...(problemIds.length > 0 ? [{ problemId: { $in: problemIds } }] : []),
+      ...(userIds.length > 0 ? [{ userId: { $in: userIds } }] : []),
+    ];
+    // If no matches at all, force empty result
+    if (!filter.$or.length) {
+      res.json({ success: true, data: [], nextCursor: null, hasMore: false });
+      return;
+    }
+  }
 
   const submissions = await Submission.find(filter)
     .sort({ _id: -1 })
