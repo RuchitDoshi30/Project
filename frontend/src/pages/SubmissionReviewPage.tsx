@@ -424,7 +424,7 @@ const SubmissionReviewPage = () => {
               {/* Test Results */}
               <div className="mb-6">
                 <h4 className="font-semibold mb-3">Test Results</h4>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <p className={`text-2xl font-bold ${getPassRateColor(selectedSubmission.testCasesPassed, selectedSubmission.totalTestCases)}`}>
                       {selectedSubmission.testCasesPassed}/{selectedSubmission.totalTestCases}
@@ -432,11 +432,11 @@ const SubmissionReviewPage = () => {
                     <p className="text-sm text-gray-600">Test Cases Passed</p>
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg">
-                    <p className="text-2xl font-bold text-green-600">{selectedSubmission.executionTime}</p>
+                    <p className="text-2xl font-bold text-green-600">{selectedSubmission.executionTime || 'N/A'}</p>
                     <p className="text-sm text-gray-600">Execution Time</p>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-lg">
-                    <p className="text-2xl font-bold text-purple-600">{selectedSubmission.memoryUsed}</p>
+                    <p className="text-2xl font-bold text-purple-600">{selectedSubmission.memoryUsed || 'N/A'}</p>
                     <p className="text-sm text-gray-600">Memory Used</p>
                   </div>
                 </div>
