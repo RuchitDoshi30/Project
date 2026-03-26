@@ -325,13 +325,33 @@ const SubmissionReviewPage = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {submission.status === 'Pending' && (
+                    <>
+                      <button
+                        onClick={() => handleApprove(submission)}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                        aria-label={`Approve submission from ${submission.studentName}`}
+                      >
+                        <CheckCircle className="w-4 h-4" aria-hidden="true" />
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleViewSubmission(submission)}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+                        aria-label={`Reject submission from ${submission.studentName}`}
+                      >
+                        <XCircle className="w-4 h-4" aria-hidden="true" />
+                        Reject
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => handleViewSubmission(submission)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    aria-label={`Review submission for ${submission.studentName}`}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                    aria-label={`View submission details for ${submission.studentName}`}
                   >
                     <Eye className="w-4 h-4" aria-hidden="true" />
-                    Review
+                    View
                   </button>
                 </div>
               </div>
