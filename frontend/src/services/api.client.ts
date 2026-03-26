@@ -8,18 +8,20 @@ import toast from 'react-hot-toast';
  * Handles authentication, error handling, and request/response interceptors.
  *
  * In production, this will communicate with the backend API.
- * Currently configured for mock/development mode.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+// In dev: Vite proxy forwards /api/* to localhost:5000
+// In prod: VITE_API_URL points to the Render backend
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 // Create axios instance with default config
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 /**
