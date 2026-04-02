@@ -206,12 +206,12 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
 
   // --- Placement Stats ---
   const [totalStudents, totalDrives] = await Promise.all([
-    User.countDocuments({ role: 'student' }),
-    PlacementDrive.countDocuments(),
+    User.countDocuments({ role: 'student' }).maxTimeMS(10000),
+    PlacementDrive.countDocuments().maxTimeMS(10000),
   ]);
 
   // Count placed students from drives
-  const drives = await PlacementDrive.find().select('selectedStudents packageLPA').lean();
+  const drives = await PlacementDrive.find().select('selectedStudents packageLPA').lean().maxTimeMS(10000);
   let totalPlaced = 0;
   let totalPackage = 0;
   let highestPackage = 0;
@@ -234,9 +234,9 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
 
   // --- Bulk fetch all data (eliminates N+1 queries) ---
   const [allStudents, allProgress, allAttempts] = await Promise.all([
-    User.find({ role: 'student' }).select('_id branch name universityId').lean(),
-    UserProgress.find().lean(),
-    AptitudeAttempt.find().select('userId score').lean(),
+    User.find({ role: 'student' }).select('_id branch name universityId').lean().maxTimeMS(10000),
+    UserProgress.find().lean().maxTimeMS(10000),
+    AptitudeAttempt.find().select('userId score').lean().maxTimeMS(10000),
   ]);
 
   // Build lookup maps
@@ -319,11 +319,11 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
   const [submissionTagAgg] = await Promise.all([
     Submission.aggregate([
       { $group: { _id: { problemId: '$problemId', status: '$status' }, count: { $sum: 1 } } },
-    ]),
+    ]).option({ maxTimeMS: 10000 }),
   ]);
 
   // Map problem IDs to tags
-  const problemsWithTags = await Problem.find().select('_id tags').lean();
+  const problemsWithTags = await Problem.find().select('_id tags').lean().maxTimeMS(10000);
   const problemTagMap = new Map(problemsWithTags.map(p => [p._id.toString(), p.tags || []]));
 
   const tagStats: Record<string, { attempts: number; passed: number }> = {};
