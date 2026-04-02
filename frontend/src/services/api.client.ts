@@ -17,11 +17,10 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 // Create axios instance with default config
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 60000, // 60s — Render free tier cold starts can take 30-50s
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
 });
 
 /**
@@ -41,24 +40,42 @@ apiClient.interceptors.request.use(
   },
 );
 
+// Deduplicate network error toasts — only show once per 10 seconds
+let lastNetworkErrorToast = 0;
+function showNetworkErrorOnce() {
+  const now = Date.now();
+  if (now - lastNetworkErrorToast > 10000) {
+    lastNetworkErrorToast = now;
+    toast.error('Server is waking up. Please wait a moment...', { duration: 5000 });
+  }
+}
+
 /**
  * Response Interceptor
- * Handles common error scenarios and authentication failures
+ * Handles retries (3 attempts with exponential backoff for cold starts),
+ * authentication, and error toasts.
  */
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const config = error.config as InternalAxiosRequestConfig & { _retryCount?: number };
+    const MAX_RETRIES = 3;
 
-    // Retry logic: 1 retry for 5xx or network errors (not for auth failures)
-    if (
+    // Retry logic: up to 3 retries with exponential backoff for network/5xx errors
+    const isNetworkOrServerError =
+      error.response?.status === undefined || error.response.status >= 500;
+    const isRetryable =
       config &&
-      (!config._retryCount || config._retryCount < 1) &&
-      (error.response?.status === undefined || error.response.status >= 500) &&
-      error.response?.status !== 401
-    ) {
+      (!config._retryCount || config._retryCount < MAX_RETRIES) &&
+      isNetworkOrServerError &&
+      error.response?.status !== 401;
+
+    if (isRetryable) {
       config._retryCount = (config._retryCount || 0) + 1;
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const delay = Math.min(2000 * Math.pow(2, config._retryCount - 1), 10000);
+      // Only show toast on first retry
+      if (config._retryCount === 1) showNetworkErrorOnce();
+      await new Promise((resolve) => setTimeout(resolve, delay));
       return apiClient(config);
     }
 
@@ -77,15 +94,15 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle server errors (after retry exhausted)
+    // Handle server errors (after all retries exhausted)
     if (error.response?.status && error.response.status >= 500) {
       toast.error('Server error. Please try again later.');
       return Promise.reject(error);
     }
 
-    // Handle network errors (after retry exhausted)
+    // Handle network errors (after all retries exhausted)
     if (!error.response) {
-      toast.error('Network error. Please check your connection.');
+      toast.error('Unable to reach server. It may be starting up — please refresh in 30 seconds.');
       return Promise.reject(error);
     }
 
@@ -99,6 +116,20 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+/**
+ * Wake up the backend on app load.
+ * Pings /health to trigger Render cold start early,
+ * so real API calls don't have to wait.
+ */
+export async function wakeUpBackend() {
+  try {
+    const baseUrl = API_BASE_URL.replace(/\/api\/v1$/, '');
+    await axios.get(`${baseUrl}/health`, { timeout: 60000 });
+  } catch {
+    // Silently ignore — the retry interceptor will handle real API failures
+  }
+}
 
 /**
  * API Helper Functions
