@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 
 import { generalLimiter } from './middlewares/rateLimiter';
 import { errorHandler } from './middlewares/errorHandler';
@@ -19,7 +18,7 @@ const app = express();
 // Trust proxy (required on Render/Heroku for rate limiting + req.ip)
 app.set('trust proxy', 1);
 
-// CORS: allow frontend origins (comma-separated in CORS_ORIGIN env var)
+// CORS: Manual middleware for bulletproof cross-origin support
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
   .split(',')
   .map(o => o.trim())
@@ -27,11 +26,22 @@ const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
 
 console.log('Allowed CORS origins:', allowedOrigins);
 
-app.use(cors({
-  origin: allowedOrigins,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Max-Age', '86400');
+
+  // Handle preflight immediately
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204);
+    return;
+  }
+  next();
+});
 
 app.use(express.json());
 app.use(requestLogger);
