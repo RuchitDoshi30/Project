@@ -61,25 +61,28 @@ const ReportsPage = () => {
     const [activeSection, setActiveSection] = useState<'overview' | 'branch' | 'performers' | 'weak'>('overview');
     const [data, setData] = useState<ReportsData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const response = await api.get<{ success: boolean; data: ReportsData }>('/dashboard/reports');
-                setData(response.data);
-            } catch (e) {
-                console.error('Failed to load reports', e);
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, []);
+    const load = async () => {
+        setLoading(true);
+        setError(false);
+        try {
+            const response = await api.get<{ success: boolean; data: ReportsData }>('/dashboard/reports');
+            setData(response.data);
+        } catch (e) {
+            console.error('Failed to load reports', e);
+            setError(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    if (loading || !data) {
+    useEffect(() => { load(); }, []);
+
+    if (loading) {
         return (
             <Container size="xl" fullHeight>
-                <PageHeader title="📊 Reports & Analytics" description="Loading..." />
+                <PageHeader title="📊 Reports & Analytics" description="Loading analytics..." />
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                     {[1, 2, 3, 4, 5, 6].map(i => (
                         <Card key={i} className="p-4 animate-pulse">
@@ -87,6 +90,27 @@ const ReportsPage = () => {
                         </Card>
                     ))}
                 </div>
+            </Container>
+        );
+    }
+
+    if (error || !data) {
+        return (
+            <Container size="xl" fullHeight>
+                <PageHeader title="📊 Reports & Analytics" description="Placement readiness, branch performance, and student analytics" />
+                <Card className="p-12 text-center">
+                    <BarChart3 className="w-12 h-12 text-gray-300 dark:text-lc-text-muted mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text mb-2">Server is starting up</h3>
+                    <p className="text-sm text-gray-500 dark:text-lc-text-muted mb-6">
+                        The backend is warming up. This usually takes 30–60 seconds on first load.
+                    </p>
+                    <button
+                        onClick={load}
+                        className="px-6 py-2.5 bg-primary-600 dark:bg-accent-500/20 text-white dark:text-accent-400 rounded-lg hover:bg-primary-700 dark:hover:bg-accent-500/30 transition-colors font-medium"
+                    >
+                        Retry
+                    </button>
+                </Card>
             </Container>
         );
     }
