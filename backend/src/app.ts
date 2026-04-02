@@ -33,13 +33,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Explicit preflight handler — fast 204 before rate limiter
-app.options('*', cors({
-  origin: allowedOrigins,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
 app.use(express.json());
 app.use(requestLogger);
 app.use(generalLimiter);
