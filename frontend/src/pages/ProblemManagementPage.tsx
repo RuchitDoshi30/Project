@@ -6,6 +6,7 @@ import { PageHeader } from '../components/PageHeader';
 import { Card } from '../components/Card';
 import type { IProblem, DifficultyLevel } from '../types/models';
 import { getProblems } from '../services/problems.service';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 /**
  * Problem Management Page
@@ -26,6 +27,7 @@ interface IExtendedProblem extends Omit<IProblem, 'constraints'> {
 }
 
 const ProblemManagementPage = () => {
+  usePageTitle('Problem Management');
   const navigate = useNavigate();
   const [problems, setProblems] = useState<IExtendedProblem[]>([]);
   const [loading, setLoading] = useState(true);

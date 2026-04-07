@@ -24,7 +24,9 @@ const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
   .map(o => o.trim())
   .filter(Boolean);
 
-console.log('Allowed CORS origins:', allowedOrigins);
+if (process.env.NODE_ENV !== 'production') {
+  console.log('Allowed CORS origins:', allowedOrigins);
+}
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;

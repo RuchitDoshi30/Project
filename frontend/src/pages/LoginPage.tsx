@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { Code2, AlertCircle, Loader2, Trophy, Target, TrendingUp } from 'lucide-react';
 import type { LoginCredentials } from '../types/auth.types';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 // Validation schema
 const loginSchema = z.object({
@@ -23,6 +24,7 @@ interface LocationState {
 }
 
 const LoginPage = () => {
+  usePageTitle('Sign In');
   const navigate = useNavigate();
   const location = useLocation();
   const { login, isAuthenticated, user } = useAuth();

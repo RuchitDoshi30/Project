@@ -13,8 +13,10 @@ import {
   toggleAnnouncementPin,
   type Announcement,
 } from '../services/admin-content.service';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const AnnouncementsPage = () => {
+  usePageTitle('Announcements');
   const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,6 +74,7 @@ const AnnouncementsPage = () => {
   };
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this announcement? This action cannot be undone.')) return;
     try {
       await deleteAnnouncementById(id);
       setAnnouncements(announcements.filter(a => a.id !== id && a._id !== id));

@@ -18,6 +18,7 @@ import { Container } from '../components/Container';
 import { PageHeader } from '../components/PageHeader';
 import { Card } from '../components/Card';
 import { api } from '../services/api.client';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 /**
  * Student Management Page
@@ -69,6 +70,7 @@ interface ImportSummary {
 const allowedDepartments = ['CE', 'IT', 'CSE', 'EC', 'ME', 'CV'] as const;
 
 const StudentManagementPage = () => {
+  usePageTitle('Student Management');
   const navigate = useNavigate();
   const csvFileInputRef = useRef<HTMLInputElement | null>(null);
 

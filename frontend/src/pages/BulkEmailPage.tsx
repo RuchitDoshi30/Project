@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { api } from '../services/api.client';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 /**
  * Bulk Email Page
@@ -134,6 +135,7 @@ const branches = ['CS', 'IT', 'EC', 'EE', 'ME', 'CE'];
 const batches = ['2024', '2025', '2026', '2027'];
 
 const BulkEmailPage = () => {
+    usePageTitle('Send Email');
     const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
     const [selectedBatch, setSelectedBatch] = useState<string>('2026');
     const [minCGPA, setMinCGPA] = useState<string>('');

@@ -5,8 +5,10 @@ import { Code2, Trophy, Target, TrendingUp, Clock, CheckCircle2, XCircle, ArrowR
 import { fetchUserProgress, fetchRecentActivity, calculateSuccessRate, fetchRecommendations } from '../services/dashboard.service';
 import type { IUserProgress } from '../types/models';
 import type { RecentActivity, RecommendedProblem } from '../services/dashboard.service';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const DashboardPage = () => {
+  usePageTitle('Dashboard');
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState<IUserProgress | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);

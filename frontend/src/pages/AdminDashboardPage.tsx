@@ -25,6 +25,7 @@ import {
   type RecentSubmission,
   type StudentActivity,
 } from '../services/admin.service';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const defaultStats: AdminStatistics = {
   totalStudents: 0,
@@ -42,6 +43,7 @@ const defaultStats: AdminStatistics = {
 };
 
 const AdminDashboardPage = () => {
+  usePageTitle('Admin Dashboard');
   const [statistics, setStatistics] = useState<AdminStatistics>(defaultStats);
   const [recentSubmissions, setRecentSubmissions] = useState<RecentSubmission[]>([]);
   const [recentActivity, setRecentActivity] = useState<StudentActivity[]>([]);
@@ -153,7 +155,7 @@ const AdminDashboardPage = () => {
       <Container size="xl" fullHeight>
         <PageHeader title="Admin Dashboard" description="Manage students, content, and monitor platform activity" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[1,2,3,4].map(i => (
+          {[1, 2, 3, 4].map(i => (
             <Card key={i} className="animate-pulse"><div className="h-28 bg-gray-200 dark:bg-lc-elevated rounded"></div></Card>
           ))}
         </div>

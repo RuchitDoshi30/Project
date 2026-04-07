@@ -12,8 +12,10 @@ import {
   deletePlacementDriveById,
   type PlacementDrive,
 } from '../services/admin-content.service';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const PlacementDrivesPage = () => {
+  usePageTitle('Placement Drives');
   const navigate = useNavigate();
   const [drives, setDrives] = useState<PlacementDrive[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,6 +84,7 @@ const PlacementDrivesPage = () => {
   };
 
   const handleDeleteDrive = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this placement drive? This action cannot be undone.')) return;
     try {
       await deletePlacementDriveById(id);
       setDrives(drives.filter(d => d.id !== id && d._id !== id));

@@ -18,6 +18,7 @@ import {
   Target
 } from 'lucide-react';
 import { fetchUserProgress } from '../services/dashboard.service';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 interface UserProfile {
   id: string;
@@ -38,6 +39,7 @@ interface UserProfile {
 }
 
 const ProfilePage = () => {
+  usePageTitle('Profile & Settings');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditingProfile, setIsEditingProfile] = useState(false);

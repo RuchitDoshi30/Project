@@ -6,6 +6,7 @@ import { Card } from '../components/Card';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api.client';
 import toast from 'react-hot-toast';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 /**
  * Submission Review Page
@@ -33,6 +34,7 @@ interface Submission {
 
 
 const SubmissionReviewPage = () => {
+  usePageTitle('Submission Review');
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);

@@ -3,11 +3,13 @@ import { Container, PageHeader, Card } from '../components';
 import { Code2, Search, Filter, CheckCircle, Circle, Clock } from 'lucide-react';
 import { getProblemsWithStatus, getAllTags } from '../services/problems.service';
 import type { IProblem, IProblemProgress } from '../types/models';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 type SortOption = 'title' | 'difficulty' | 'time';
 type SortOrder = 'asc' | 'desc';
 
 const CodingPage = () => {
+  usePageTitle('Coding Problems');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);

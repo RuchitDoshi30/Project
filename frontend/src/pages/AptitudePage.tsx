@@ -10,6 +10,7 @@ import {
 } from '../services/aptitude.service';
 import { useAuth } from '../context/AuthContext';
 import type { IAptitudeTest, IAptitudeAttempt, AptitudeCategory } from '../types/models';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const CATEGORY_EMOJI_ICONS: Record<AptitudeCategory, string> = {
   Quantitative: '🔢',
@@ -19,6 +20,7 @@ const CATEGORY_EMOJI_ICONS: Record<AptitudeCategory, string> = {
 };
 
 const AptitudePage = () => {
+  usePageTitle('Aptitude Tests');
   const navigate = useNavigate();
   const { user } = useAuth();
   const currentUserId = user?._id || 'anon';

@@ -6,6 +6,7 @@ import {
     ArrowDown, Minus
 } from 'lucide-react';
 import { api } from '../services/api.client';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 /**
  * Reports & Analytics Page
@@ -58,6 +59,7 @@ interface ReportsData {
 }
 
 const ReportsPage = () => {
+    usePageTitle('Reports & Analytics');
     const [activeSection, setActiveSection] = useState<'overview' | 'branch' | 'performers' | 'weak'>('overview');
     const [data, setData] = useState<ReportsData | null>(null);
     const [loading, setLoading] = useState(true);
