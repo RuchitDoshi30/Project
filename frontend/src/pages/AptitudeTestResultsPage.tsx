@@ -1,25 +1,60 @@
 import { useState, useEffect, memo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, Trophy, XCircle, CheckCircle, RotateCcw, Home, ChevronDown, ChevronUp, 
-  Eye, EyeOff, TrendingUp, Lightbulb, Award, Shield, Bookmark
+import {
+  ArrowLeft,
+  Trophy,
+  XCircle,
+  CheckCircle,
+  RotateCcw,
+  Home,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  EyeOff,
+  TrendingUp,
+  Lightbulb,
+  Award,
+  Shield,
+  Bookmark,
 } from 'lucide-react';
-import { 
-  getAttemptById, 
-  getAptitudeTestById, 
-  getQuestionsForTest,
+import {
+  getAttemptById,
   getCategoryPerformance,
-  getSmartRecommendations
+  getSmartRecommendations,
 } from '../services/aptitude.service';
 import { Card, SkeletonResults } from '../components';
-import type { IAptitudeAttempt, IAptitudeTest, IAptitudeQuestion, AptitudeCategory } from '../types/models';
+import type {
+  IAptitudeAttempt,
+  IAptitudeTest,
+  IAptitudeQuestion,
+  AptitudeCategory,
+} from '../types/models';
 
 // Category color mapping for consistent UI
-const CATEGORY_THEME_COLORS: Record<AptitudeCategory, { bg: string; text: string; border: string }> = {
-  Quantitative: { bg: 'bg-blue-50 dark:bg-blue-900/20', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-200 dark:border-blue-700/40' },
-  Logical: { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-300', border: 'border-purple-200 dark:border-purple-700/40' },
-  Verbal: { bg: 'bg-green-50 dark:bg-green-900/20', text: 'text-green-700 dark:text-green-300', border: 'border-green-200 dark:border-green-700/40' },
-  Technical: { bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-300', border: 'border-orange-200 dark:border-orange-700/40' },
+const CATEGORY_THEME_COLORS: Record<
+  AptitudeCategory,
+  { bg: string; text: string; border: string }
+> = {
+  Quantitative: {
+    bg: 'bg-blue-50 dark:bg-blue-900/20',
+    text: 'text-blue-700 dark:text-blue-300',
+    border: 'border-blue-200 dark:border-blue-700/40',
+  },
+  Logical: {
+    bg: 'bg-purple-50 dark:bg-purple-900/20',
+    text: 'text-purple-700 dark:text-purple-300',
+    border: 'border-purple-200 dark:border-purple-700/40',
+  },
+  Verbal: {
+    bg: 'bg-green-50 dark:bg-green-900/20',
+    text: 'text-green-700 dark:text-green-300',
+    border: 'border-green-200 dark:border-green-700/40',
+  },
+  Technical: {
+    bg: 'bg-orange-50 dark:bg-orange-900/20',
+    text: 'text-orange-700 dark:text-orange-300',
+    border: 'border-orange-200 dark:border-orange-700/40',
+  },
 };
 
 /**
@@ -32,7 +67,7 @@ const CATEGORY_THEME_COLORS: Record<AptitudeCategory, { bg: string; text: string
 const AptitudeTestResultsPage = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
   const navigate = useNavigate();
-  
+
   const [isLoadingResults, setIsLoadingResults] = useState(true);
   const [testAttempt, setTestAttempt] = useState<IAptitudeAttempt | null>(null);
   const [aptitudeTest, setAptitudeTest] = useState<IAptitudeTest | null>(null);
@@ -56,20 +91,35 @@ const AptitudeTestResultsPage = () => {
         }
 
         setTestAttempt(foundAttempt);
-        
-        // testId may be populated (object) or a plain string
-        const testIdValue = typeof foundAttempt.testId === 'string' 
-          ? foundAttempt.testId 
-          : (foundAttempt.testId as any)?._id || foundAttempt.testId;
-        const foundTest = await getAptitudeTestById(testIdValue);
-        if (!foundTest) {
+
+        // The attempt's testId is deep-populated by the backend with questions
+        // that include correctOptionIndex. Using this directly avoids the
+        // getAptitudeTestById endpoint which strips correctOptionIndex for students.
+        const populatedTest = foundAttempt.testId as unknown as IAptitudeTest & {
+          questions: IAptitudeQuestion[];
+        };
+        if (!populatedTest || typeof populatedTest === 'string') {
           navigate('/aptitude');
           return;
         }
 
-        const questionsInTest = await getQuestionsForTest(foundTest._id);
-        setAptitudeTest(foundTest);
-        setTestQuestions(questionsInTest);
+        const testData: IAptitudeTest = {
+          _id: populatedTest._id,
+          title: populatedTest.title,
+          description: populatedTest.description || '',
+          category: populatedTest.category,
+          questions: populatedTest.questions?.map((q: IAptitudeQuestion) => q._id) || [],
+          duration: populatedTest.duration,
+          passingPercentage: populatedTest.passingPercentage,
+          createdBy: populatedTest.createdBy,
+          createdAt: populatedTest.createdAt,
+        };
+
+        // Questions from the populated attempt include correctOptionIndex
+        const questionsFromAttempt: IAptitudeQuestion[] = populatedTest.questions || [];
+
+        setAptitudeTest(testData);
+        setTestQuestions(questionsFromAttempt);
         setIsLoadingResults(false);
       } catch {
         navigate('/aptitude');
@@ -84,7 +134,7 @@ const AptitudeTestResultsPage = () => {
     // Use setTimeout to avoid cascading renders
     const timeout = setTimeout(() => {
       if (showAllExplanations && testQuestions.length > 0) {
-        setExpandedQuestionIds(new Set(testQuestions.map(q => q._id)));
+        setExpandedQuestionIds(new Set(testQuestions.map((q) => q._id)));
       } else if (!showAllExplanations) {
         setExpandedQuestionIds(new Set());
       }
@@ -93,7 +143,7 @@ const AptitudeTestResultsPage = () => {
   }, [showAllExplanations, testQuestions]);
 
   const toggleQuestionExpansion = (questionId: string) => {
-    setExpandedQuestionIds(prevSet => {
+    setExpandedQuestionIds((prevSet) => {
       const updatedSet = new Set(prevSet);
       if (updatedSet.has(questionId)) {
         updatedSet.delete(questionId);
@@ -105,17 +155,17 @@ const AptitudeTestResultsPage = () => {
   };
 
   const getUserAnswerForQuestion = (questionId: string): number | undefined => {
-    const userAnswer = testAttempt?.answers.find(ans => ans.questionId === questionId);
+    const userAnswer = testAttempt?.answers.find((ans) => ans.questionId === questionId);
     return userAnswer?.selectedOption;
   };
 
   const wasAnsweredConfidently = (questionId: string): boolean => {
-    const userAnswer = testAttempt?.answers.find(ans => ans.questionId === questionId);
+    const userAnswer = testAttempt?.answers.find((ans) => ans.questionId === questionId);
     return userAnswer?.isConfident || false;
   };
 
   const isAnswerCorrect = (questionId: string): boolean => {
-    const question = testQuestions.find(q => q._id === questionId);
+    const question = testQuestions.find((q) => q._id === questionId);
     const userAnswer = getUserAnswerForQuestion(questionId);
     return question ? question.correctOptionIndex === userAnswer : false;
   };
@@ -163,21 +213,22 @@ const AptitudeTestResultsPage = () => {
     );
   }
 
-  const correctAnswersCount = testQuestions.filter(q => isAnswerCorrect(q._id)).length;
+  const correctAnswersCount = testQuestions.filter((q) => isAnswerCorrect(q._id)).length;
   const incorrectAnswersCount = testQuestions.length - correctAnswersCount;
   const scorePercentage = Math.round((correctAnswersCount / testQuestions.length) * 100);
   const categoryPerformanceData = getCategoryPerformance(testAttempt, testQuestions);
   const intelligentRecommendations = getSmartRecommendations(testAttempt, testQuestions);
-  
+
   // Confidence analysis
-  const confidentAnswers = testAttempt.answers.filter(a => a.isConfident);
-  const confidentCorrectCount = confidentAnswers.filter(a => {
-    const question = testQuestions.find(q => q._id === a.questionId);
+  const confidentAnswers = testAttempt.answers.filter((a) => a.isConfident);
+  const confidentCorrectCount = confidentAnswers.filter((a) => {
+    const question = testQuestions.find((q) => q._id === a.questionId);
     return question && question.correctOptionIndex === a.selectedOption;
   }).length;
-  const confidenceAccuracy = confidentAnswers.length > 0 
-    ? Math.round((confidentCorrectCount / confidentAnswers.length) * 100) 
-    : 0;
+  const confidenceAccuracy =
+    confidentAnswers.length > 0
+      ? Math.round((confidentCorrectCount / confidentAnswers.length) * 100)
+      : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-lc-bg">
@@ -253,7 +304,10 @@ const ResultsHeader = ({
           className="p-2 hover:bg-gray-100 dark:hover:bg-lc-elevated rounded-lg transition-colors"
           aria-label="Back to tests"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-lc-text-secondary" aria-hidden="true" />
+          <ArrowLeft
+            className="w-5 h-5 text-gray-600 dark:text-lc-text-secondary"
+            aria-hidden="true"
+          />
         </button>
         <div>
           <h1 className="text-base font-semibold text-gray-900 dark:text-lc-text">Test Results</h1>
@@ -333,7 +387,7 @@ const ScoreSummaryCard = ({
         <XCircle className="w-16 h-16 text-red-600 mx-auto" aria-hidden="true" />
       )}
     </div>
-    
+
     <h2
       className={`text-3xl font-bold mb-2 ${
         passed ? 'text-green-900 dark:text-green-300' : 'text-red-900 dark:text-red-300'
@@ -341,7 +395,7 @@ const ScoreSummaryCard = ({
     >
       {passed ? 'Congratulations!' : 'Keep Trying!'}
     </h2>
-    
+
     <p className="text-gray-600 dark:text-lc-text-muted mb-6">
       {passed
         ? 'You have successfully passed the test!'
@@ -350,11 +404,7 @@ const ScoreSummaryCard = ({
 
     <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-white dark:bg-lc-card border-4 border-gray-200 dark:border-lc-border mb-6">
       <div className="text-center">
-        <div
-          className={`text-4xl font-bold ${
-            passed ? 'text-green-600' : 'text-red-600'
-          }`}
-        >
+        <div className={`text-4xl font-bold ${passed ? 'text-green-600' : 'text-red-600'}`}>
           {scorePercentage}%
         </div>
         <div className="text-xs text-gray-500 dark:text-lc-text-muted mt-1">Score</div>
@@ -380,12 +430,13 @@ const ScoreSummaryCard = ({
       <div className="mt-6 pt-6 border-t border-gray-200 dark:border-lc-border">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Shield className="w-5 h-5 text-blue-600" aria-hidden="true" />
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text">Confidence Analysis</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-lc-text">
+            Confidence Analysis
+          </h3>
         </div>
         <div className="text-sm text-gray-600 dark:text-lc-text-muted">
-          You marked{' '}
-          <span className="font-semibold text-blue-600">{confidentAnswersCount}</span> answers as
-          confident with{' '}
+          You marked <span className="font-semibold text-blue-600">{confidentAnswersCount}</span>{' '}
+          answers as confident with{' '}
           <span
             className={`font-semibold ${
               confidenceAccuracy >= 70 ? 'text-green-600' : 'text-orange-600'
@@ -411,7 +462,9 @@ const CategoryPerformanceCard = memo(function CategoryPerformanceCard({
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-4">
         <TrendingUp className="w-5 h-5 text-primary-600" aria-hidden="true" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text">Performance by Category</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text">
+          Performance by Category
+        </h3>
       </div>
       <div className="space-y-3">
         {Object.entries(data).map(([category, performance]) => {
@@ -421,24 +474,23 @@ const CategoryPerformanceCard = memo(function CategoryPerformanceCard({
             performance.percentage >= 80
               ? 'Excellent'
               : performance.percentage >= 60
-              ? 'Good'
-              : 'Needs Practice';
-          
+                ? 'Good'
+                : 'Needs Practice';
+
           return (
-            <div
-              key={category}
-              className={`p-4 rounded-lg border ${colors.bg} ${colors.border}`}
-            >
+            <div key={category} className={`p-4 rounded-lg border ${colors.bg} ${colors.border}`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-lc-text">{category}</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-lc-text">
+                    {category}
+                  </span>
                   <span
                     className={`text-xs px-2 py-0.5 rounded font-medium ${
                       performance.percentage >= 80
                         ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                         : performance.percentage >= 60
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                        : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
+                          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                          : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
                     }`}
                   >
                     {performanceLevel}
@@ -459,8 +511,8 @@ const CategoryPerformanceCard = memo(function CategoryPerformanceCard({
                     performance.percentage >= 80
                       ? 'bg-green-500'
                       : performance.percentage >= 60
-                      ? 'bg-blue-500'
-                      : 'bg-orange-500'
+                        ? 'bg-blue-500'
+                        : 'bg-orange-500'
                   }`}
                   style={{ width: `${performance.percentage}%` }}
                 />
@@ -481,7 +533,9 @@ const RecommendationsCard = ({ recommendations }: RecommendationsCardProps) => (
   <Card className="p-6 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-lc-surface border-blue-200 dark:border-blue-700/40">
     <div className="flex items-center gap-2 mb-4">
       <Lightbulb className="w-5 h-5 text-amber-600" aria-hidden="true" />
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text">Recommendations for You</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text">
+        Recommendations for You
+      </h3>
     </div>
     <div className="space-y-2">
       {recommendations.map((recommendation, index) => (
@@ -490,7 +544,9 @@ const RecommendationsCard = ({ recommendations }: RecommendationsCardProps) => (
           className="flex items-start gap-3 p-3 bg-white dark:bg-lc-card rounded-lg border border-blue-100 dark:border-lc-border"
         >
           <Award className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-sm text-gray-700 dark:text-lc-text-secondary flex-1">{recommendation}</p>
+          <p className="text-sm text-gray-700 dark:text-lc-text-secondary flex-1">
+            {recommendation}
+          </p>
         </div>
       ))}
     </div>
@@ -519,7 +575,9 @@ const DetailedReview = ({
   <section aria-label="Detailed question review">
     <div className="flex items-center justify-between mb-4">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-lc-text">Detailed Review</h3>
-      <span className="text-sm text-gray-500 dark:text-lc-text-muted">Click on any question to view explanation</span>
+      <span className="text-sm text-gray-500 dark:text-lc-text-muted">
+        Click on any question to view explanation
+      </span>
     </div>
     <div className="space-y-3">
       {questions.map((question, questionIndex) => {
@@ -591,7 +649,10 @@ const DetailedReview = ({
                   </div>
                 </div>
                 {isQuestionExpanded ? (
-                  <ChevronUp className="w-5 h-5 text-gray-400 dark:text-lc-text-muted flex-shrink-0" aria-hidden="true" />
+                  <ChevronUp
+                    className="w-5 h-5 text-gray-400 dark:text-lc-text-muted flex-shrink-0"
+                    aria-hidden="true"
+                  />
                 ) : (
                   <ChevronDown
                     className="w-5 h-5 text-gray-400 dark:text-lc-text-muted flex-shrink-0"
@@ -615,8 +676,8 @@ const DetailedReview = ({
                           isCorrectOption
                             ? 'bg-green-50 border-green-300'
                             : isUserSelection
-                            ? 'bg-red-50 border-red-300'
-                            : 'bg-gray-50 dark:bg-lc-elevated border-gray-200 dark:border-lc-border'
+                              ? 'bg-red-50 border-red-300'
+                              : 'bg-gray-50 dark:bg-lc-elevated border-gray-200 dark:border-lc-border'
                         }`}
                       >
                         <div className="flex items-center gap-2">
@@ -647,8 +708,12 @@ const DetailedReview = ({
 
                 {question.explanation && (
                   <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-lg">
-                    <p className="text-xs font-semibold text-blue-900 dark:text-blue-300 mb-1">Explanation:</p>
-                    <p className="text-sm text-blue-800 dark:text-blue-200">{question.explanation}</p>
+                    <p className="text-xs font-semibold text-blue-900 dark:text-blue-300 mb-1">
+                      Explanation:
+                    </p>
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      {question.explanation}
+                    </p>
                   </div>
                 )}
               </div>
