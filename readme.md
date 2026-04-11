@@ -71,7 +71,7 @@ Open your terminal and clone the repository. Then, install dependencies for both
 
 ```bash
 # Clone the repo (if not already done)
-git clone https://github.com/your-username/PlacementPrep.git
+git clone https://github.com/RuchitDoshi30/Project.git
 cd PlacementPrep
 
 # Setup backend
