@@ -273,7 +273,10 @@ export default function LandingPage() {
           </div>
 
           {/* Bento Item 4: Placement Drives */}
-          <div className="md:col-span-2 md:row-span-1 bg-[#111116] border border-white/5 rounded-3xl p-8 relative overflow-hidden group hover:border-emerald-500/30 transition-colors flex flex-col justify-between">
+          <div
+            id="drives"
+            className="md:col-span-2 md:row-span-1 bg-[#111116] border border-white/5 rounded-3xl p-8 relative overflow-hidden group hover:border-emerald-500/30 transition-colors flex flex-col justify-between"
+          >
             <div>
               <Briefcase className="w-8 h-8 text-emerald-400 mb-4" />
               <h4 className="text-2xl font-bold mb-2">Live Placement Drives</h4>
@@ -307,7 +310,10 @@ export default function LandingPage() {
       </section>
 
       {/* 5. Minimal Review / Social Proof */}
-      <section className="py-24 bg-white/5 border-t border-white/5 relative overflow-hidden">
+      <section
+        id="testify"
+        className="py-24 bg-white/5 border-t border-white/5 relative overflow-hidden"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-12">
             <div className="flex-1">
