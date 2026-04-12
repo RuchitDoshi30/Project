@@ -61,8 +61,10 @@ const LoginPage = () => {
     try {
       await login(data as LoginCredentials);
       toast.success('Welcome back! Login successful.');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage =
+        e?.response?.data?.message || e?.message || 'Login failed. Please check your credentials.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

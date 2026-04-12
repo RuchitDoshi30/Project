@@ -81,10 +81,13 @@ apiClient.interceptors.response.use(
 
     // Handle authentication errors
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-      toast.error('Session expired. Please login again.');
+      // Do not trigger global logout if the user is actively trying to log in
+      if (!config.url || !config.url.includes('/auth/login')) {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        toast.error('Session expired. Please login again.');
+      }
       return Promise.reject(error);
     }
 
