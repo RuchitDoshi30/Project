@@ -96,7 +96,7 @@ export const updatePassword = asyncHandler(async (req: Request, res: Response) =
 
   const isMatch = await user.comparePassword(currentPassword);
   if (!isMatch) {
-    throw new ApiError(401, 'Current password is incorrect.');
+    throw new ApiError(400, 'Current password is incorrect.');
   }
 
   // Set the new password — the pre('save') hook will hash it automatically
