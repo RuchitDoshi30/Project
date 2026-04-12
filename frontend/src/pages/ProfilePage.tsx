@@ -172,12 +172,19 @@ const ProfilePage = () => {
     try {
       await authService.updatePassword(passwordData.current, passwordData.new);
       toast.success('Password changed successfully!');
-      setPasswordData({ current: '', new: '', confirm: '' });
-      setIsEditingPassword(false);
+      authService.logout();
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 1500);
     } catch (err: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const message = (err as any)?.response?.data?.message || 'Failed to change password.';
-      toast.error(message);
+      const status = (err as any)?.response?.status;
+      // The global interceptor already handles 400 errors with a toast
+      if (status !== 400) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const message = (err as any)?.response?.data?.message || 'Failed to change password.';
+        toast.error(message);
+      }
     } finally {
       setSavingPassword(false);
     }
