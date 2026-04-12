@@ -384,7 +384,7 @@ export default function LandingPage() {
             <span className="font-bold text-slate-300 tracking-tight">PlacementPrep</span>
           </div>
           <p className="text-sm font-medium text-slate-600">
-            &copy; {new Date().getFullYear()} Software Engineering Project.
+            &copy; {new Date().getFullYear()} PlacementPrep. All rights reserved..
           </p>
         </div>
       </footer>
