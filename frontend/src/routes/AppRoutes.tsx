@@ -1,6 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Suspense, lazy, type ReactNode } from 'react';
-import { useAuth } from '../context/AuthContext';
+// Removed useAuth as it's no longer needed for root routing
 
 // Layouts
 import { StudentLayout } from '../layouts/StudentLayout';
@@ -12,6 +12,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { Spinner } from '../components/Spinner';
 
 // Lazy-loaded pages for route-level code splitting
+const LandingPage = lazy(() => import('../pages/LandingPage'));
 const LoginPage = lazy(() => import('../pages/LoginPage'));
 const DashboardPage = lazy(() => import('../pages/DashboardPage'));
 const CodingPage = lazy(() => import('../pages/CodingPage'));
@@ -57,7 +58,7 @@ const RouteBoundary: React.FC<{ children: ReactNode }> = ({ children }) => (
 );
 
 const AppRoutes = () => {
-  const { user } = useAuth();
+  // Removed { user } usage from this level as LandingPage handles roles.
 
   return (
     <BrowserRouter>
@@ -80,21 +81,13 @@ const AppRoutes = () => {
           }
         />
 
-        {/* Root Route - Redirect based on role */}
+        {/* Root Route - Public Landing Page (SEO/AIO optimized) */}
         <Route
           path="/"
           element={
-            <ProtectedRoute>
-              <RouteBoundary>
-                {user?.role === 'admin' ? (
-                  <Navigate to="/admin" replace />
-                ) : (
-                  <StudentLayout>
-                    <DashboardPage />
-                  </StudentLayout>
-                )}
-              </RouteBoundary>
-            </ProtectedRoute>
+            <RouteBoundary>
+              <LandingPage />
+            </RouteBoundary>
           }
         />
 
