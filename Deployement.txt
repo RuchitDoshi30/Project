@@ -1,0 +1,15 @@
+GitHub Link: https://github.com/RuchitDoshi30/Project
+
+Deployed Link: https://placement-portal30.vercel.app/login
+
+Credentials:
+
+Admin 
+
+Username: admin@marwadiuniversity.ac.in
+Password: admin123
+
+Student
+
+Username: ruchit.doshi142033@marwadiuniversity.ac.in
+Password: student123

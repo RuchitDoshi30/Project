@@ -175,6 +175,10 @@ export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: '/auth/login',
     ME: '/auth/me',
+    UPDATE_PROFILE: '/auth/profile',
+    UPDATE_PASSWORD: '/auth/password',
+    DOWNLOAD_DATA: '/auth/download-data',
+    DELETE_ACCOUNT: '/auth/account',
   },
 
   // Problems

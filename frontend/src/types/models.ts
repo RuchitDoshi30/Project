@@ -10,13 +10,30 @@ export interface IUser {
   branch?: string;
   semester?: number;
   enrollmentYear?: number;
+  bio?: string;
+  notifications?: {
+    emailOnSubmission: boolean;
+    emailOnTestComplete: boolean;
+    emailWeeklySummary: boolean;
+    inAppNotifications: boolean;
+  };
+  privacy?: {
+    profileVisible: boolean;
+    showInLeaderboard: boolean;
+  };
   createdAt: string;
   updatedAt: string;
 }
 
 // Coding Problem Types
 export type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced';
-export type SubmissionStatus = 'Accepted' | 'Wrong Answer' | 'Time Limit Exceeded' | 'Runtime Error' | 'Compilation Error' | 'Pending Review';
+export type SubmissionStatus =
+  | 'Accepted'
+  | 'Wrong Answer'
+  | 'Time Limit Exceeded'
+  | 'Runtime Error'
+  | 'Compilation Error'
+  | 'Pending Review';
 
 export interface ITestCase {
   input: string;

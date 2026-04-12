@@ -13,6 +13,17 @@ export interface IUser extends Document {
   semester?: number;
   enrollmentYear?: number;
   accountStatus: 'active' | 'disabled';
+  bio?: string;
+  notifications: {
+    emailOnSubmission: boolean;
+    emailOnTestComplete: boolean;
+    emailWeeklySummary: boolean;
+    inAppNotifications: boolean;
+  };
+  privacy: {
+    profileVisible: boolean;
+    showInLeaderboard: boolean;
+  };
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -42,6 +53,17 @@ const UserSchema: Schema<IUser> = new Schema(
     semester: { type: Number, min: 1, max: 8 },
     enrollmentYear: { type: Number },
     accountStatus: { type: String, enum: ['active', 'disabled'], default: 'active' },
+    bio: { type: String, trim: true, maxlength: 500, default: '' },
+    notifications: {
+      emailOnSubmission: { type: Boolean, default: true },
+      emailOnTestComplete: { type: Boolean, default: true },
+      emailWeeklySummary: { type: Boolean, default: true },
+      inAppNotifications: { type: Boolean, default: true },
+    },
+    privacy: {
+      profileVisible: { type: Boolean, default: true },
+      showInLeaderboard: { type: Boolean, default: true },
+    },
   },
   {
     timestamps: true, // Automatically manages createdAt and updatedAt
