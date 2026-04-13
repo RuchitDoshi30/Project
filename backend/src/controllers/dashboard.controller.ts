@@ -240,9 +240,10 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
   ]);
 
   // Build lookup maps
-  const progressByUser = new Map(allProgress.map(p => [p.userId.toString(), p]));
+  const progressByUser = new Map(allProgress.map(p => [p.userId?.toString() || '', p]));
   const attemptsByUser = new Map<string, typeof allAttempts>();
   for (const a of allAttempts) {
+    if (!a.userId) continue;
     const uid = a.userId.toString();
     if (!attemptsByUser.has(uid)) attemptsByUser.set(uid, []);
     attemptsByUser.get(uid)!.push(a);
@@ -285,10 +286,11 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
   });
 
   // --- Top Performers (computed in memory) ---
-  const allUserMap = new Map(allStudents.map(u => [u._id.toString(), u]));
+  const allUserMap = new Map(allStudents.map(u => [u._id?.toString() || '', u]));
 
   const topPerformers = allProgress
     .map(p => {
+      if (!p.userId) return null;
       const user = allUserMap.get(p.userId.toString());
       if (!user) return null;
       const easy = p.problemsSolved?.easy || 0;
@@ -324,10 +326,11 @@ export const getReports = asyncHandler(async (_req: Request, res: Response) => {
 
   // Map problem IDs to tags
   const problemsWithTags = await Problem.find().select('_id tags').lean().maxTimeMS(10000);
-  const problemTagMap = new Map(problemsWithTags.map(p => [p._id.toString(), p.tags || []]));
+  const problemTagMap = new Map(problemsWithTags.map(p => [p._id?.toString() || '', p.tags || []]));
 
   const tagStats: Record<string, { attempts: number; passed: number }> = {};
   for (const agg of submissionTagAgg) {
+    if (!agg._id?.problemId) continue;
     const tags = problemTagMap.get(agg._id.problemId.toString()) || [];
     for (const tag of tags) {
       if (!tagStats[tag]) tagStats[tag] = { attempts: 0, passed: 0 };
